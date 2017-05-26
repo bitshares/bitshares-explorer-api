@@ -2,7 +2,7 @@
 Simple Python wrapper for front end applications to be called by GET urls. api calls are added on demand as front end applications requiere it. 
 
 
-##Install:
+## Install:
 
 apt-get install python-virtualenv
 
@@ -26,7 +26,7 @@ export FLASK_APP=api.py
 
 flask run --host=0.0.0.0
 
-##Usage:
+## Usage:
 
 Point your browser to:
 
