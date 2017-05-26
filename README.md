@@ -4,7 +4,9 @@ Simple Python wrapper for front end applications to be called by GET urls. api c
 
 ## Install:
 
-apt-get install python-virtualenv
+For debian based linux distros:
+
+```apt-get install python-virtualenv
 
 apt-get install python-pip
 
@@ -25,6 +27,7 @@ virtualenv venv
 export FLASK_APP=api.py
 
 flask run --host=0.0.0.0
+```
 
 ## Usage:
 
