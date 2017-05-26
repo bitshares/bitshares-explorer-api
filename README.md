@@ -6,7 +6,8 @@ Simple Python wrapper for front end applications to be called by GET urls. api c
 
 For debian based linux distros:
 
-```apt-get install python-virtualenv
+```
+apt-get install python-virtualenv
 
 apt-get install python-pip
 
