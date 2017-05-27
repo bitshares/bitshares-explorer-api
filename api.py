@@ -137,7 +137,19 @@ def get_asset():
     result = ws.recv()
     j = json.loads(result)
 
-    # print j["result"]
+    #print j["result"]
+
+    return jsonify(j["result"])
+
+@app.route('/block_header')
+def block_header():
+    block_num = request.args.get('block_num')
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_block_header",[' + block_num + ', 0]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    #print j["result"]
 
     return jsonify(j["result"])
 
