@@ -121,7 +121,7 @@ def account_history():
 
     account_id = request.args.get('account_id')
 
-    ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_account_history",["'+account_id+'", "1.11.10", 100, "1.11.0"]]}')
+    ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_account_history",["'+account_id+'", "1.11.10", 20, "1.11.0"]]}')
     result =  ws.recv()
     j = json.loads(result)
 
