@@ -153,3 +153,15 @@ def block_header():
 
     return jsonify(j["result"])
 
+@app.route('/get_block')
+def get_block():
+    block_num = request.args.get('block_num')
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_block",[' + block_num + ', 0]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    #print j["result"]
+
+    return jsonify(j["result"])
+
