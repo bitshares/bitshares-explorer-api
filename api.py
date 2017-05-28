@@ -88,7 +88,7 @@ def full_account():
 @app.route('/assets')
 def assets():
 
-    ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["BTS", 100]]}')
+    ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["BTS", 20]]}')
     result =  ws.recv()
     j = json.loads(result)
 
