@@ -165,3 +165,16 @@ def get_block():
 
     return jsonify(j["result"])
 
+@app.route('/get_ticker')
+def get_ticker():
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_ticker",["' + base + '", "'+quote+'"]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    #print j["result"]
+
+    return jsonify(j["result"])
+
