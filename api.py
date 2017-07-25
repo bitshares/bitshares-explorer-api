@@ -116,8 +116,6 @@ def get_operation():
 @app.route('/accounts')
 def accounts():
 
-    account_id = request.args.get('account_id')
-
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
     #print  result2
