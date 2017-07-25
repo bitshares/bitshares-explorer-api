@@ -294,8 +294,8 @@ def get_object():
 
     return jsonify(j["result"])
 
-@app.route('/get_asset_holders')
-def get_asset_holders():
+@app.route('/get_asset_holders_count')
+def get_asset_holders_count():
 
     asset_id = request.args.get('asset_id')
 
@@ -314,7 +314,30 @@ def get_asset_holders():
     result =  ws.recv()
     j = json.loads(result)
 
-    print j["result"]
+    #print j["result"]
+
+    return jsonify(j["result"])
+
+@app.route('/get_asset_holders')
+def get_asset_holders():
+
+    asset_id = request.args.get('asset_id')
+
+    ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
+    login =  ws.recv()
+
+    ws.send('{"id":2,"method":"call","params":[1,"asset",[]]}')
+
+    asset =  ws.recv()
+    asset_j = json.loads(asset)
+
+    asset_api = str(asset_j["result"])
+
+    ws.send('{"id":1, "method":"call", "params":['+asset_api+',"get_asset_holders",["'+asset_id+'", 0, 100]]}')
+    result =  ws.recv()
+    print result
+
+    j = json.loads(result)
 
     return jsonify(j["result"])
 

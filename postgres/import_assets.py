@@ -82,7 +82,7 @@ for x in range (0, len(all)):
 
         mcap = int(current_supply) * float(price)
 
-        url = "http://23.94.69.140:5000/get_asset_holders?asset_id=" + id
+        url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=" + id
         #print url
         response4 = urllib.urlopen(url)
         try:

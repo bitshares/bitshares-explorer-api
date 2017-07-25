@@ -113,9 +113,13 @@ Sample URL: http://23.94.69.140:5000/lastnetworkops
 
 Sample URL: http://23.94.69.140:5000/get_object?object=1.14.55
 
-- `get_asset_holders` - Get the count of assets holders from asset id.
+- `get_asset_holders_count` - Get the count of assets holders from asset id.
 
-Sample URL: http://23.94.69.140:5000/get_asset_holders?asset_id=1.3.0
+Sample URL: http://23.94.69.140:5000/get_asset_holders_count?asset_id=1.3.0
+
+- `get_asset_holders` - Get the list of assets holders from asset id.
+
+Sample URL: http://23.94.69.140:5000/get_asset_holders?asset_id=1.3.113
 
 - `get_workers` - Get full workers list in the network.
 
