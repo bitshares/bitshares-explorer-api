@@ -219,6 +219,14 @@ def get_asset():
     j["result"][0]["current_supply"] = j2["result"][0]["current_supply"]
     j["result"][0]["confidential_supply"] = j2["result"][0]["confidential_supply"]
     #print j["result"]
+
+    issuer = j["result"][0]["issuer"]
+    ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["'+issuer+'"]]]}')
+    result3 = ws.recv()
+    j3 = json.loads(result3)
+    j["result"][0]["issuer_name"] = j3["result"][0]["name"]
+
+
     return jsonify(j["result"])
 
 @app.route('/block_header')
