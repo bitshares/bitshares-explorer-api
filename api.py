@@ -185,6 +185,13 @@ def account_history():
 
     account_id = request.args.get('account_id')
 
+    if not isObject(account_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+
+        account_id = j_l["result"][0]["id"]
+
     ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_account_history",["'+account_id+'", "1.11.0", 20, "1.11.9999999999"]]}')
     result =  ws.recv()
     j = json.loads(result)
