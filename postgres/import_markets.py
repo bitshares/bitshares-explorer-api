@@ -13,6 +13,10 @@ cur = con.cursor()
 
 query = "TRUNCATE markets"
 cur.execute(query)
+
+query = "ALTER SEQUENCE assets_id_seq RESTART WITH 1;"
+cur.execute(query)
+
 con.commit()
 
 query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"

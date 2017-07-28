@@ -13,6 +13,24 @@ cur = con.cursor()
 
 query = "TRUNCATE assets"
 cur.execute(query)
+#con.commit()
+
+query = "ALTER SEQUENCE assets_id_seq RESTART WITH 1;"
+cur.execute(query)
+#con.commit()
+
+# alter sequence of the ops once a day here
+query = "DELETE FROM ops WHERE oid NOT IN (SELECT oid FROM ops ORDER BY oid DESC LIMIT 10);"
+cur.execute(query)
+#con.commit()
+for x in range (0, 10):
+    query = "UPDATE ops set oid="+str(x+1)+" WHERE oid IN (SELECT oid FROM ops ORDER BY oid LIMIT 1 OFFSET "+str(x)+");"
+    #print query
+    cur.execute(query)
+
+query = "ALTER SEQUENCE ops_oid_seq RESTART WITH 11;"
+cur.execute(query)
+
 con.commit()
 
 all = []

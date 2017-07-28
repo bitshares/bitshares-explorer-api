@@ -348,9 +348,9 @@ def get_asset_holders():
 
     asset_api = str(asset_j["result"])
 
-    ws.send('{"id":1, "method":"call", "params":['+asset_api+',"get_asset_holders",["'+asset_id+'", 0, 100]]}')
+    ws.send('{"id":1, "method":"call", "params":['+asset_api+',"get_asset_holders",["'+asset_id+'", 0, 20]]}')
     result =  ws.recv()
-    print result
+    #print result
 
     j = json.loads(result)
 
