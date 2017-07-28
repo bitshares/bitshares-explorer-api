@@ -14,7 +14,7 @@ cur = con.cursor()
 query = "TRUNCATE markets"
 cur.execute(query)
 
-query = "ALTER SEQUENCE assets_id_seq RESTART WITH 1;"
+query = "ALTER SEQUENCE markets_id_seq RESTART WITH 1;"
 cur.execute(query)
 
 con.commit()
