@@ -78,7 +78,12 @@ def get_operation():
     #print j["result"]
     ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
     result2 =  ws.recv()
+    #print result2
     j2 = json.loads(result2)
+    #print j2["result"]
+
+    if not j["result"][0]:
+        j["result"][0] = {}
 
     j["result"][0]["accounts_registered_this_interval"] = j2["result"]["accounts_registered_this_interval"]
 
@@ -350,7 +355,6 @@ def get_asset_holders():
 
     ws.send('{"id":1, "method":"call", "params":['+asset_api+',"get_asset_holders",["'+asset_id+'", 0, 20]]}')
     result =  ws.recv()
-    #print result
 
     j = json.loads(result)
 
