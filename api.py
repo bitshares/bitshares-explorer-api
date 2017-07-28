@@ -75,12 +75,9 @@ def get_operation():
     result =  ws.recv()
     j = json.loads(result)
 
-    #print j["result"]
     ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
     result2 =  ws.recv()
-    #print result2
     j2 = json.loads(result2)
-    #print j2["result"]
 
     if not j["result"][0]:
         j["result"][0] = {}
@@ -213,10 +210,9 @@ def get_asset():
         ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
         result_l = ws.recv()
         j_l = json.loads(result_l)
-
         asset_id = j_l["result"][0]["id"]
 
-
+    print asset_id
     ws.send('{"id":1, "method":"call", "params":[0,"get_assets",[["' + asset_id + '"], 0]]}')
     result = ws.recv()
     j = json.loads(result)
@@ -319,6 +315,12 @@ def get_asset_holders_count():
 
     asset_id = request.args.get('asset_id')
 
+    if not isObject(asset_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+        asset_id = j_l["result"][0]["id"]
+
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
     #print  result2
@@ -342,6 +344,12 @@ def get_asset_holders_count():
 def get_asset_holders():
 
     asset_id = request.args.get('asset_id')
+
+    if not isObject(asset_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+        asset_id = j_l["result"][0]["id"]
 
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
@@ -395,6 +403,13 @@ def isObject(string):
 def get_markets():
 
     asset_id = request.args.get('asset_id')
+
+    if not isObject(asset_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+        asset_id = j_l["result"][0]["id"]
+
 
     con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
     cur = con.cursor()
