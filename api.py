@@ -212,7 +212,7 @@ def get_asset():
         j_l = json.loads(result_l)
         asset_id = j_l["result"][0]["id"]
 
-    print asset_id
+    #print asset_id
     ws.send('{"id":1, "method":"call", "params":[0,"get_assets",[["' + asset_id + '"], 0]]}')
     result = ws.recv()
     j = json.loads(result)
@@ -419,3 +419,27 @@ def get_markets():
     results = cur.fetchall()
     con.close()
     return jsonify(results)
+
+
+@app.route('/get_most_active_markets')
+def get_most_active_markets():
+
+    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    cur = con.cursor()
+
+    query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 20"
+    cur.execute(query)
+    results = cur.fetchall()
+    con.close()
+    return jsonify(results)
+
+@app.route('/get_order_book')
+def get_order_book():
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_order_book",["'+base+'", "'+quote+'", 50]]}')
+    result =  ws.recv()
+    j = json.loads(result)
+
+    return jsonify(j["result"])
