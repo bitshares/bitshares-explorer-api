@@ -228,6 +228,9 @@ def get_asset():
     j["result"][0]["confidential_supply"] = j2["result"][0]["confidential_supply"]
     #print j["result"]
 
+    j["result"][0]["accumulated_fees"] = j2["result"][0]["accumulated_fees"]
+    j["result"][0]["fee_pool"] = j2["result"][0]["fee_pool"]
+
     issuer = j["result"][0]["issuer"]
     ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["'+issuer+'"]]]}')
     result3 = ws.recv()
