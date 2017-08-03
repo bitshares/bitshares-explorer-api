@@ -371,8 +371,16 @@ def get_asset_holders():
 @app.route('/get_workers')
 def get_workers():
 
+
+    ws.send('{"jsonrpc": "2.0", "method": "get_workers_count", "params": [], "id": 1}')
+
+    count =  ws.recv()
+    count_j = json.loads(count)
+
+    workers_count = str(count_j["result"])
+
     workers = []
-    for w in range(0, 57):
+    for w in range(0, workers_count):
         ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["1.14.'+str(w)+'"]]]}')
         result =  ws.recv()
 
@@ -439,6 +447,17 @@ def get_order_book():
     base = request.args.get('base')
     quote = request.args.get('quote')
     ws.send('{"id":1, "method":"call", "params":[0,"get_order_book",["'+base+'", "'+quote+'", 50]]}')
+    result =  ws.recv()
+    j = json.loads(result)
+
+    return jsonify(j["result"])
+
+
+@app.route('/get_margin_positions')
+def get_open_orders():
+
+    account_id = request.args.get('account_id')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_margin_positions",["'+account_id+'"]]}')
     result =  ws.recv()
     j = json.loads(result)
 
