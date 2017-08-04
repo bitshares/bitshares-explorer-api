@@ -380,7 +380,9 @@ def get_workers():
     count =  ws.recv()
     count_j = json.loads(count)
 
-    workers_count = str(count_j["result"])
+    workers_count = int(count_j["result"])
+
+    #print workers_count
 
     workers = []
     for w in range(0, workers_count):
@@ -465,3 +467,36 @@ def get_open_orders():
     j = json.loads(result)
 
     return jsonify(j["result"])
+
+@app.route('/get_witnesses')
+def get_witnesses():
+
+    ws.send('{"jsonrpc": "2.0", "method": "get_witness_count", "params": [], "id": 1}')
+    count =  ws.recv()
+    count_j = json.loads(count)
+    witnesses_count = int(count_j["result"])
+
+    witnesses = []
+    for w in range(0, witnesses_count):
+        ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["1.6.'+str(w)+'"]]]}')
+        result =  ws.recv()
+
+        j = json.loads(result)
+        if j["result"][0]:
+            account_id = j["result"][0]["witness_account"]
+            #print account_id
+            ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["' + account_id + '"]]]}')
+            result2 = ws.recv()
+            j2 = json.loads(result2)
+
+            account_name = j2["result"][0]["name"]
+            j["result"][0]["witness_account_name"] = account_name
+        else:
+            #j["result"][0]["witness_account_name"] = ""
+            continue
+
+        witnesses.append(j["result"])
+
+    r_witnesses = witnesses[::-1]
+
+    return jsonify(filter(None, r_witnesses))
