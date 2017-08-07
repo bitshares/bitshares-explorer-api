@@ -40,20 +40,19 @@ def header():
     ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
     result3 = ws.recv()
     j3 = json.loads(result3)
-    #print j3["result"]["quote_volume"]
+
     j["result"]["quote_volume"] = j3["result"]["quote_volume"]
 
-    ws.send('{"id":1, "method":"call", "params":[0,"get_witness_count",[]]}')
-    result4 = ws.recv()
-    j4 = json.loads(result4)
-    #print j3["result"]["quote_volume"]
-    #print j4["result"]
-    j["result"]["witness_count"] = j4["result"]
+    ws.send('{"id":1, "method":"call", "params":[0,"get_global_properties",[]]}')
+    result5 = ws.recv()
+    j5 = json.loads(result5)
+    #print j5
 
-    #j["result"]["witness_count"] = j4["result"]
+    commitee_count = len(j5["result"]["active_committee_members"])
+    witness_count = len(j5["result"]["active_witnesses"])
 
-
-    #print j["result"]
+    j["result"]["commitee_count"] = commitee_count
+    j["result"]["witness_count"] = witness_count
 
     return jsonify(j["result"])
 
@@ -105,12 +104,16 @@ def get_operation():
     #print j3["result"]["quote_volume"]
     j["result"][0]["quote_volume"] = j3["result"]["quote_volume"]
 
-    ws.send('{"id":1, "method":"call", "params":[0,"get_witness_count",[]]}')
-    result4 = ws.recv()
-    j4 = json.loads(result4)
-    #print j3["result"]["quote_volume"]
-    #print j4["result"]
-    j["result"][0]["witness_count"] = j4["result"]
+    # TODO: making this call with every operation is not very efficient as this are static properties
+    ws.send('{"id":1, "method":"call", "params":[0,"get_global_properties",[]]}')
+    result5 = ws.recv()
+    j5 = json.loads(result5)
+
+    commitee_count = len(j5["result"]["active_committee_members"])
+    witness_count = len(j5["result"]["active_witnesses"])
+
+    j["result"][0]["commitee_count"] = commitee_count
+    j["result"][0]["witness_count"] = witness_count
 
 
     #print j['result']
