@@ -50,6 +50,8 @@ def header():
     #print j4["result"]
     j["result"]["witness_count"] = j4["result"]
 
+    #j["result"]["witness_count"] = j4["result"]
+
 
     #print j["result"]
 
@@ -384,6 +386,15 @@ def get_workers():
 
     #print workers_count
 
+    # get the votes of woirker 114.0 - refund 400k
+    ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["1.14.0"]]]}')
+    result_0 = ws.recv()
+    j_0 = json.loads(result_0)
+    #account_id = j["result"][0]["worker_account"]
+    thereshold =  int(j_0["result"][0]["total_votes_for"])
+
+
+
     workers = []
     for w in range(0, workers_count):
         ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["1.14.'+str(w)+'"]]]}')
@@ -397,6 +408,10 @@ def get_workers():
 
         account_name = j2["result"][0]["name"]
         j["result"][0]["worker_account_name"] = account_name
+
+        current_votes = int(j["result"][0]["total_votes_for"])
+        perc = (current_votes*100)/thereshold
+        j["result"][0]["perc"] = perc
 
         workers.append(j["result"])
 
@@ -497,6 +512,8 @@ def get_witnesses():
 
         witnesses.append(j["result"])
 
+
+    witnesses = sorted(witnesses, key=lambda k: int(k[0]['total_votes']))
     r_witnesses = witnesses[::-1]
 
     return jsonify(filter(None, r_witnesses))
