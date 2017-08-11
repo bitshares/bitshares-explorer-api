@@ -165,6 +165,7 @@ def assets():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
+    #print results
     return jsonify(results)
 
 @app.route('/fees')
@@ -199,7 +200,7 @@ def account_history():
 
         account_id = j_l["result"][0]["id"]
 
-    ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_account_history",["'+account_id+'", "1.11.0", 20, "1.11.9999999999"]]}')
+    ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_account_history",["'+account_id+'", "1.11.1", 20, "1.11.9999999999"]]}')
     result =  ws.recv()
     j = json.loads(result)
 
@@ -304,6 +305,7 @@ def lastnetworkops():
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 10"
     cur.execute(query)
     results = cur.fetchall()
+    con.close()
     return jsonify(results)
 
 @app.route('/get_object')
@@ -380,7 +382,7 @@ def get_asset_holders():
 def get_workers():
 
 
-    ws.send('{"jsonrpc": "2.0", "method": "get_workers_count", "params": [], "id": 1}')
+    ws.send('{"jsonrpc": "2.0", "method": "get_worker_count", "params": [], "id": 1}')
 
     count =  ws.recv()
     count_j = json.loads(count)
@@ -520,3 +522,37 @@ def get_witnesses():
     r_witnesses = witnesses[::-1]
 
     return jsonify(filter(None, r_witnesses))
+
+@app.route('/get_committee_members')
+def get_committee_members():
+
+    ws.send('{"jsonrpc": "2.0", "method": "get_committee_count", "params": [], "id": 1}')
+    count =  ws.recv()
+    count_j = json.loads(count)
+    committee_count = int(count_j["result"])
+
+    committee_members = []
+    for w in range(0, committee_count):
+        ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["1.5.'+str(w)+'"]]]}')
+        result =  ws.recv()
+
+        j = json.loads(result)
+        if j["result"][0]:
+            account_id = j["result"][0]["committee_member_account"]
+            #print account_id
+            ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["' + account_id + '"]]]}')
+            result2 = ws.recv()
+            j2 = json.loads(result2)
+
+            account_name = j2["result"][0]["name"]
+            j["result"][0]["committee_member_account_name"] = account_name
+        else:
+            #j["result"][0]["witness_account_name"] = ""
+            continue
+
+        committee_members.append(j["result"])
+
+    committee_members = sorted(committee_members, key=lambda k: int(k[0]['total_votes']))
+    r_committee = committee_members[::-1]
+
+    return jsonify(filter(None, r_committee))

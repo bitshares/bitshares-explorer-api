@@ -43,10 +43,10 @@ all.append(j);
 
 len_result = len(j["result"])
 
-#print len_result
+print len_result
 #print all
 
-while  len_result == 100:
+while len_result == 100:
     ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["'+j["result"][99]["symbol"]+'", 100]]}')
     result = ws.recv()
     j = json.loads(result)
@@ -54,7 +54,11 @@ while  len_result == 100:
     all.append(j);
 
 for x in range (0, len(all)):
-    for i in range(0, 100):
+
+    size = len(all[x]["result"])
+    print size
+
+    for i in range(0, size):
         symbol = all[x]["result"][i]["symbol"]
 
         if symbol == "BTS":
@@ -82,6 +86,12 @@ for x in range (0, len(all)):
         try:
             data2 = json.loads(response2.read())
             price = data2["latest"]
+            #print price
+
+            if str(price) == 'inf':
+               continue
+            #    exit
+
             #print price
         except:
             price = 0
