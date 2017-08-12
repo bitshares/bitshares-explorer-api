@@ -14,6 +14,8 @@ from flask import request
 import psycopg2
 # end postgres
 
+import datetime
+
 #ws = create_connection("wss://eu.openledger.info/ws")
 ws = create_connection("ws://127.0.0.1:8090/ws") # localhost
 
@@ -556,3 +558,103 @@ def get_committee_members():
     r_committee = committee_members[::-1]
 
     return jsonify(filter(None, r_committee))
+
+@app.route('/market_chart_dates')
+def market_chart_dates():
+
+    base = datetime.date.today()
+    date_list = [base - datetime.timedelta(days=x) for x in range(0, 100)]
+    date_list = [d.strftime("%Y-%m-%d") for d in date_list]
+    #print len(list(reversed(date_list)))
+    return jsonify(list(reversed(date_list)))
+
+@app.route('/market_chart_data')
+def market_chart_data():
+
+    ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
+    login =  ws.recv()
+
+    ws.send('{"id":2,"method":"call","params":[1,"history",[]]}')
+    history =  ws.recv()
+    history_j = json.loads(history)
+    history_api = str(history_j["result"])
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+
+    ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + base + '"], 0]]}')
+    result_l = ws.recv()
+    j_l = json.loads(result_l)
+    base_id = j_l["result"][0]["id"]
+    base_precision = 10**float(j_l["result"][0]["precision"])
+    #print base_id
+
+    ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + quote + '"], 0]]}')
+    result_l = ws.recv()
+    j_l = json.loads(result_l)
+    #print j_l
+    quote_id = j_l["result"][0]["id"]
+    quote_precision = 10**float(j_l["result"][0]["precision"])
+    #print quote_id
+
+    now = datetime.date.today()
+    ago = now - datetime.timedelta(days=100)
+    ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_market_history", ["'+base_id+'", "'+quote_id+'", 86400, "'+ago.strftime("%Y-%m-%dT%H:%M:%S")+'", "'+now.strftime("%Y-%m-%dT%H:%M:%S")+'"]]}')
+    result_l = ws.recv()
+    j_l = json.loads(result_l)
+
+    data = []
+    for w in range(0, len(j_l["result"])):
+
+        open_quote = float(j_l["result"][w]["open_quote"])
+        high_quote = float(j_l["result"][w]["high_quote"])
+        low_quote = float(j_l["result"][w]["low_quote"])
+        close_quote = float(j_l["result"][w]["close_quote"])
+
+        open_base = float(j_l["result"][w]["open_base"])
+        high_base = float(j_l["result"][w]["high_base"])
+        low_base = float(j_l["result"][w]["low_base"])
+        close_base = float(j_l["result"][w]["close_base"])
+
+        # TODO: wrong way to go over the nothing for something issue bitshares-core #132 #287 #342
+        if open_quote == 0:
+            open_quote = 1
+        if high_quote == 0:
+            high_quote = 1
+        if low_quote == 0:
+            low_quote = 1
+        if close_quote == 0:
+            close_quote = 1
+
+        if open_base == 0:
+            open_base = 1
+        if high_base == 0:
+            high_base = 1
+        if low_base == 0:
+            low_base = 1
+        if close_base == 0:
+            close_base = 1
+
+        open = float(open_base/base_precision)/float(open_quote/quote_precision)
+        high = float(high_base/base_precision)/float(high_quote/quote_precision)
+        low = float(low_base/base_precision)/float(low_quote/quote_precision)
+        close = float(close_base/base_precision)/float(close_quote/quote_precision)
+
+        ohlc = [open,high, low, close]
+
+        high = max(ohlc)
+        low = min(ohlc)
+
+        #ohlc = [open, high, low, close]
+        ohlc = [open, close, low, high]
+
+        data.append(ohlc)
+
+    append = [0,0,0,0]
+    if len(data) < 99:
+        complete = 99 - len(data)
+        for c in range(0, complete):
+            data.insert(0, append)
+
+    return jsonify(data)
+
