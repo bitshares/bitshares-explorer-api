@@ -664,6 +664,11 @@ def top_proxies():
     con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
     cur = con.cursor()
 
+    query = "SELECT sum(amount) FROM holders"
+    cur.execute(query)
+    total = cur.fetchone()
+    total_votes = total[0]
+
     query = "SELECT voting_as FROM holders WHERE voting_as<>'1.2.5' group by voting_as"
     cur.execute(query)
     results = cur.fetchall()
@@ -673,7 +678,7 @@ def top_proxies():
 
     for p in range(0, len(results)):
 
-        proxy_line = [0] * 4
+        proxy_line = [0] * 5
 
         proxy_id = results[p][0]
         proxy_line[0] = proxy_id
@@ -705,6 +710,8 @@ def top_proxies():
             proxy_line[3] = proxy_line[3] + 1       # followers
 
         if proxy_line[3] > 2:
+            percentage = float(float(proxy_line[2]) * 100.0/ float(total_votes))
+            proxy_line[4] = percentage
             proxies.append(proxy_line)
 
     con.close()
@@ -713,3 +720,17 @@ def top_proxies():
     r_proxies = proxies[::-1]
 
     return jsonify(filter(None, r_proxies))
+
+@app.route('/top_holders')
+def top_holders():
+
+    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    cur = con.cursor()
+
+    query = "SELECT * FROM holders WHERE voting_as='1.2.5' ORDER BY amount DESC LIMIT 10"
+    cur.execute(query)
+    results = cur.fetchall()
+    con.close()
+    return jsonify(results)
+
+
