@@ -733,4 +733,165 @@ def top_holders():
     con.close()
     return jsonify(results)
 
+@app.route('/witnesses_votes')
+def witnesses_votes():
+
+    proxies = top_proxies()
+    proxies = proxies.response
+    proxies = ''.join(proxies)
+    proxies = json.loads(proxies)
+    proxies = proxies[:10]
+
+    witnesses = get_witnesses()
+    witnesses = witnesses.response
+    witnesses = ''.join(witnesses)
+    witnesses = json.loads(witnesses)
+    witnesses = witnesses[:25]
+
+    w, h = len(proxies) + 2, len(witnesses)
+    witnesses_votes = [[0 for x in range(w)] for y in range(h)]
+
+    for w in range(0, len(witnesses)):
+        vote_id =  witnesses[w][0]["vote_id"]
+        id_witness = witnesses[w][0]["id"]
+        witness_account_name = witnesses[w][0]["witness_account_name"]
+
+        witnesses_votes[w][0] = witness_account_name
+        witnesses_votes[w][1] = id_witness
+
+        c = 2
+
+        for p in range(0, len(proxies)):
+            id_proxy = proxies[p][0]
+
+            #witnesses_votes[w][c] = id_proxy
+
+            ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["'+id_proxy+'"]]]}')
+            result = ws.recv()
+            j = json.loads(result)
+
+            votes = j["result"][0]["options"]["votes"]
+            #print votes
+            p_vote = "-"
+            for v in range(0, len(votes)):
+
+                if votes[v] == vote_id:
+                    p_vote = "Y"
+
+            witnesses_votes[w][c] = id_proxy + ":" + p_vote
+
+            c = c + 1
+
+    #print witnesses_votes
+    return jsonify(witnesses_votes)
+
+
+@app.route('/workers_votes')
+def workers_votes():
+
+    proxies = top_proxies()
+    proxies = proxies.response
+    proxies = ''.join(proxies)
+    proxies = json.loads(proxies)
+    proxies = proxies[:10]
+
+    workers = get_workers()
+    workers = workers.response
+    workers = ''.join(workers)
+    workers = json.loads(workers)
+    workers = workers[:6]
+    #print workers
+
+    w, h = len(proxies) + 2, len(workers)
+    workers_votes = [[0 for x in range(w)] for y in range(h)]
+
+    for w in range(0, len(workers)):
+        vote_id =  workers[w][0]["vote_for"]
+        id_worker = workers[w][0]["id"]
+        worker_account_name = workers[w][0]["worker_account_name"]
+
+        workers_votes[w][0] = worker_account_name
+        workers_votes[w][1] = id_worker
+
+        c = 2
+
+        for p in range(0, len(proxies)):
+            id_proxy = proxies[p][0]
+
+            #witnesses_votes[w][c] = id_proxy
+
+            ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["'+id_proxy+'"]]]}')
+            result = ws.recv()
+            j = json.loads(result)
+
+            votes = j["result"][0]["options"]["votes"]
+            #print votes
+            p_vote = "-"
+            for v in range(0, len(votes)):
+
+                if votes[v] == vote_id:
+                    p_vote = "Y"
+
+            workers_votes[w][c] = id_proxy + ":" + p_vote
+
+            c = c + 1
+
+    #print witnesses_votes
+    return jsonify(workers_votes)
+
+@app.route('/committee_votes')
+def committee_votes():
+
+    proxies = top_proxies()
+    proxies = proxies.response
+    proxies = ''.join(proxies)
+    proxies = json.loads(proxies)
+    proxies = proxies[:10]
+
+    committee = get_committee_members()
+    committee = committee.response
+    committee = ''.join(committee)
+    committee = json.loads(committee)
+    committee = committee[:11]
+    #print workers
+
+    w, h = len(proxies) + 2, len(committee)
+    committee_votes = [[0 for x in range(w)] for y in range(h)]
+
+    for w in range(0, len(committee)):
+        vote_id =  committee[w][0]["vote_id"]
+        id_committee = committee[w][0]["id"]
+        committee_account_name = committee[w][0]["committee_member_account_name"]
+
+        committee_votes[w][0] = committee_account_name
+        committee_votes[w][1] = id_committee
+
+        c = 2
+
+        for p in range(0, len(proxies)):
+            id_proxy = proxies[p][0]
+
+            #witnesses_votes[w][c] = id_proxy
+
+            ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["'+id_proxy+'"]]]}')
+            result = ws.recv()
+            j = json.loads(result)
+
+            votes = j["result"][0]["options"]["votes"]
+            #print votes
+            p_vote = "-"
+            for v in range(0, len(votes)):
+
+                if votes[v] == vote_id:
+                    p_vote = "Y"
+                    committee_votes[w][c] = id_proxy + ":" + p_vote
+                    break
+                else:
+                    p_vote = "-"
+                    committee_votes[w][c] = id_proxy + ":" + p_vote
+
+            c = c + 1
+
+    #print witnesses_votes
+    return jsonify(committee_votes)
 
