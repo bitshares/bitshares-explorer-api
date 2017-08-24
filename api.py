@@ -1042,3 +1042,38 @@ def last_network_transactions():
     con.close()
     #print results
     return jsonify(results)
+
+@app.route('/lookup_accounts')
+def lookup_accounts():
+
+    start = request.args.get('start')
+    ws.send('{"id":1, "method":"call", "params":[0,"lookup_accounts",["'+start+'", 1000]]}')
+    result =  ws.recv()
+    j = json.loads(result)
+
+    #print j["result"]
+
+    return jsonify(j["result"])
+
+
+@app.route('/lookup_assets')
+def lookup_assets():
+    start = request.args.get('start')
+
+    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    cur = con.cursor()
+
+    query = "SELECT aname FROM assets WHERE aname LIKE '"+start+"%'"
+    cur.execute(query)
+    results = cur.fetchall()
+    con.close()
+    return jsonify(results)
+
+@app.route('/getlastblocknumbher')
+def getlastblocknumber():
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
+    result =  ws.recv()
+    j = json.loads(result)
+
+    return jsonify(j["result"]["head_block_number"])
