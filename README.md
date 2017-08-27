@@ -1,6 +1,8 @@
-# bitshares-python-api-backend
+# BPAB - Bitshares Python Api Backend
+
 Simple Python wrapper for front end applications to be called by GET urls. api calls are added on demand as front end applications requiere it. 
 
+The current main purpose of the api is to serve the bitshares explorer: http://bitshares-explorer.io but it is expected to serve more applications. 
 
 ## Install API:
 
@@ -30,20 +32,95 @@ export FLASK_APP=api.py
 flask run --host=0.0.0.0
 ```
 
-## Install and setup Postgres
+## Setup Postgres
+
+The explorer use a postgres database to store some temporal data in order to do certain heavy operations and temporal storage of data that are not possible in the current bitshares-node.
+
+You need to have postgres installed somewhere and have host, user, pass and database details.
+
+This details, among with a websocket url need to be added to python files. Here is how the config looks in the header of all the files:
+
+```
+# config
+websocket_url = "ws://127.0.0.1:8090/ws"
+postgres_host = 'localhost'
+postgres_database = 'explorer'
+postgres_username = 'postgres'
+postgres_password = 'posta'
+# end config
+```
+
+Make sure you add your data in the following files:
+
+- api.cpp
+- postgres/import_realtime_ops.oy
+- postgres/import_assets.py
+- postgres/import_markets.py
+- postgres/import_holders.py
+
+You need to create the tables where the data will be stored into postgres. Here is a pg_dump file of what you will need to do in your database:
+
+https://github.com/oxarbitrage/bitshares-python-api-backend/blob/master/postgres/schema.txt
 
 ## Setup Cron
 
+The API backend runs 3 scripts once a day and store results in a postgres database. The 3 scripts can be added to cron.
+
  `crontab -e`
 
- Add 2 lines:
+ Add 3 lines:
 
 ```
-0 23 * * *  python /full/path/to/repo/bitshares-python-api-backend/postgres/import_assets.py >/dev/null
-15 23 * * *  python /full/path/to/repo/bitshares-python-api-backend/postgres/markets.py >/dev/null
+0 22 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_holders.py >/dev/null
+0 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_assets.py >/dev/null
+15 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/markets.py >/dev/null
 ```
 
 ## Setup real time operation grabber
+
+I use `screen` to run the grabber but you can also run it in the background, as a service, etc.
+
+command to start it is just:
+
+`python import_realtime_ops.py`
+
+this need to be constantly running as it is connected to the websocket getting the real time operations and saving them temporally in a database.
+
+expected output for the grabber:
+
+```
+GET /ws HTTP/1.1
+Upgrade: websocket
+Connection: Upgrade
+Host: 127.0.0.1:8090
+Origin: http://127.0.0.1:8090
+Sec-WebSocket-Key: xr2KHygFlayuciZC/Oj63A==
+Sec-WebSocket-Version: 13
+
+
+-----------------------
+--- response header ---
+HTTP/1.1 101 Switching Protocols
+Connection: upgrade
+Sec-WebSocket-Accept: 1YT6X2SDtwPzg/iJHtb32vKT9Pw=
+Server: WebSocket++/0.7.0
+Upgrade: websocket
+-----------------------
+send: '\x81\xba\xe2\x8bZ\xce\x99\xa97\xab\x96\xe35\xaa\xc0\xb1z\xec\x81\xea6\xa2\xc0\xa7z\xec\x92\xea(\xaf\x8f\xf8x\xf4\xc2\xd0k\xe2\xc2\xa9>\xaf\x96\xea8\xaf\x91\x
+eex\xe2\xc2\xd0\x07\x93\xce\xabx\xa7\x86\xa9`\xee\xd1\xf6'
+send: '\x81\xcf\x00\xf9\xd6\x80{\xdb\xbb\xe5t\x91\xb9\xe4"\xc3\xf6\xa2c\x98\xba\xec"\xd5\xf6\xa2p\x98\xa4\xe1m\x8a\xf4\xba \xa2\xe4\xac \xdb\xa5\xe5t\xa6\xa5\xf5b\x
+8a\xb5\xf2i\x9b\xb3\xdfc\x98\xba\xecb\x98\xb5\xeb"\xd5\xf6\xdb5\xd5\xf6\xf4r\x8c\xb3\xdd]\xd5\xf6\xa2i\x9d\xf4\xba \xcf\xab'
+INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734829', '1.11.61956083', '19533294', '2',
+'4', NOW(), '1.2.214390', '1', 'julien430')
+INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734836', '1.11.61956090', '19533295', '5',
+'0', NOW(), '1.2.116747', '2', 'lbwbtswithdrawal')
+INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734850', '1.11.61956104', '19533297', '2',
+'1', NOW(), '1.2.133075', '1', 'usd-btc-mm')
+INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734856', '1.11.61956110', '19533298', '3',
+'2', NOW(), '1.2.214390', '1', 'julien430')
+
+...
+```
 
 ## Usage:
 
