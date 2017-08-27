@@ -129,6 +129,86 @@ Sample URL: http://23.94.69.140:5000/get_workers
 
 Sample URL: http://23.94.69.140:5000/get_markets?asset_id=1.3.113
 
+-  `get_most_active_markets` - Get the network most active markets by volume in the last 24 hours.
+
+Sample URL http://23.94.69.140:5000/get_most_active_markets
+
+- `get_order_book` - Get the order book for a market.
+
+Sample URL: http://23.94.69.140:5000/get_order_book?base=BTS&quote=CNY
+
+-  `get_margin_positions` - Get the margin positions for an account.
+
+Sample URL: http://23.94.69.140:5000/get_margin_positions?account_id=1.2.12376
+
+- `get_witnesses` - Get all witnesses, ordered by voting, active and inactive.
+
+Sample URL: http://23.94.69.140:5000/get_witnesses
+
+- `get_committee_members` - Get all the committee members, ordered by voting, active and inactive.
+
+Sample URL: http://23.94.69.140:5000/get_committee_members
+
+- `market_chart_dates` - Utility call to get dates from now and back each day in the last 100 days. Used to build market charts.
+
+Sample URL: http://23.94.69.140:5000/market_chart_dates
+
+-  `market_chart_data` - Get 100 days OHLC candlestick data from a market. Data is formatted to build candlestick charts for a market.
+
+Sample URL: http://23.94.69.140:5000/market_chart_data?base=USD&quote=BTS
+
+- `top_proxies` - Get the top network proxies in the Bitshares chain.
+
+Sample URL: http://23.94.69.140:5000/top_proxies
+
+- `top_holders` - Get the individual accounts with most BTS in their accounts.
+
+Sample URL: http://23.94.69.140:5000/top_holders
+
+- `witnesses_votes` - Get proxy votes for each witness.
+
+Sample URL: http://23.94.69.140:5000/witnesses_votes
+
+- `workers_votes` - Get proxy votes for each worker.
+
+Sample URL: http://23.94.69.140:5000/workers_votes
+
+- `committee_votes` - Get proxy votes for each committee member.
+
+Sample URL: http://23.94.69.140:5000/committee_votes
+
+- `top_markets` - Most 6 active markets in the last 24 hours in the chain.
+
+Sample URL: http://23.94.69.140:5000/top_markets
+
+-  `top_smartcoins` - Most active by volume smartcoins in the last24 hours.
+
+Sample URL: http://23.94.69.140:5000/top_smartcoins
+
+-  `top_uias` - Most active by volume user issued assets in the last24 hours.
+
+Sample URL: http://23.94.69.140:5000/top_uias
+
+- `top_operations` - Top 3 most called operations in the last 24 hours.
+
+Sample URL: http://23.94.69.140:5000/top_operations
+
+- `last_network_transactions` - Incomplete - Work in progress in the node side.
+
+Sample URL: None yet
+
+- `lookup_accounts` - Get accounts from the network that start with parameter. Useful for autocomplete.
+
+Sample URL: http://23.94.69.140:5000/lookup_accounts?start=alfredo
+
+-  `lookup_assets` - Get assets from the network that start with parameter. Useful for autocomplete.
+
+Sample URL: http://23.94.69.140:5000/lookup_assets?start=A
+
+-  `getlastblocknumbher` - Utility function that will get the current last block number at the moment of calling.
+
+Sample URL: http://23.94.69.140:5000/getlastblocknumbher
+
 
 
 
