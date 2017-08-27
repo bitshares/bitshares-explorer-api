@@ -6,9 +6,16 @@ import urllib
 
 import psycopg2
 
-ws = create_connection("ws://127.0.0.1:8090/ws") # localhost
+websocket_url = "ws://127.0.0.1:8090/ws"
+postgres_host = 'localhost'
+postgres_database = 'explorer'
+postgres_username = 'postgres'
+postgres_password = 'posta'
+# end config
 
-con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+ws = create_connection(websocket_url) # localhost
+
+con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
 cur = con.cursor()
 
 query = "TRUNCATE holders"

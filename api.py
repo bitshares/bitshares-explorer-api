@@ -16,9 +16,15 @@ import psycopg2
 
 import datetime
 
-#ws = create_connection("wss://eu.openledger.info/ws")
-ws = create_connection("ws://127.0.0.1:8090/ws") # localhost
+# config
+websocket_url = "ws://127.0.0.1:8090/ws"
+postgres_host = 'localhost'
+postgres_database = 'explorer'
+postgres_username = 'postgres'
+postgres_password = 'posta'
+# end config
 
+ws = create_connection(websocket_url) # localhost
 
 @app.route('/header')
 def header():
@@ -160,7 +166,7 @@ def full_account():
 @app.route('/assets')
 def assets():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"
@@ -315,7 +321,7 @@ def get_volume():
 @app.route('/lastnetworkops')
 def lastnetworkops():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 10"
@@ -460,7 +466,7 @@ def get_markets():
         asset_id = j_l["result"][0]["id"]
 
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT * FROM markets WHERE aid='"+asset_id+"'"
@@ -473,7 +479,7 @@ def get_markets():
 @app.route('/get_most_active_markets')
 def get_most_active_markets():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 20"
@@ -675,7 +681,7 @@ def market_chart_data():
 @app.route('/top_proxies')
 def top_proxies():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT sum(amount) FROM holders"
@@ -738,7 +744,7 @@ def top_proxies():
 @app.route('/top_holders')
 def top_holders():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT * FROM holders WHERE voting_as='1.2.5' ORDER BY amount DESC LIMIT 10"
@@ -913,7 +919,7 @@ def committee_votes():
 @app.route('/top_markets')
 def top_markets():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT volume FROM markets ORDER BY volume DESC LIMIT 7"
@@ -943,7 +949,7 @@ def top_markets():
 @app.route('/top_smartcoins')
 def top_smartcoins():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
@@ -973,7 +979,7 @@ def top_smartcoins():
 @app.route('/top_uias')
 def top_uias():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT volume FROM assets WHERE type='User Issued' ORDER BY volume DESC LIMIT 7"
@@ -1004,7 +1010,7 @@ def top_uias():
 @app.route('/top_operations')
 def top_operations():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT count(*) FROM ops"
@@ -1033,7 +1039,7 @@ def top_operations():
 @app.route('/last_network_transactions')
 def last_network_transactions():
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 20"
@@ -1060,7 +1066,7 @@ def lookup_accounts():
 def lookup_assets():
     start = request.args.get('start')
 
-    con = psycopg2.connect(database='explorer', user='postgres', host='localhost', password='posta')
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
     query = "SELECT aname FROM assets WHERE aname LIKE '"+start+"%'"
