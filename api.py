@@ -223,9 +223,6 @@ def account_history():
         j["result"][c]["witness"] = j2["result"]["witness"]
     #j = json.loads(result)
     #result[]
-
-
-
     #print j["result"]
 
     return jsonify(j["result"])
@@ -1083,3 +1080,64 @@ def getlastblocknumber():
     j = json.loads(result)
 
     return jsonify(j["result"]["head_block_number"])
+
+
+@app.route('/account_history_pager')
+def account_history_pager():
+
+    page = request.args.get('page')
+    account_id = request.args.get('account_id')
+
+    # connecting into a full node.
+    full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
+    full_ws = create_connection(full_websocket_url)
+
+    full_ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
+    login =  full_ws.recv()
+
+    full_ws.send('{"id":2,"method":"call","params":[1,"history",[]]}')
+    history =  full_ws.recv()
+    history_j = json.loads(history)
+    history_api = str(history_j["result"])
+
+    if not isObject(account_id):
+        full_ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_id + '"], 0]]}')
+        result_l = full_ws.recv()
+        j_l = json.loads(result_l)
+
+        account_id = j_l["result"][0]["id"]
+
+    # need to get total ops for account
+    full_ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["' + account_id + '"]]]}')
+    result_a = full_ws.recv()
+    j_a = json.loads(result_a)
+
+    stats = j_a["result"][0]["statistics"]
+
+    full_ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+stats+'"]]]}')
+    result_s =  full_ws.recv()
+    j_s = json.loads(result_s)
+
+    total_ops = j_s["result"][0]["total_ops"]
+    #print total_ops
+    start = total_ops - (20 * int(page))
+    stop = total_ops - (40 * int(page))
+
+    if stop < 0:
+        stop = 0
+
+    if start > 0:
+        full_ws.send('{"id":1, "method":"call", "params":['+history_api+',"get_relative_account_history",["'+account_id+'", '+str(stop)+', 20, '+str(start)+']]}')
+        result_f =  full_ws.recv()
+        j_f = json.loads(result_f)
+
+        for c in range(0, len(j_f["result"])):
+            full_ws.send('{"id":1, "method":"call", "params":[0,"get_block_header",[' + str(j_f["result"][c]["block_num"]) + ', 0]]}')
+            result2 = full_ws.recv()
+            j2 = json.loads(result2)
+            j_f["result"][c]["timestamp"] = j2["result"]["timestamp"]
+            j_f["result"][c]["witness"] = j2["result"]["witness"]
+
+        return jsonify(j_f["result"])
+    else:
+        return ""
