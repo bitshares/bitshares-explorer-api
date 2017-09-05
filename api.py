@@ -79,6 +79,10 @@ def account_name():
 @app.route('/operation')
 def get_operation():
 
+    # lets connect the operations to a full node
+    full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
+    ws = create_connection(full_websocket_url)
+
     operation_id = request.args.get('operation_id')
     ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+operation_id+'"]]]}')
     result =  ws.recv()
