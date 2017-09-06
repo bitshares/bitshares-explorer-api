@@ -79,6 +79,59 @@ def account_name():
 @app.route('/operation')
 def get_operation():
 
+    operation_id = request.args.get('operation_id')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+operation_id+'"]]]}')
+    result =  ws.recv()
+    j = json.loads(result)
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
+    result2 =  ws.recv()
+    j2 = json.loads(result2)
+
+    if not j["result"][0]:
+        j["result"][0] = {}
+
+    j["result"][0]["accounts_registered_this_interval"] = j2["result"]["accounts_registered_this_interval"]
+
+    # get market cap
+    ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["2.3.0"]]]}')
+    result2 = ws.recv()
+    j2 = json.loads(result2)
+
+    current_supply = j2["result"][0]["current_supply"]
+    confidental_supply = j2["result"][0]["confidential_supply"]
+
+    market_cap = int(current_supply) + int(confidental_supply)
+    j["result"][0]["bts_market_cap"] = int(market_cap/100000000)
+    #print j["result"][0]["bts_market_cap"]
+
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
+    result3 = ws.recv()
+    j3 = json.loads(result3)
+    #print j3["result"]["quote_volume"]
+    j["result"][0]["quote_volume"] = j3["result"]["quote_volume"]
+
+    # TODO: making this call with every operation is not very efficient as this are static properties
+    ws.send('{"id":1, "method":"call", "params":[0,"get_global_properties",[]]}')
+    result5 = ws.recv()
+    j5 = json.loads(result5)
+
+    commitee_count = len(j5["result"]["active_committee_members"])
+    witness_count = len(j5["result"]["active_witnesses"])
+
+    j["result"][0]["commitee_count"] = commitee_count
+    j["result"][0]["witness_count"] = witness_count
+
+
+    #print j['result']
+
+    return jsonify(j["result"])
+
+
+@app.route('/operation_full')
+def operation_full():
+
     # lets connect the operations to a full node
     full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
     ws = create_connection(full_websocket_url)
