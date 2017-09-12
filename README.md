@@ -142,6 +142,10 @@ Sample URL: http://23.94.69.140:5000/account_name?account_id=1.2.356589
 
 Sample URL: http://23.94.69.140:5000/operation?operation_id=1.11.2673910
 
+- `operation_full` - Same as above but connecting to a full node to get old operation history data. 
+
+Sample URL: http://23.94.69.140:5000/operation_full?operation_id=1.11.2673910
+
 - `accounts` - Get a list of the 100 richest accounts in the bitshares network.
 
 Sample URL: http://23.94.69.140:5000/accounts

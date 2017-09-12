@@ -22,9 +22,16 @@ postgres_host = 'localhost'
 postgres_database = 'explorer'
 postgres_username = 'postgres'
 postgres_password = 'posta'
+
+# a connection to a bitshares full node
+full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
+
 # end config
 
 ws = create_connection(websocket_url) # localhost
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
 
 @app.route('/header')
 def header():
