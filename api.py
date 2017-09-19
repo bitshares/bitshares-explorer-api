@@ -276,20 +276,16 @@ def account_history():
     result =  ws.recv()
     j = json.loads(result)
 
-    for c in range(0, len(j["result"])):
-        #print j["result"][c]["block_num"]
-        ws.send('{"id":1, "method":"call", "params":[0,"get_block_header",[' + str(j["result"][c]["block_num"]) + ', 0]]}')
-        result2 = ws.recv()
-        j2 = json.loads(result2)
+    if(len(j["result"]) > 0):
+        for c in range(0, len(j["result"])):
+            ws.send('{"id":1, "method":"call", "params":[0,"get_block_header",[' + str(j["result"][c]["block_num"]) + ', 0]]}')
+            result2 = ws.recv()
+            j2 = json.loads(result2)
 
-        #print j2["result"]["timestamp"]
-        j["result"][c]["timestamp"] = j2["result"]["timestamp"]
-        j["result"][c]["witness"] = j2["result"]["witness"]
-    #j = json.loads(result)
-    #result[]
-    #print j["result"]
+            j["result"][c]["timestamp"] = j2["result"]["timestamp"]
+            j["result"][c]["witness"] = j2["result"]["witness"]
 
-    return jsonify(j["result"])
+        return jsonify(j["result"])
 
 @app.route('/get_asset')
 def get_asset():
