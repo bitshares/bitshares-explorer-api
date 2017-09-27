@@ -233,7 +233,7 @@ def assets():
     con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
-    query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"
+    query = "SELECT * FROM assets WHERE volume > 0 ORDER BY aname"
     cur.execute(query)
     results = cur.fetchall()
     con.close()
@@ -278,14 +278,18 @@ def account_history():
 
     if(len(j["result"]) > 0):
         for c in range(0, len(j["result"])):
-            ws.send('{"id":1, "method":"call", "params":[0,"get_block_header",[' + str(j["result"][c]["block_num"]) + ', 0]]}')
+            ws.send(
+                '{"id":1, "method":"call", "params":[0,"get_block_header",[' + str(j["result"][c]["block_num"]) + ', 0]]}')
             result2 = ws.recv()
             j2 = json.loads(result2)
 
             j["result"][c]["timestamp"] = j2["result"]["timestamp"]
             j["result"][c]["witness"] = j2["result"]["witness"]
-
+    try:
         return jsonify(j["result"])
+    except:
+        return {}
+
 
 @app.route('/get_asset')
 def get_asset():
@@ -712,10 +716,10 @@ def market_chart_data():
         if close_base == 0:
             close_base = 1
 
-        open = float(open_base/base_precision)/float(open_quote/quote_precision)
-        high = float(high_base/base_precision)/float(high_quote/quote_precision)
-        low = float(low_base/base_precision)/float(low_quote/quote_precision)
-        close = float(close_base/base_precision)/float(close_quote/quote_precision)
+        open = float(open_base*base_precision)/float(open_quote*quote_precision)
+        high = float(high_base*base_precision)/float(high_quote*quote_precision)
+        low = float(low_base*base_precision)/float(low_quote*quote_precision)
+        close = float(close_base*base_precision)/float(close_quote*quote_precision)
 
         ohlc = [open,high, low, close]
 
@@ -1201,3 +1205,113 @@ def account_history_pager():
         return jsonify(j_f["result"])
     else:
         return ""
+
+@app.route('/get_limit_orders')
+def get_limit_orders():
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_limit_orders",["' + base + '", "' + quote + '", 100]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    return jsonify(j["result"])
+
+@app.route('/get_call_orders')
+def get_call_orders():
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_call_orders",["' + base + '", "' + quote + '", 100]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    return jsonify(j["result"])
+
+@app.route('/get_settle_orders')
+def get_settle_orders():
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_settle_orders",["' + base + '", "' + quote + '", 100]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    return jsonify(j["result"])
+
+@app.route('/get_fill_order_history')
+def get_fill_order_history():
+
+    ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
+    login =  ws.recv()
+
+    ws.send('{"id":2,"method":"call","params":[1,"history",[]]}')
+    history =  ws.recv()
+    history_j = json.loads(history)
+    history_api = str(history_j["result"])
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+
+    ws.send('{"id":1, "method":"call", "params":[' + history_api + ',"get_fill_order_history",["' + base + '", "' + quote + '", 100]]}')
+    result = ws.recv()
+    j = json.loads(result)
+    return jsonify(j["result"])
+
+@app.route('/get_dex_total_volume')
+def get_dex_total_volume():
+
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
+    cur = con.cursor()
+
+    query = "select price from assets where aname='USD'"
+    cur.execute(query)
+    results = cur.fetchone()
+    usd_price = results[0]
+
+    query = "select price from assets where aname='CNY'"
+    cur.execute(query)
+    results = cur.fetchone()
+    cny_price = results[0]
+
+    query = "select sum(volume) from assets WHERE aname!='BTS'"
+    cur.execute(query)
+    results = cur.fetchone()
+    volume = results[0]
+
+    query = "select sum(mcap) from assets"
+    cur.execute(query)
+    results = cur.fetchone()
+    market_cap = results[0]
+    con.close()
+
+    res = {"volume_bts": round(volume), "volume_usd": round(volume/usd_price), "volume_cny": round(volume/cny_price),
+           "market_cap_bts": round(market_cap), "market_cap_usd": round(market_cap/usd_price), "market_cap_cny": round(market_cap/cny_price)}
+
+    return jsonify(res)
+
+@app.route('/daily_volume_dex_dates')
+def daily_volume_dex_dates():
+
+    base = datetime.date.today()
+    date_list = [base - datetime.timedelta(days=x) for x in range(0, 30)]
+    date_list = [d.strftime("%Y-%m-%d") for d in date_list]
+    #print len(list(reversed(date_list)))
+    return jsonify(list(reversed(date_list)))
+
+@app.route('/daily_volume_dex_data')
+def daily_volume_dex_data():
+
+    #dummy = [1, 32, 7, 6, 4, 5, 7, 16, 18, 10, 11, 3, 7, 6, 4, 5, 17, 1, 8, 10, 11, 30, 7, 6, 4, 50, 7, 19, 8, 10];
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
+    cur = con.cursor()
+
+    query = "select value from stats where type='volume_bts' order by date desc limit 30"
+    cur.execute(query)
+    results = cur.fetchall()
+
+    mod = [0 for x in range(len(results))]
+    for r in range(0, len(results)):
+        mod[r] = results[r][0]
+
+    return jsonify(list(reversed(mod)))

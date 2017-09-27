@@ -56,7 +56,8 @@ for row in rows:
                 symbol =  all[x]["result"][i]["symbol"]
                 id = all[x]["result"][i]["id"]
 
-                url = "http://23.94.69.140:5000/get_volume?base="+row[1]+"&quote=" + symbol
+                url = "http://23.94.69.140:5000/get_volume?base="+symbol+"&quote=" + row[1]
+                #print "http://23.94.69.140:5000/get_volume?base="+row[1]+"&quote=" + symbol
 
                 response = urllib.urlopen(url)
 
@@ -67,7 +68,7 @@ for row in rows:
                     continue
 
 
-                url = "http://23.94.69.140:5000/get_ticker?base=BTS&quote=" + symbol
+                url = "http://23.94.69.140:5000/get_ticker?base="+symbol+"&quote="+ row[1]
                 response2 = urllib.urlopen(url)
                 try:
                     data2 = json.loads(response2.read())
@@ -77,14 +78,49 @@ for row in rows:
                     price = 0
                     continue
 
-                print row[1] + " / " + symbol + " vol: " + str(data["quote_volume"]) + " price: " + str(price)
-                if float(price) > 0 and float(data['quote_volume']) > 0:
-                    query = "INSERT INTO markets (pair, asset_id, price, volume, aid) VALUES('"+row[1]+ "/" + symbol+"', '"+str(row[0])+"', '"+price+"', '"+data['quote_volume'] +"', '"+row[2]+"')"
+                print row[1] + " / " + symbol + " vol: " + str(data["base_volume"]) + " price: " + str(price)
+
+                # update asset volume
+                #if row[1] == "BTS":
+                #    divide_by = 1
+                #else:
+                #    divide_by = row[3]
+                """
+                if float(data["base_volume"]) > 0 and float(row[3]) > 0 and row[1] != "BTS" and symbol != "BTS":
+                    ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + symbol + '"], 0]]}')
+                    result_l = ws.recv()
+                    j_l = json.loads(result_l)
+                    base_id = j_l["result"][0]["id"]
+                    base_precision = 10 ** float(j_l["result"][0]["precision"])
+                    # print base_id
+
+                    ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + row[1] + '"], 0]]}')
+                    result_l = ws.recv()
+                    j_l = json.loads(result_l)
+                    # print j_l
+                    quote_id = j_l["result"][0]["id"]
+                    quote_precision = 10 ** float(j_l["result"][0]["precision"])
+
+                    print float(row[4])
+                    print float(data['base_volume'])
+                    print float(row[3])
+                    sum_volume = float(row[4]) + (float(data['base_volume']) * float(base_precision) / float(data['quote_volume']) * float(quote_precision)) / float(row[3])
+                    print sum_volume
+                    exit
+                    query_u = "UPDATE assets SET volume='"+str(sum_volume)+"' WHERE id="+str(row[0])
+                    #print query_u
+                    cur.execute(query_u)
+                    con.commit()
+                """
+
+                if float(price) > 0 and float(data['base_volume']) > 0:
+                    query = "INSERT INTO markets (pair, asset_id, price, volume, aid) VALUES('"+row[1]+ "/" + symbol+"', '"+str(row[0])+"', '"+price+"', '"+data['base_volume'] +"', '"+row[2]+"')"
                     print query
                     cur.execute(query)
                     con.commit()
 
     except:
         continue
+
 
 con.close()

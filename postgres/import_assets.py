@@ -68,6 +68,29 @@ for x in range (0, len(all)):
 
     for i in range(0, size):
         symbol = all[x]["result"][i]["symbol"]
+        id = all[x]["result"][i]["id"]
+
+        url = "http://23.94.69.140:5000/get_asset?asset_id=" + id
+        print url
+        response3 = urllib.urlopen(url)
+        try:
+            data3 = json.loads(response3.read())
+            current_supply = data3[0]["current_supply"]
+            # print current_supply
+        except:
+            price = 0
+            continue
+
+        url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=" + id
+        # print url
+        response4 = urllib.urlopen(url)
+        try:
+            data4 = json.loads(response4.read())
+            holders = data4
+            # print holders
+        except:
+            holders = 0
+            continue
 
         if symbol == "BTS":
             type = "Core Token"
@@ -76,7 +99,9 @@ for x in range (0, len(all)):
         else:
             type = "User Issued"
         #print all[x]["result"][i]
-        id = all[x]["result"][i]["id"]
+
+
+
 
         url = "http://23.94.69.140:5000/get_volume?base=BTS&quote=" + symbol
         response = urllib.urlopen(url)
@@ -105,35 +130,53 @@ for x in range (0, len(all)):
             price = 0
             continue
 
-        url = "http://23.94.69.140:5000/get_asset?asset_id=" + id
-        print url
-        response3 = urllib.urlopen(url)
-        try:
-            data3 = json.loads(response3.read())
-            current_supply = data3[0]["current_supply"]
-            #print current_supply
-        except:
-            price = 0
-            continue
-
         mcap = int(current_supply) * float(price)
 
-        url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=" + id
-        #print url
-        response4 = urllib.urlopen(url)
-        try:
-            data4 = json.loads(response4.read())
-            holders = data4
-            #print holders
-        except:
-            holders = 0
-            continue
+        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"')"
+        #query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('" + symbol + "', '" + id + "', '" + price + "', '0', '" + str(mcap) + "', '" + type + "', '" + str(current_supply) + "', '" + str(holders) + "')"
 
-        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['quote_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"')"
         print query
         cur.execute(query)
         con.commit()
 
 
+# with updated volume, add stats
+query = "select sum(volume) from assets WHERE aname!='BTS'"
+cur.execute(query)
+results = cur.fetchone()
+volume = results[0]
+
+query = "select sum(mcap) from assets"
+cur.execute(query)
+results = cur.fetchone()
+market_cap = results[0]
+
+query = "INSERT INTO stats (type, value, date) VALUES('volume_bts', '"+str(int(round(volume)))+"', NOW())"
+print query
+cur.execute(query)
+con.commit()
+
+"""query = "INSERT INTO stats (type, value, date) VALUES('market_cap_bts', '"+str(int(round(market_cap)))+"', NOW())" # out of range for bigint, fix.
+print query
+cur.execute(query)
+con.commit()
+"""
+
+# insert core token manually
+url = "http://23.94.69.140:5000/get_asset?asset_id=1.3.0"
+response3 = urllib.urlopen(url)
+data3 = json.loads(response3.read())
+current_supply = data3[0]["current_supply"]
+
+url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=1.3.0"
+response4 = urllib.urlopen(url)
+data4 = json.loads(response4.read())
+holders = data4
+
+mcap = int(current_supply)
+
+query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('BTS', '1.3.0', '1', '"+str(volume)+"', '"+str(mcap)+"', 'Core Token', '" + str(current_supply) + "', '" + str(holders) + "')"
+cur.execute(query)
+con.commit()
 
 con.close()
