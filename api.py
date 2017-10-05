@@ -24,7 +24,7 @@ postgres_username = 'postgres'
 postgres_password = 'posta'
 
 # a connection to a bitshares full node
-full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
+full_websocket_url = "ws://88.99.145.10:9999/ws"
 
 # end config
 
@@ -140,7 +140,7 @@ def get_operation():
 def operation_full():
 
     # lets connect the operations to a full node
-    full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
+    #full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
     ws = create_connection(full_websocket_url)
 
     operation_id = request.args.get('operation_id')
@@ -233,7 +233,7 @@ def assets():
     con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
-    query = "SELECT * FROM assets WHERE volume > 0 ORDER BY aname"
+    query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"
     cur.execute(query)
     results = cur.fetchall()
     con.close()
@@ -1153,7 +1153,7 @@ def account_history_pager():
     account_id = request.args.get('account_id')
 
     # connecting into a full node.
-    full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
+    #full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
     full_ws = create_connection(full_websocket_url)
 
     full_ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
@@ -1302,7 +1302,6 @@ def daily_volume_dex_dates():
 @app.route('/daily_volume_dex_data')
 def daily_volume_dex_data():
 
-    #dummy = [1, 32, 7, 6, 4, 5, 7, 16, 18, 10, 11, 3, 7, 6, 4, 5, 17, 1, 8, 10, 11, 30, 7, 6, 4, 50, 7, 19, 8, 10];
     con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
