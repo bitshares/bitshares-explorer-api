@@ -132,7 +132,7 @@ for x in range (0, len(all)):
 
         mcap = int(current_supply) * float(price)
 
-        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"')"
+        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"', '')"
         #query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('" + symbol + "', '" + id + "', '" + price + "', '0', '" + str(mcap) + "', '" + type + "', '" + str(current_supply) + "', '" + str(holders) + "')"
 
         print query
@@ -175,7 +175,7 @@ holders = data4
 
 mcap = int(current_supply)
 
-query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('BTS', '1.3.0', '1', '"+str(volume)+"', '"+str(mcap)+"', 'Core Token', '" + str(current_supply) + "', '" + str(holders) + "')"
+query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype) VALUES('BTS', '1.3.0', '1', '"+str(volume)+"', '"+str(mcap)+"', 'Core Token', '" + str(current_supply) + "', '" + str(holders) + "', '')"
 cur.execute(query)
 con.commit()
 
