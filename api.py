@@ -16,6 +16,8 @@ import psycopg2
 
 import datetime
 
+import math
+
 # config
 websocket_url = "ws://127.0.0.1:8090/ws"
 postgres_host = 'localhost'
@@ -745,36 +747,82 @@ def market_chart_data():
         low_base = float(j_l["result"][w]["low_base"])
         close_base = float(j_l["result"][w]["close_base"])
 
-        # TODO: wrong way to go over the nothing for something issue bitshares-core #132 #287 #342
+        low_quote = min([open_quote, close_quote])
+        low_base = min([open_base, close_base])
+
+        high_quote = max([open_quote, close_quote])
+        high_base = max([open_base, close_base])
+
+        if low_quote == 0 and open_quote == 0:
+            low_quote = close_quote
+        else:
+            low_quote = open_quote
+
+        if low_base == 0 and open_base == 0:
+            low_base = close_base
+        else:
+            low_base = open_base
+
         if open_quote == 0:
-            open_quote = 1
-        if high_quote == 0:
-            high_quote = 1
-        if low_quote == 0:
-            low_quote = 1
-        if close_quote == 0:
-            close_quote = 1
+            open_quote = close_quote
 
         if open_base == 0:
-            open_base = 1
-        if high_base == 0:
-            high_base = 1
-        if low_base == 0:
-            low_base = 1
+            open_base = close_base
+
+        if close_quote == 0:
+            close_quote = open_quote
+
         if close_base == 0:
-            close_base = 1
+            close_base = open_base
+
+
+
+
+        # TODO: got code from https://github.com/bitshares/bitshares-ui/blob/staging/app/stores/MarketsStore.js#L596 but haves some issues
+        # TODO: so i am just using open and close, looks better anyways than with the extreme values.
+        """
+        if low_quote == 0:
+            low_quote = findMin(open_quote, close_quote)
+        if math.isnan(high_quote) or high_quote == 'Inf':
+            high_quote = findMax(open_quote, close_quote)
+        #if close_quote == 'Inf' or close_quote == 0:
+        #    close_quote = open_quote
+        #if open_quote == 'Inf' or open_quote == 0:
+        #    open_quote = close_quote
+        if high_quote > 1.3 * ((open_quote + close_quote) / 2):
+            high_quote = findMax(open_quote, close_quote)
+        if low_quote < 0.7 * ((open_quote + close_quote) / 2):
+            low_quote = findMin(open_quote, close_quote)
+
+        if low_base == 0:
+            low_base = findMin(open_base, close_base)
+        if math.isnan(high_base) or high_base == 'Inf':
+            high_base = findMax(open_base, close_base)
+        #if close_base == 'Inf' or close_base == 0:
+        #    close_base = open_base
+        #if open_base == 'Inf' or open_base == 0:
+        #    open_base = close_base
+        if high_base > 1.3 * ((open_base + close_base) / 2):
+            high_base = findMax(open_base, close_base)
+        if low_base < 0.7 * ((open_base + close_base) / 2):
+           low_base = findMin(open_base, close_base)
+
+
+        high_quote = max([open_quote, close_quote, low_quote, high_quote])
+        low_quote = min([open_quote, close_quote, low_quote, high_quote])
+
+        high_base = max([open_base, close_base, low_base, high_base])
+        low_base = min([open_base, close_base, low_base, high_base])
+        """
 
         open = float(open_base*base_precision)/float(open_quote*quote_precision)
         high = float(high_base*base_precision)/float(high_quote*quote_precision)
         low = float(low_base*base_precision)/float(low_quote*quote_precision)
         close = float(close_base*base_precision)/float(close_quote*quote_precision)
 
-        ohlc = [open,high, low, close]
+        high = max([open, close, low, high])
+        low = min([open, close, low, high])
 
-        high = max(ohlc)
-        low = min(ohlc)
-
-        #ohlc = [open, high, low, close]
         ohlc = [open, close, low, high]
 
         data.append(ohlc)
@@ -786,6 +834,26 @@ def market_chart_data():
             data.insert(0, append)
 
     return jsonify(data)
+
+def findMax(a,b):
+    if a != 'Inf' and b != 'Inf':
+        return max([a, b])
+    elif a == 'Inf':
+        return b
+    else:
+        return a
+
+def findMin(a, b):
+    if a != 0 and b != 0:
+        return min([a, b])
+    elif a == 0:
+        return b
+    else:
+        return a
+
+
+
+
 
 @app.route('/top_proxies')
 def top_proxies():

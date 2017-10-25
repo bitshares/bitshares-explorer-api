@@ -53,6 +53,7 @@ for row in rows:
     try:
         for x in range (0, len(all)):
             for i in range(0, 100):
+
                 symbol =  all[x]["result"][i]["symbol"]
                 id = all[x]["result"][i]["id"]
 
@@ -63,10 +64,10 @@ for row in rows:
 
                 try:
                     data = json.loads(response.read())
+                    volume = data["base_volume"]
                 except:
-                    pass
+                    volume = 0
                     continue
-
 
                 url = "http://23.94.69.140:5000/get_ticker?base="+symbol+"&quote="+ row[1]
                 response2 = urllib.urlopen(url)
@@ -78,13 +79,11 @@ for row in rows:
                     price = 0
                     continue
 
-                print row[1] + " / " + symbol + " vol: " + str(data["base_volume"]) + " price: " + str(price)
+                print row[1] + " / " + symbol + " vol: " + str(volume) + " price: " + str(price)
+                #if symbol == "COMPUCEEDS":
+                #    exit
 
-                # update asset volume
-                #if row[1] == "BTS":
-                #    divide_by = 1
-                #else:
-                #    divide_by = row[3]
+                # this was an attempt to sum up volume of not bts crosses to calculate total DEX volume, disabled by now(need better math to convert to bts)
                 """
                 if float(data["base_volume"]) > 0 and float(row[3]) > 0 and row[1] != "BTS" and symbol != "BTS":
                     ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + symbol + '"], 0]]}')
@@ -113,8 +112,8 @@ for row in rows:
                     con.commit()
                 """
 
-                if float(price) > 0 and float(data['base_volume']) > 0:
-                    query = "INSERT INTO markets (pair, asset_id, price, volume, aid) VALUES('"+row[1]+ "/" + symbol+"', '"+str(row[0])+"', '"+price+"', '"+data['base_volume'] +"', '"+row[2]+"')"
+                if float(price) > 0 and float(volume) > 0:
+                    query = "INSERT INTO markets (pair, asset_id, price, volume, aid) VALUES('"+row[1]+ "/" + symbol+"', '"+str(row[0])+"', '"+str(float(price))+"', '"+str(float(volume))+"', '"+row[2]+"')"
                     print query
                     cur.execute(query)
                     con.commit()
