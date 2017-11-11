@@ -747,6 +747,7 @@ def market_chart_data():
         low_base = float(j_l["result"][w]["low_base"])
         close_base = float(j_l["result"][w]["close_base"])
 
+
         low_quote = min([open_quote, close_quote])
         low_base = min([open_base, close_base])
 
@@ -775,9 +776,25 @@ def market_chart_data():
         if close_base == 0:
             close_base = open_base
 
+        """
+        if open_quote == 0:
+            open_quote = 1
+        if close_quote == 0:
+            close_quote = 1
+        if low_quote == 0:
+            low_quote = 1
+        if high_quote == 0:
+            high_quote = 1
 
-
-
+        if open_base == 0:
+            open_base = 1
+        if close_base == 0:
+            close_base = 1
+        if low_base == 0:
+            low_base = 1
+        if high_base == 0:
+            high_base = 1
+        """
         # TODO: got code from https://github.com/bitshares/bitshares-ui/blob/staging/app/stores/MarketsStore.js#L596 but haves some issues
         # TODO: so i am just using open and close, looks better anyways than with the extreme values.
         """
@@ -793,7 +810,6 @@ def market_chart_data():
             high_quote = findMax(open_quote, close_quote)
         if low_quote < 0.7 * ((open_quote + close_quote) / 2):
             low_quote = findMin(open_quote, close_quote)
-
         if low_base == 0:
             low_base = findMin(open_base, close_base)
         if math.isnan(high_base) or high_base == 'Inf':
@@ -1430,3 +1446,90 @@ def daily_volume_dex_data():
         mod[r] = results[r][0]
 
     return jsonify(list(reversed(mod)))
+
+@app.route('/get_all_asset_holders')
+def get_all_asset_holders():
+
+    asset_id = request.args.get('asset_id')
+
+    if not isObject(asset_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+        asset_id = j_l["result"][0]["id"]
+
+    ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
+    login =  ws.recv()
+
+    ws.send('{"id":2,"method":"call","params":[1,"asset",[]]}')
+
+    asset =  ws.recv()
+    asset_j = json.loads(asset)
+
+    asset_api = str(asset_j["result"])
+
+    all = []
+
+    ws.send('{"id":1, "method":"call", "params":[' + asset_api + ',"get_asset_holders",["' + asset_id + '", 0, 100]]}')
+    result = ws.recv()
+    j = json.loads(result)
+
+    for r in range(0, len(j["result"])):
+        all.append(j["result"][r])
+
+    len_result = len(j["result"])
+    start = 100
+    while  len_result == 100:
+        start = start + 100
+        ws.send('{"id":1, "method":"call", "params":[' + asset_api + ',"get_asset_holders",["' + asset_id + '", ' + str(start) + ', 100]]}')
+        result = ws.recv()
+        j = json.loads(result)
+        len_result = len(j["result"])
+        for r in range(0, len(j["result"])):
+            all.append(j["result"][r])
+
+
+    return jsonify(all)
+
+
+@app.route('/referrer_count')
+def referrer_count():
+
+    account_id = request.args.get('account_id')
+
+    if not isObject(account_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+
+        account_id = j_l["result"][0]["id"]
+
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
+    cur = con.cursor()
+
+    query = "select count(*) from referrers where referrer='"+account_id+"'"
+    cur.execute(query)
+    results = cur.fetchone()
+
+    return jsonify(results)
+
+@app.route('/get_all_referrers')
+def get_all_referrers():
+
+    account_id = request.args.get('account_id')
+
+    if not isObject(account_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+
+        account_id = j_l["result"][0]["id"]
+
+    con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
+    cur = con.cursor()
+
+    query = "select * from referrers where referrer='"+account_id+"'"
+    cur.execute(query)
+    results = cur.fetchall()
+
+    return jsonify(results)
