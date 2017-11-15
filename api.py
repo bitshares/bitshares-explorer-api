@@ -747,7 +747,7 @@ def market_chart_data():
         low_base = float(j_l["result"][w]["low_base"])
         close_base = float(j_l["result"][w]["close_base"])
 
-
+        """
         low_quote = min([open_quote, close_quote])
         low_base = min([open_base, close_base])
 
@@ -776,6 +776,7 @@ def market_chart_data():
         if close_base == 0:
             close_base = open_base
 
+        """
         """
         if open_quote == 0:
             open_quote = 1
@@ -831,13 +832,20 @@ def market_chart_data():
         low_base = min([open_base, close_base, low_base, high_base])
         """
 
+        #open = (open_base / (10 ** base_precision)) / (open_quote / (10 ** quote_precision))
+
+        ##open = (float(open_base) / (10 ** float(base_precision))) / (float(open_quote) / (10 ** float(quote_precision)))
+        #high = float((high_base / (10 ** base_precision))) / float((high_quote / (10 ** quote_precision)))
+        #low = float((low_base / (10 ** base_precision))) / float((low_quote / (10 ** quote_precision)))
+        #close = float((close_base / (10 ** base_precision))) / float((close_quote / (10 ** quote_precision)))
+
         open = float(open_base*base_precision)/float(open_quote*quote_precision)
         high = float(high_base*base_precision)/float(high_quote*quote_precision)
         low = float(low_base*base_precision)/float(low_quote*quote_precision)
         close = float(close_base*base_precision)/float(close_quote*quote_precision)
 
-        high = max([open, close, low, high])
-        low = min([open, close, low, high])
+        #high = max([open, close, low, high])
+        #low = min([open, close, low, high])
 
         ohlc = [open, close, low, high]
 
