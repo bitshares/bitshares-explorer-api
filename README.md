@@ -52,8 +52,8 @@ postgres_password = 'posta'
 
 Make sure you add your data in the following files:
 
-- api.cpp
-- postgres/import_realtime_ops.oy
+- api.py
+- postgres/import_realtime_ops.py
 - postgres/import_assets.py
 - postgres/import_markets.py
 - postgres/import_holders.py
