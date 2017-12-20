@@ -717,7 +717,7 @@ def market_chart_data():
     result_l = ws.recv()
     j_l = json.loads(result_l)
     base_id = j_l["result"][0]["id"]
-    base_precision = 10**float(j_l["result"][0]["precision"])
+    base_precision = 10**j_l["result"][0]["precision"]
     #print base_id
 
     ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + quote + '"], 0]]}')
@@ -725,7 +725,7 @@ def market_chart_data():
     j_l = json.loads(result_l)
     #print j_l
     quote_id = j_l["result"][0]["id"]
-    quote_precision = 10**float(j_l["result"][0]["precision"])
+    quote_precision = 10**j_l["result"][0]["precision"]
     #print quote_id
 
     now = datetime.date.today()
@@ -747,105 +747,10 @@ def market_chart_data():
         low_base = float(j_l["result"][w]["low_base"])
         close_base = float(j_l["result"][w]["close_base"])
 
-        """
-        low_quote = min([open_quote, close_quote])
-        low_base = min([open_base, close_base])
-
-        high_quote = max([open_quote, close_quote])
-        high_base = max([open_base, close_base])
-
-        if low_quote == 0 and open_quote == 0:
-            low_quote = close_quote
-        else:
-            low_quote = open_quote
-
-        if low_base == 0 and open_base == 0:
-            low_base = close_base
-        else:
-            low_base = open_base
-
-        if open_quote == 0:
-            open_quote = close_quote
-
-        if open_base == 0:
-            open_base = close_base
-
-        if close_quote == 0:
-            close_quote = open_quote
-
-        if close_base == 0:
-            close_base = open_base
-
-        """
-        """
-        if open_quote == 0:
-            open_quote = 1
-        if close_quote == 0:
-            close_quote = 1
-        if low_quote == 0:
-            low_quote = 1
-        if high_quote == 0:
-            high_quote = 1
-
-        if open_base == 0:
-            open_base = 1
-        if close_base == 0:
-            close_base = 1
-        if low_base == 0:
-            low_base = 1
-        if high_base == 0:
-            high_base = 1
-        """
-        # TODO: got code from https://github.com/bitshares/bitshares-ui/blob/staging/app/stores/MarketsStore.js#L596 but haves some issues
-        # TODO: so i am just using open and close, looks better anyways than with the extreme values.
-        """
-        if low_quote == 0:
-            low_quote = findMin(open_quote, close_quote)
-        if math.isnan(high_quote) or high_quote == 'Inf':
-            high_quote = findMax(open_quote, close_quote)
-        #if close_quote == 'Inf' or close_quote == 0:
-        #    close_quote = open_quote
-        #if open_quote == 'Inf' or open_quote == 0:
-        #    open_quote = close_quote
-        if high_quote > 1.3 * ((open_quote + close_quote) / 2):
-            high_quote = findMax(open_quote, close_quote)
-        if low_quote < 0.7 * ((open_quote + close_quote) / 2):
-            low_quote = findMin(open_quote, close_quote)
-        if low_base == 0:
-            low_base = findMin(open_base, close_base)
-        if math.isnan(high_base) or high_base == 'Inf':
-            high_base = findMax(open_base, close_base)
-        #if close_base == 'Inf' or close_base == 0:
-        #    close_base = open_base
-        #if open_base == 'Inf' or open_base == 0:
-        #    open_base = close_base
-        if high_base > 1.3 * ((open_base + close_base) / 2):
-            high_base = findMax(open_base, close_base)
-        if low_base < 0.7 * ((open_base + close_base) / 2):
-           low_base = findMin(open_base, close_base)
-
-
-        high_quote = max([open_quote, close_quote, low_quote, high_quote])
-        low_quote = min([open_quote, close_quote, low_quote, high_quote])
-
-        high_base = max([open_base, close_base, low_base, high_base])
-        low_base = min([open_base, close_base, low_base, high_base])
-        """
-
-        #open = (open_base / (10 ** base_precision)) / (open_quote / (10 ** quote_precision))
-
-        ##open = (float(open_base) / (10 ** float(base_precision))) / (float(open_quote) / (10 ** float(quote_precision)))
-        #high = float((high_base / (10 ** base_precision))) / float((high_quote / (10 ** quote_precision)))
-        #low = float((low_base / (10 ** base_precision))) / float((low_quote / (10 ** quote_precision)))
-        #close = float((close_base / (10 ** base_precision))) / float((close_quote / (10 ** quote_precision)))
-
         open = float(open_base*base_precision)/float(open_quote*quote_precision)
         high = float(high_base*base_precision)/float(high_quote*quote_precision)
         low = float(low_base*base_precision)/float(low_quote*quote_precision)
         close = float(close_base*base_precision)/float(close_quote*quote_precision)
-
-        #high = max([open, close, low, high])
-        #low = min([open, close, low, high])
 
         ohlc = [open, close, low, high]
 
@@ -1020,7 +925,7 @@ def workers_votes():
     workers = workers.response
     workers = ''.join(workers)
     workers = json.loads(workers)
-    workers = workers[:6]
+    workers = workers[:10]
     #print workers
 
     w, h = len(proxies) + 2, len(workers)

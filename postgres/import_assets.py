@@ -72,10 +72,12 @@ for x in range (0, len(all)):
 
         url = "http://23.94.69.140:5000/get_asset?asset_id=" + id
         print url
+        precision = 5
         response3 = urllib.urlopen(url)
         try:
             data3 = json.loads(response3.read())
             current_supply = data3[0]["current_supply"]
+            precision = data3[0]["precision"]
             # print current_supply
         except:
             price = 0
@@ -132,7 +134,7 @@ for x in range (0, len(all)):
 
         mcap = int(current_supply) * float(price)
 
-        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"', '')"
+        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"', '','"+str(precision)+"')"
         #query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('" + symbol + "', '" + id + "', '" + price + "', '0', '" + str(mcap) + "', '" + type + "', '" + str(current_supply) + "', '" + str(holders) + "')"
 
         print query
