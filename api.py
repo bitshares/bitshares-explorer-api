@@ -593,7 +593,7 @@ def get_most_active_markets():
     con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
-    query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 20"
+    query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 100"
     cur.execute(query)
     results = cur.fetchall()
     con.close()
@@ -747,10 +747,10 @@ def market_chart_data():
         low_base = float(j_l["result"][w]["low_base"])
         close_base = float(j_l["result"][w]["close_base"])
 
-        open = float(open_base*base_precision)/float(open_quote*quote_precision)
-        high = float(high_base*base_precision)/float(high_quote*quote_precision)
-        low = float(low_base*base_precision)/float(low_quote*quote_precision)
-        close = float(close_base*base_precision)/float(close_quote*quote_precision)
+        open = 1/(float(open_base/base_precision)/float(open_quote/quote_precision))
+        high = 1/(float(high_base/base_precision)/float(high_quote/quote_precision))
+        low = 1/(float(low_base/base_precision)/float(low_quote/quote_precision))
+        close = 1/(float(close_base/base_precision)/float(close_quote/quote_precision))
 
         ohlc = [open, close, low, high]
 
