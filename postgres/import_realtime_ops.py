@@ -48,7 +48,8 @@ def on_message(ws, message):
             #print data2
             block_num = data2[0]["block_num"]
 
-            op_type = data2[0]["result"][0]
+            op_type = data2[0]["op"][0]
+
             #print block_num
             trx_in_block =  data2[0]["trx_in_block"]
             op_in_trx =  data2[0]["op_in_trx"]
