@@ -1339,7 +1339,7 @@ def get_dex_total_volume():
 def daily_volume_dex_dates():
 
     base = datetime.date.today()
-    date_list = [base - datetime.timedelta(days=x) for x in range(0, 30)]
+    date_list = [base - datetime.timedelta(days=x) for x in range(0, 60)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
     #print len(list(reversed(date_list)))
     return jsonify(list(reversed(date_list)))
@@ -1350,7 +1350,7 @@ def daily_volume_dex_data():
     con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
     cur = con.cursor()
 
-    query = "select value from stats where type='volume_bts' order by date desc limit 30"
+    query = "select value from stats where type='volume_bts' order by date desc limit 60"
     cur.execute(query)
     results = cur.fetchall()
 
