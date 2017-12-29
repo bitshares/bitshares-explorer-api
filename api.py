@@ -1124,7 +1124,7 @@ def top_operations():
     results = cur.fetchone()
     total = results[0]
 
-    query = "SELECT op_type, count(op_type) FROM ops GROUP BY op_type"
+    query = "SELECT op_type, count(op_type) AS counter FROM ops GROUP BY op_type ORDER BY counter DESC"
     cur.execute(query)
     results = cur.fetchall()
 
