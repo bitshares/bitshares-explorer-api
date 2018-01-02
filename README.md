@@ -73,7 +73,8 @@ The API backend runs 3 scripts once a day and store results in a postgres databa
 ```
 0 22 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_holders.py >/dev/null
 0 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_assets.py >/dev/null
-15 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/markets.py >/dev/null
+15 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_markets.py >/dev/null
+30 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_referrers.py >/dev/null
 ```
 
 ## Setup real time operation grabber
