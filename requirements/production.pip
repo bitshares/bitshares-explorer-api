@@ -1,0 +1,6 @@
+flask
+flask-cors
+websocket-client
+psycopg2
+schedule
+uwsgi==2.0.15
