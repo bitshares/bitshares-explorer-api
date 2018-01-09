@@ -372,10 +372,13 @@ def get_asset_and_volume():
     query = "SELECT volume, mcap FROM assets WHERE aid='"+asset_id+"'"
     cur.execute(query)
     results = cur.fetchall()
-    print results
     con.close()
-    j["result"][0]["volume"] = results[0][0]
-    j["result"][0]["mcap"] = results[0][1]
+    try:
+        j["result"][0]["volume"] = results[0][0]
+        j["result"][0]["mcap"] = results[0][1]
+    except:
+        j["result"][0]["volume"] = 0
+        j["result"][0]["mcap"] = 0
 
     return jsonify(j["result"])
 
