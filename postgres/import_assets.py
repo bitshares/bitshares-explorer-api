@@ -1,3 +1,4 @@
+import os
 from websocket import create_connection
 import time
 
@@ -7,16 +8,17 @@ import urllib
 import psycopg2
 
 # config
-websocket_url = "ws://127.0.0.1:8090/ws"
-postgres_host = 'localhost'
-postgres_database = 'explorer'
-postgres_username = 'postgres'
-postgres_password = 'posta'
+WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
+POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
+                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
+                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
+                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
+}
 # end config
 
-ws = create_connection(websocket_url) # localhost
+ws = create_connection(WEBSOCKET_URL)
 
-con = psycopg2.connect(database=postgres_database, user=postgres_username, host=postgres_host, password=postgres_password)
+con = psycopg2.connect(**POSTGRES_CONFIG)
 cur = con.cursor()
 
 query = "TRUNCATE assets"
