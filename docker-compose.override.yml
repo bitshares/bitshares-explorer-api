@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  web:
+    volumes:
+      - .:/explorer:ro
+
+  scheduler:
+    volumes:
+      - .:/explorer:ro
+
+  realtime-importer:
+    volumes:
+      - .:/explorer:ro

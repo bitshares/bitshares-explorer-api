@@ -1,0 +1,72 @@
+version: '3'
+
+networks:
+  private:
+    internal: true
+  internet:
+    internal: false
+
+volumes:
+  db-data:
+
+services:
+  db:
+    build: ./postgres
+    hostname: postgres
+    environment:
+      - POSTGRES_DB=explorer
+      - POSTGRES_USER=explorer
+      - POSTGRES_PASSWORD=posta
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - private
+
+  web:
+    hostname: api
+    image: bitshares-explorer
+    build: .
+    command: uwsgi --ini uwsgi.ini
+    depends_on:
+      - db
+    env_file:
+      - explorer_config.env
+    volumes:
+      - .:/explorer:ro
+    expose:
+      - "5000"
+    ports:
+      - "5000:5000"
+    networks:
+      - private
+      - internet
+
+  scheduler:
+    hostname: scheduler
+    image: bitshares-explorer
+    build: .
+    command: /explorer/postgres/scheduler.py
+    depends_on:
+      - db
+    env_file:
+      - explorer_config.env
+    volumes:
+      - .:/explorer:ro
+    networks:
+      - private
+      - internet
+      
+  realtime-importer:
+    hostname: realtime_importer
+    image: bitshares-explorer
+    build: .
+    command: /usr/bin/env python /explorer/postgres/import_realtime_ops.py
+    depends_on:
+      - db
+    env_file:
+      - explorer_config.env
+    volumes:
+      - .:/explorer:ro
+    networks:
+      - private
+      - internet
