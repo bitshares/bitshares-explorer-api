@@ -1,13 +1,12 @@
+import json
 import os
-import websocket
 import thread
 import time
-
-import json
 import urllib
-#from flask import jsonify
 
 import psycopg2
+import websocket
+
 
 # config
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
@@ -17,6 +16,7 @@ POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
                    'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
 }
 # end config
+
 
 def on_message(ws, message):
     #print(message)
@@ -66,28 +66,30 @@ def on_message(ws, message):
     except:
         pass
 
+
 def on_error(ws, error):
     print(error)
     #print ""
 
+
 def on_close(ws):
     print("### closed ###")
 
+
 def on_open(ws):
     def run(*args):
-
         ws.send('{"method": "call", "params": [1, "database", []], "id": 3}')
         ws.send('{"method": "call", "params": [2, "set_subscribe_callback", [5, true]], "id": 6}')
 
     thread.start_new_thread(run, ())
 
+
 if __name__ == "__main__":
     websocket.enableTrace(True)
     ws = websocket.WebSocketApp(WEBSOCKET_URL,
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
     ws.on_open = on_open
-
 
     ws.run_forever()
