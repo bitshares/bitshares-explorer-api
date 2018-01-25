@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.5.7
--- Dumped by pg_dump version 9.5.7
+-- Dumped from database version 9.5.10
+-- Dumped by pg_dump version 9.5.10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -47,6 +47,8 @@ CREATE TABLE assets (
     type character varying(40) NOT NULL,
     current_supply bigint,
     holders integer,
+    wallettype character varying(40),
+    "precision" integer,
     CONSTRAINT assets_aid_check CHECK (((aid)::text <> ''::text)),
     CONSTRAINT assets_aname_check CHECK (((aname)::text <> ''::text))
 );
@@ -234,6 +236,80 @@ ALTER SEQUENCE proxies_pid_seq OWNED BY proxies.pid;
 
 
 --
+-- Name: referrers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE referrers (
+    rid integer NOT NULL,
+    account_id character varying(40),
+    account_name character varying(100),
+    referrer character varying(40),
+    referrer_rewards_percentage integer,
+    lifetime_referrer character varying(40),
+    lifetime_referrer_fee_percentage integer
+);
+
+
+ALTER TABLE referrers OWNER TO postgres;
+
+--
+-- Name: referrers_rid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE referrers_rid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE referrers_rid_seq OWNER TO postgres;
+
+--
+-- Name: referrers_rid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE referrers_rid_seq OWNED BY referrers.rid;
+
+
+--
+-- Name: stats; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE stats (
+    sid integer NOT NULL,
+    type character varying(40) NOT NULL,
+    value bigint NOT NULL,
+    date date NOT NULL,
+    CONSTRAINT stats_type_check CHECK (((type)::text <> ''::text))
+);
+
+
+ALTER TABLE stats OWNER TO postgres;
+
+--
+-- Name: stats_sid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE stats_sid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE stats_sid_seq OWNER TO postgres;
+
+--
+-- Name: stats_sid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE stats_sid_seq OWNED BY stats.sid;
+
+
+--
 -- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -266,6 +342,20 @@ ALTER TABLE ONLY ops ALTER COLUMN oid SET DEFAULT nextval('ops_oid_seq'::regclas
 --
 
 ALTER TABLE ONLY proxies ALTER COLUMN pid SET DEFAULT nextval('proxies_pid_seq'::regclass);
+
+
+--
+-- Name: rid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY referrers ALTER COLUMN rid SET DEFAULT nextval('referrers_rid_seq'::regclass);
+
+
+--
+-- Name: sid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY stats ALTER COLUMN sid SET DEFAULT nextval('stats_sid_seq'::regclass);
 
 
 --
@@ -306,6 +396,22 @@ ALTER TABLE ONLY ops
 
 ALTER TABLE ONLY proxies
     ADD CONSTRAINT proxies_pkey PRIMARY KEY (pid);
+
+
+--
+-- Name: referrers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY referrers
+    ADD CONSTRAINT referrers_pkey PRIMARY KEY (rid);
+
+
+--
+-- Name: stats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY stats
+    ADD CONSTRAINT stats_pkey PRIMARY KEY (sid);
 
 
 --
