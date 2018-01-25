@@ -6,20 +6,12 @@ import urllib
 import psycopg2
 from websocket import create_connection
 
-
-# config
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
-POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
-                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
-}
-# end config
+import config
 
 
-ws = create_connection(WEBSOCKET_URL)
+ws = create_connection(config.WEBSOCKET_URL)
 
-con = psycopg2.connect(**POSTGRES_CONFIG)
+con = psycopg2.connect(**config.POSTGRES)
 cur = con.cursor()
 
 

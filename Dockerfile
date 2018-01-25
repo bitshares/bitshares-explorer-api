@@ -4,7 +4,8 @@ RUN groupadd --gid 1000 -r explorer && useradd --uid 1000 --create-home --system
 	&& mkdir -p /explorer
 
 ENV PYTHONUNBUFFERED=1 \
-	PYTHONDONTWRITEBYTECODE=1
+	PYTHONDONTWRITEBYTECODE=1 \
+	PYTHONPATH=/explorer
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \

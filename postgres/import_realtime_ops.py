@@ -7,15 +7,7 @@ import urllib
 import psycopg2
 import websocket
 
-
-# config
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
-POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
-                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
-}
-# end config
+import config
 
 
 def on_message(ws, message):
@@ -56,7 +48,7 @@ def on_message(ws, message):
             trx_in_block =  data2[0]["trx_in_block"]
             op_in_trx =  data2[0]["op_in_trx"]
 
-            con = psycopg2.connect(**POSTGRES_CONFIG)
+            con = psycopg2.connect(**config.POSTGRES)
             cur = con.cursor()
             query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id_+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
             print query
@@ -86,7 +78,7 @@ def on_open(ws):
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
-    ws = websocket.WebSocketApp(WEBSOCKET_URL,
+    ws = websocket.WebSocketApp(config.WEBSOCKET_URL,
                                 on_message=on_message,
                                 on_error=on_error,
                                 on_close=on_close)

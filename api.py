@@ -8,25 +8,14 @@ from flask_cors import CORS, cross_origin
 import psycopg2
 from websocket import create_connection
 
+import config
+
 
 app = Flask(__name__)
 CORS(app)
 
 
-# config
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
-POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
-                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
-}
-
-# a connection to a bitshares full node
-FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:9999/ws")
-# end config
-
-
-ws = create_connection(WEBSOCKET_URL)
+ws = create_connection(config.WEBSOCKET_URL)
 
 
 if __name__ == "__main__":
@@ -139,7 +128,7 @@ def get_operation():
 def operation_full():
     # lets connect the operations to a full node
     #full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
-    ws = create_connection(FULL_WEBSOCKET_URL)
+    ws = create_connection(config.FULL_WEBSOCKET_URL)
 
     operation_id = request.args.get('operation_id')
     ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+operation_id+'"]]]}')
@@ -228,7 +217,7 @@ def full_account():
 
 @app.route('/assets')
 def assets():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"
@@ -362,7 +351,7 @@ def get_asset_and_volume():
     j["result"][0]["issuer_name"] = j3["result"][0]["name"]
 
 
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT volume, mcap FROM assets WHERE aid='"+asset_id+"'"
@@ -435,7 +424,7 @@ def get_volume():
 
 @app.route('/lastnetworkops')
 def lastnetworkops():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 10"
@@ -576,7 +565,7 @@ def get_markets():
         asset_id = j_l["result"][0]["id"]
 
 
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT * FROM markets WHERE aid='"+asset_id+"'"
@@ -588,7 +577,7 @@ def get_markets():
 
 @app.route('/get_most_active_markets')
 def get_most_active_markets():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 100"
@@ -782,7 +771,7 @@ def findMin(a, b):
 
 @app.route('/top_proxies')
 def top_proxies():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT sum(amount) FROM holders"
@@ -845,7 +834,7 @@ def top_proxies():
 
 @app.route('/top_holders')
 def top_holders():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT * FROM holders WHERE voting_as='1.2.5' ORDER BY amount DESC LIMIT 10"
@@ -1018,7 +1007,7 @@ def committee_votes():
 
 @app.route('/top_markets')
 def top_markets():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT volume FROM markets ORDER BY volume DESC LIMIT 7"
@@ -1048,7 +1037,7 @@ def top_markets():
 
 @app.route('/top_smartcoins')
 def top_smartcoins():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
@@ -1078,7 +1067,7 @@ def top_smartcoins():
 
 @app.route('/top_uias')
 def top_uias():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT volume FROM assets WHERE type='User Issued' ORDER BY volume DESC LIMIT 7"
@@ -1108,7 +1097,7 @@ def top_uias():
 
 @app.route('/top_operations')
 def top_operations():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT count(*) FROM ops"
@@ -1137,7 +1126,7 @@ def top_operations():
 
 @app.route('/last_network_transactions')
 def last_network_transactions():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 20"
@@ -1164,7 +1153,7 @@ def lookup_accounts():
 def lookup_assets():
     start = request.args.get('start')
 
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "SELECT aname FROM assets WHERE aname LIKE '"+start+"%'"
@@ -1190,7 +1179,7 @@ def account_history_pager():
 
     # connecting into a full node.
     #full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
-    full_ws = create_connection(FULL_WEBSOCKET_URL)
+    full_ws = create_connection(config.FULL_WEBSOCKET_URL)
 
     full_ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  full_ws.recv()
@@ -1297,7 +1286,7 @@ def get_fill_order_history():
 
 @app.route('/get_dex_total_volume')
 def get_dex_total_volume():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "select price from assets where aname='USD'"
@@ -1338,7 +1327,7 @@ def daily_volume_dex_dates():
 
 @app.route('/daily_volume_dex_data')
 def daily_volume_dex_data():
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "select value from stats where type='volume_bts' order by date desc limit 60"
@@ -1407,7 +1396,7 @@ def referrer_count():
 
         account_id = j_l["result"][0]["id"]
 
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "select count(*) from referrers where referrer='"+account_id+"'"
@@ -1428,7 +1417,7 @@ def get_all_referrers():
 
         account_id = j_l["result"][0]["id"]
 
-    con = psycopg2.connect(**POSTGRES_CONFIG)
+    con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
     query = "select * from referrers where referrer='"+account_id+"'"
