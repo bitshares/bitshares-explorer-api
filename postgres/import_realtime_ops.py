@@ -23,11 +23,11 @@ def on_message(ws, message):
     j = json.loads(message)
     try:
         #print j["params"][1][0][0]["id"]
-        id = j["params"][1][0][0]["id"]
-        #print id[:4]
-        if id[:4] == "2.9.":
+        id_ = j["params"][1][0][0]["id"]
+        #print id_[:4]
+        if id_[:4] == "2.9.":
             #print j["params"][1][0][0]
-            url = "http://23.94.69.140:5000/get_object?object=" + id
+            url = "http://23.94.69.140:5000/get_object?object=" + id_
             #print url
             response = urllib.urlopen(url)
             data = json.loads(response.read())
@@ -58,7 +58,7 @@ def on_message(ws, message):
 
             con = psycopg2.connect(**POSTGRES_CONFIG)
             cur = con.cursor()
-            query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
+            query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id_+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
             print query
             cur.execute(query)
             con.commit()
