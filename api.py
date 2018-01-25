@@ -63,13 +63,14 @@ def header():
 @app.route('/account_name')
 def account_name():
     account_id = request.args.get('account_id')
+    return jsonify(_account_name(account_id))
+
+
+def _account_name(account_id):
     ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["'+account_id+'"]]]}')
     result =  ws.recv()
     j = json.loads(result)
-
-    #print j["result"]
-
-    return jsonify(j["result"])
+    return j["result"]
 
 
 @app.route('/operation')
@@ -441,13 +442,14 @@ def lastnetworkops():
 @app.route('/get_object')
 def get_object():
     obj = request.args.get('object')
+    return jsonify(_get_object(obj))
+
+
+def _get_object(obj):
     ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+obj+'"]]]}')
     result =  ws.recv()
     j = json.loads(result)
-
-    #print j["result"]
-
-    return jsonify(j["result"])
+    return j["result"]
 
 
 @app.route('/get_asset_holders_count')

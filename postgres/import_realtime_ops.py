@@ -1,12 +1,10 @@
 import json
-import os
 import thread
-import time
-import urllib
 
 import psycopg2
 import websocket
 
+import api
 import config
 
 
@@ -19,27 +17,15 @@ def on_message(ws, message):
         #print id_[:4]
         if id_[:4] == "2.9.":
             #print j["params"][1][0][0]
-            url = "http://23.94.69.140:5000/get_object?object=" + id_
-            #print url
-            response = urllib.urlopen(url)
-            data = json.loads(response.read())
+            data = api._get_object(id_)
             #print data[0]
             account_id = data[0]["account"]
-            url = "http://23.94.69.140:5000/account_name?account_id=" + account_id
-            response_a = urllib.urlopen(url)
-            data_a = json.loads(response_a.read())
+            data_a = api._account_name(account_id)
+
             #print data_a[0]["name"]
             account_name = data_a[0]["name"]
 
-
-            #print account
-            #print data.operation_id
-            url = "http://23.94.69.140:5000/get_object?object=" + data[0]["operation_id"]
-            #print url
-            #print data.operation_id
-            response2 = urllib.urlopen(url)
-            data2 = json.loads(response2.read())
-            #print data2
+            data2 = api._get_object(data[0]['operation_id'])
             block_num = data2[0]["block_num"]
 
             op_type = data2[0]["op"][0]

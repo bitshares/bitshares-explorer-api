@@ -1,7 +1,4 @@
 import json
-import os
-import time
-import urllib
 
 import psycopg2
 from websocket import create_connection
