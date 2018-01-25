@@ -281,6 +281,10 @@ def account_history():
 @app.route('/get_asset')
 def get_asset():
     asset_id = request.args.get('asset_id')
+    return jsonify(_get_asset(asset_id))
+
+
+def _get_asset(asset_id):
     if not isObject(asset_id):
         ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
         result_l = ws.recv()
@@ -312,7 +316,7 @@ def get_asset():
     j3 = json.loads(result3)
     j["result"][0]["issuer_name"] = j3["result"][0]["name"]
 
-    return jsonify(j["result"])
+    return j["result"]
 
 
 @app.route('/get_asset_and_volume')
@@ -398,28 +402,28 @@ def get_block():
 def get_ticker():
     base = request.args.get('base')
     quote = request.args.get('quote')
+    return jsonify(_get_ticker(base, quote))
 
+
+def _get_ticker(base, quote):
     ws.send('{"id":1, "method":"call", "params":[0,"get_ticker",["' + base + '", "'+quote+'"]]}')
     result = ws.recv()
     j = json.loads(result)
-
-    #print j["result"]
-
-    return jsonify(j["result"])
+    return j["result"]
 
 
 @app.route('/get_volume')
 def get_volume():
     base = request.args.get('base')
     quote = request.args.get('quote')
+    return jsonify(_get_volume(base, quote))
 
+
+def _get_volume(base, quote):
     ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["' + base + '", "'+quote+'"]]}')
     result = ws.recv()
     j = json.loads(result)
-
-    #print j["result"]
-
-    return jsonify(j["result"])
+    return j["result"]
 
 
 @app.route('/lastnetworkops')
@@ -449,7 +453,10 @@ def get_object():
 @app.route('/get_asset_holders_count')
 def get_asset_holders_count():
     asset_id = request.args.get('asset_id')
+    return jsonify(_get_asset_holders_count(asset_id))
 
+
+def _get_asset_holders_count(asset_id):
     if not isObject(asset_id):
         ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
         result_l = ws.recv()
@@ -471,9 +478,7 @@ def get_asset_holders_count():
     result =  ws.recv()
     j = json.loads(result)
 
-    #print j["result"]
-
-    return jsonify(j["result"])
+    return j["result"]
 
 
 @app.route('/get_asset_holders')

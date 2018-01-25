@@ -11,3 +11,6 @@ POSTGRES = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
 
 # a connection to a bitshares full node
 FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:9999/ws")
+
+CORE_ASSET_SYMBOL = 'BTS'
+CORE_ASSET_ID = '1.3.0'
