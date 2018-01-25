@@ -6,6 +6,7 @@ import urllib
 import psycopg2
 from websocket import create_connection
 
+import api
 import config
 
 
@@ -51,22 +52,15 @@ for row in rows:
                 symbol =  all_assets[x]["result"][i]["symbol"]
                 id_ = all_assets[x]["result"][i]["id"]
 
-                url = "http://23.94.69.140:5000/get_volume?base="+symbol+"&quote=" + row[1]
-                #print "http://23.94.69.140:5000/get_volume?base="+row[1]+"&quote=" + symbol
-
-                response = urllib.urlopen(url)
-
                 try:
-                    data = json.loads(response.read())
+                    data = api._get_volume(symbol, row[1])
                     volume = data["base_volume"]
                 except:
                     volume = 0
                     continue
 
-                url = "http://23.94.69.140:5000/get_ticker?base="+symbol+"&quote="+ row[1]
-                response2 = urllib.urlopen(url)
                 try:
-                    data2 = json.loads(response2.read())
+                    data2 = api._get_ticker(symbol, row[1])
                     price = data2["latest"]
                     #print price
                 except:
@@ -116,4 +110,5 @@ for row in rows:
         continue
 
 
+cur.close()
 con.close()
