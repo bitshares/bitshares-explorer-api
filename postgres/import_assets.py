@@ -1,11 +1,11 @@
-import os
-from websocket import create_connection
-import time
-
 import json
+import os
+import time
 import urllib
 
 import psycopg2
+from websocket import create_connection
+
 
 # config
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
@@ -15,6 +15,7 @@ POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
                    'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
 }
 # end config
+
 
 ws = create_connection(WEBSOCKET_URL)
 
@@ -33,7 +34,7 @@ cur.execute(query)
 query = "DELETE FROM ops WHERE oid NOT IN (SELECT oid FROM ops ORDER BY oid DESC LIMIT 10);"
 cur.execute(query)
 #con.commit()
-for x in range (0, 10):
+for x in range(0, 10):
     query = "UPDATE ops set oid="+str(x+1)+" WHERE oid IN (SELECT oid FROM ops ORDER BY oid LIMIT 1 OFFSET "+str(x)+");"
     #print query
     cur.execute(query)
@@ -43,36 +44,35 @@ cur.execute(query)
 
 con.commit()
 
-all = []
+all_assets = []
 
 ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["AAAAA", 100]]}')
 result = ws.recv()
 j = json.loads(result)
 
-all.append(j);
+all_assets.append(j);
 
 len_result = len(j["result"])
 
 print len_result
-#print all
+#print all_assets
 
 while len_result == 100:
     ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["'+j["result"][99]["symbol"]+'", 100]]}')
     result = ws.recv()
     j = json.loads(result)
     len_result = len(j["result"])
-    all.append(j);
+    all_assets.append(j);
 
-for x in range (0, len(all)):
-
-    size = len(all[x]["result"])
+for x in range(0, len(all_assets)):
+    size = len(all_assets[x]["result"])
     print size
 
     for i in range(0, size):
-        symbol = all[x]["result"][i]["symbol"]
-        id = all[x]["result"][i]["id"]
+        symbol = all_assets[x]["result"][i]["symbol"]
+        asset_id = all_assets[x]["result"][i]["id"]
 
-        url = "http://23.94.69.140:5000/get_asset?asset_id=" + id
+        url = "http://23.94.69.140:5000/get_asset?asset_id=" + asset_id
         print url
         precision = 5
         response3 = urllib.urlopen(url)
@@ -85,7 +85,7 @@ for x in range (0, len(all)):
             price = 0
             continue
 
-        url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=" + id
+        url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=" + asset_id
         # print url
         response4 = urllib.urlopen(url)
         try:
@@ -97,14 +97,12 @@ for x in range (0, len(all)):
             continue
 
         if symbol == "BTS":
-            type = "Core Token"
-        elif all[x]["result"][i]["issuer"] == "1.2.0":
-            type = "SmartCoin"
+            type_ = "Core Token"
+        elif all_assets[x]["result"][i]["issuer"] == "1.2.0":
+            type_ = "SmartCoin"
         else:
-            type = "User Issued"
-        #print all[x]["result"][i]
-
-
+            type_ = "User Issued"
+        #print all_assets[x]["result"][i]
 
 
         url = "http://23.94.69.140:5000/get_volume?base=BTS&quote=" + symbol
@@ -136,8 +134,8 @@ for x in range (0, len(all)):
 
         mcap = int(current_supply) * float(price)
 
-        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES('"+symbol+"', '"+id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type+"', '"+str(current_supply)+"', '"+str(holders)+"', '','"+str(precision)+"')"
-        #query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('" + symbol + "', '" + id + "', '" + price + "', '0', '" + str(mcap) + "', '" + type + "', '" + str(current_supply) + "', '" + str(holders) + "')"
+        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES('"+symbol+"', '"+asset_id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type_+"', '"+str(current_supply)+"', '"+str(holders)+"', '','"+str(precision)+"')"
+        #query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('" + symbol + "', '" + asset_id + "', '" + price + "', '0', '" + str(mcap) + "', '" + type_ + "', '" + str(current_supply) + "', '" + str(holders) + "')"
 
         print query
         cur.execute(query)

@@ -1,13 +1,12 @@
+import json
 import os
-import websocket
 import thread
 import time
-
-import json
 import urllib
-#from flask import jsonify
 
 import psycopg2
+import websocket
+
 
 # config
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
@@ -18,16 +17,17 @@ POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
 }
 # end config
 
+
 def on_message(ws, message):
     #print(message)
     j = json.loads(message)
     try:
         #print j["params"][1][0][0]["id"]
-        id = j["params"][1][0][0]["id"]
-        #print id[:4]
-        if id[:4] == "2.9.":
+        id_ = j["params"][1][0][0]["id"]
+        #print id_[:4]
+        if id_[:4] == "2.9.":
             #print j["params"][1][0][0]
-            url = "http://23.94.69.140:5000/get_object?object=" + id
+            url = "http://23.94.69.140:5000/get_object?object=" + id_
             #print url
             response = urllib.urlopen(url)
             data = json.loads(response.read())
@@ -58,7 +58,7 @@ def on_message(ws, message):
 
             con = psycopg2.connect(**POSTGRES_CONFIG)
             cur = con.cursor()
-            query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
+            query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id_+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
             print query
             cur.execute(query)
             con.commit()
@@ -66,28 +66,30 @@ def on_message(ws, message):
     except:
         pass
 
+
 def on_error(ws, error):
     print(error)
     #print ""
 
+
 def on_close(ws):
     print("### closed ###")
 
+
 def on_open(ws):
     def run(*args):
-
         ws.send('{"method": "call", "params": [1, "database", []], "id": 3}')
         ws.send('{"method": "call", "params": [2, "set_subscribe_callback", [5, true]], "id": 6}')
 
     thread.start_new_thread(run, ())
 
+
 if __name__ == "__main__":
     websocket.enableTrace(True)
     ws = websocket.WebSocketApp(WEBSOCKET_URL,
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
     ws.on_open = on_open
-
 
     ws.run_forever()

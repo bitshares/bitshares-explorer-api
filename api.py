@@ -1,23 +1,17 @@
-import os
-from websocket import create_connection
+import datetime
 import json
-from flask import jsonify
+import math
+import os
 
-
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
+import psycopg2
+from websocket import create_connection
+
+
 app = Flask(__name__)
 CORS(app)
 
-from flask import request
-
-# postgres
-import psycopg2
-# end postgres
-
-import datetime
-
-import math
 
 # config
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
@@ -31,14 +25,16 @@ POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
 FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:9999/ws")
 # end config
 
+
 ws = create_connection(WEBSOCKET_URL)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
 
+
 @app.route('/header')
 def header():
-
     ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
     result =  ws.recv()
     j = json.loads(result)
@@ -74,9 +70,9 @@ def header():
 
     return jsonify(j["result"])
 
+
 @app.route('/account_name')
 def account_name():
-
     account_id = request.args.get('account_id')
     ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["'+account_id+'"]]]}')
     result =  ws.recv()
@@ -86,9 +82,9 @@ def account_name():
 
     return jsonify(j["result"])
 
+
 @app.route('/operation')
 def get_operation():
-
     operation_id = request.args.get('operation_id')
     ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+operation_id+'"]]]}')
     result =  ws.recv()
@@ -141,7 +137,6 @@ def get_operation():
 
 @app.route('/operation_full')
 def operation_full():
-
     # lets connect the operations to a full node
     #full_websocket_url = "ws://node.testnet.bitshares.eu:18092/ws"
     ws = create_connection(FULL_WEBSOCKET_URL)
@@ -195,9 +190,9 @@ def operation_full():
 
     return jsonify(j["result"])
 
+
 @app.route('/accounts')
 def accounts():
-
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
     #print  result2
@@ -217,9 +212,9 @@ def accounts():
 
     return jsonify(j["result"])
 
+
 @app.route('/full_account')
 def full_account():
-
     account_id = request.args.get('account_id')
 
     ws.send('{"id":1, "method":"call", "params":[0,"get_full_accounts",[["'+account_id+'"], 0]]}')
@@ -230,9 +225,9 @@ def full_account():
 
     return jsonify(j["result"])
 
+
 @app.route('/assets')
 def assets():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -243,9 +238,9 @@ def assets():
     #print results
     return jsonify(results)
 
+
 @app.route('/fees')
 def fees():
-
     ws.send('{"id":1, "method":"call", "params":[0,"get_global_properties",[]]}')
     result =  ws.recv()
     j = json.loads(result)
@@ -254,9 +249,9 @@ def fees():
 
     return jsonify(j["result"])
 
+
 @app.route('/account_history')
 def account_history():
-
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
 
@@ -297,7 +292,6 @@ def account_history():
 @app.route('/get_asset')
 def get_asset():
     asset_id = request.args.get('asset_id')
-
     if not isObject(asset_id):
         ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
         result_l = ws.recv()
@@ -330,6 +324,7 @@ def get_asset():
     j["result"][0]["issuer_name"] = j3["result"][0]["name"]
 
     return jsonify(j["result"])
+
 
 @app.route('/get_asset_and_volume')
 def get_asset_and_volume():
@@ -383,6 +378,7 @@ def get_asset_and_volume():
 
     return jsonify(j["result"])
 
+
 @app.route('/block_header')
 def block_header():
     block_num = request.args.get('block_num')
@@ -395,6 +391,7 @@ def block_header():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_block')
 def get_block():
     block_num = request.args.get('block_num')
@@ -406,6 +403,7 @@ def get_block():
     #print j["result"]
 
     return jsonify(j["result"])
+
 
 @app.route('/get_ticker')
 def get_ticker():
@@ -420,6 +418,7 @@ def get_ticker():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_volume')
 def get_volume():
     base = request.args.get('base')
@@ -433,9 +432,9 @@ def get_volume():
 
     return jsonify(j["result"])
 
+
 @app.route('/lastnetworkops')
 def lastnetworkops():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -445,11 +444,11 @@ def lastnetworkops():
     con.close()
     return jsonify(results)
 
+
 @app.route('/get_object')
 def get_object():
-
-    object = request.args.get('object')
-    ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+object+'"]]]}')
+    obj = request.args.get('object')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+obj+'"]]]}')
     result =  ws.recv()
     j = json.loads(result)
 
@@ -457,9 +456,9 @@ def get_object():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_asset_holders_count')
 def get_asset_holders_count():
-
     asset_id = request.args.get('asset_id')
 
     if not isObject(asset_id):
@@ -487,9 +486,9 @@ def get_asset_holders_count():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_asset_holders')
 def get_asset_holders():
-
     asset_id = request.args.get('asset_id')
 
     if not isObject(asset_id):
@@ -515,10 +514,9 @@ def get_asset_holders():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_workers')
 def get_workers():
-
-
     ws.send('{"jsonrpc": "2.0", "method": "get_worker_count", "params": [], "id": 1}')
 
     count =  ws.recv()
@@ -534,8 +532,6 @@ def get_workers():
     j_0 = json.loads(result_0)
     #account_id = j["result"][0]["worker_account"]
     thereshold =  int(j_0["result"][0]["total_votes_for"])
-
-
 
     workers = []
     for w in range(0, workers_count):
@@ -560,8 +556,8 @@ def get_workers():
     r_workers = workers[::-1]
     return jsonify(filter(None, r_workers))
 
-def isObject(string):
 
+def isObject(string):
     parts = string.split(".")
     if len(parts) == 3:
         return True
@@ -571,7 +567,6 @@ def isObject(string):
 
 @app.route('/get_markets')
 def get_markets():
-
     asset_id = request.args.get('asset_id')
 
     if not isObject(asset_id):
@@ -593,7 +588,6 @@ def get_markets():
 
 @app.route('/get_most_active_markets')
 def get_most_active_markets():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -603,9 +597,9 @@ def get_most_active_markets():
     con.close()
     return jsonify(results)
 
+
 @app.route('/get_order_book')
 def get_order_book():
-
     base = request.args.get('base')
     quote = request.args.get('quote')
     ws.send('{"id":1, "method":"call", "params":[0,"get_order_book",["'+base+'", "'+quote+'", 50]]}')
@@ -617,7 +611,6 @@ def get_order_book():
 
 @app.route('/get_margin_positions')
 def get_open_orders():
-
     account_id = request.args.get('account_id')
     ws.send('{"id":1, "method":"call", "params":[0,"get_margin_positions",["'+account_id+'"]]}')
     result =  ws.recv()
@@ -625,9 +618,9 @@ def get_open_orders():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_witnesses')
 def get_witnesses():
-
     ws.send('{"jsonrpc": "2.0", "method": "get_witness_count", "params": [], "id": 1}')
     count =  ws.recv()
     count_j = json.loads(count)
@@ -660,9 +653,9 @@ def get_witnesses():
 
     return jsonify(filter(None, r_witnesses))
 
+
 @app.route('/get_committee_members')
 def get_committee_members():
-
     ws.send('{"jsonrpc": "2.0", "method": "get_committee_count", "params": [], "id": 1}')
     count =  ws.recv()
     count_j = json.loads(count)
@@ -694,18 +687,18 @@ def get_committee_members():
 
     return jsonify(filter(None, r_committee))
 
+
 @app.route('/market_chart_dates')
 def market_chart_dates():
-
     base = datetime.date.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, 100)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
     #print len(list(reversed(date_list)))
     return jsonify(list(reversed(date_list)))
 
+
 @app.route('/market_chart_data')
 def market_chart_data():
-
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
 
@@ -768,6 +761,7 @@ def market_chart_data():
 
     return jsonify(data)
 
+
 def findMax(a,b):
     if a != 'Inf' and b != 'Inf':
         return max([a, b])
@@ -775,6 +769,7 @@ def findMax(a,b):
         return b
     else:
         return a
+
 
 def findMin(a, b):
     if a != 0 and b != 0:
@@ -785,12 +780,8 @@ def findMin(a, b):
         return a
 
 
-
-
-
 @app.route('/top_proxies')
 def top_proxies():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -851,9 +842,9 @@ def top_proxies():
 
     return jsonify(filter(None, r_proxies))
 
+
 @app.route('/top_holders')
 def top_holders():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -863,9 +854,9 @@ def top_holders():
     con.close()
     return jsonify(results)
 
+
 @app.route('/witnesses_votes')
 def witnesses_votes():
-
     proxies = top_proxies()
     proxies = proxies.response
     proxies = ''.join(proxies)
@@ -918,7 +909,6 @@ def witnesses_votes():
 
 @app.route('/workers_votes')
 def workers_votes():
-
     proxies = top_proxies()
     proxies = proxies.response
     proxies = ''.join(proxies)
@@ -969,9 +959,9 @@ def workers_votes():
     #print witnesses_votes
     return jsonify(workers_votes)
 
+
 @app.route('/committee_votes')
 def committee_votes():
-
     proxies = top_proxies()
     proxies = proxies.response
     proxies = ''.join(proxies)
@@ -1028,7 +1018,6 @@ def committee_votes():
 
 @app.route('/top_markets')
 def top_markets():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1056,9 +1045,9 @@ def top_markets():
     con.close()
     return jsonify(top_markets)
 
+
 @app.route('/top_smartcoins')
 def top_smartcoins():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1086,9 +1075,9 @@ def top_smartcoins():
     con.close()
     return jsonify(top_smartcoins)
 
+
 @app.route('/top_uias')
 def top_uias():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1119,7 +1108,6 @@ def top_uias():
 
 @app.route('/top_operations')
 def top_operations():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1146,9 +1134,9 @@ def top_operations():
     con.close()
     return jsonify(top_operations)
 
+
 @app.route('/last_network_transactions')
 def last_network_transactions():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1159,9 +1147,9 @@ def last_network_transactions():
     #print results
     return jsonify(results)
 
+
 @app.route('/lookup_accounts')
 def lookup_accounts():
-
     start = request.args.get('start')
     ws.send('{"id":1, "method":"call", "params":[0,"lookup_accounts",["'+start+'", 1000]]}')
     result =  ws.recv()
@@ -1185,9 +1173,9 @@ def lookup_assets():
     con.close()
     return jsonify(results)
 
+
 @app.route('/getlastblocknumbher')
 def getlastblocknumber():
-
     ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
     result =  ws.recv()
     j = json.loads(result)
@@ -1197,7 +1185,6 @@ def getlastblocknumber():
 
 @app.route('/account_history_pager')
 def account_history_pager():
-
     page = request.args.get('page')
     account_id = request.args.get('account_id')
 
@@ -1255,9 +1242,9 @@ def account_history_pager():
     else:
         return ""
 
+
 @app.route('/get_limit_orders')
 def get_limit_orders():
-
     base = request.args.get('base')
     quote = request.args.get('quote')
     ws.send('{"id":1, "method":"call", "params":[0,"get_limit_orders",["' + base + '", "' + quote + '", 100]]}')
@@ -1266,9 +1253,9 @@ def get_limit_orders():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_call_orders')
 def get_call_orders():
-
     base = request.args.get('base')
     quote = request.args.get('quote')
     ws.send('{"id":1, "method":"call", "params":[0,"get_call_orders",["' + base + '", "' + quote + '", 100]]}')
@@ -1277,9 +1264,9 @@ def get_call_orders():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_settle_orders')
 def get_settle_orders():
-
     base = request.args.get('base')
     quote = request.args.get('quote')
     ws.send('{"id":1, "method":"call", "params":[0,"get_settle_orders",["' + base + '", "' + quote + '", 100]]}')
@@ -1288,9 +1275,9 @@ def get_settle_orders():
 
     return jsonify(j["result"])
 
+
 @app.route('/get_fill_order_history')
 def get_fill_order_history():
-
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
     login =  ws.recv()
 
@@ -1307,9 +1294,9 @@ def get_fill_order_history():
     j = json.loads(result)
     return jsonify(j["result"])
 
+
 @app.route('/get_dex_total_volume')
 def get_dex_total_volume():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1339,18 +1326,18 @@ def get_dex_total_volume():
 
     return jsonify(res)
 
+
 @app.route('/daily_volume_dex_dates')
 def daily_volume_dex_dates():
-
     base = datetime.date.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, 60)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
     #print len(list(reversed(date_list)))
     return jsonify(list(reversed(date_list)))
 
+
 @app.route('/daily_volume_dex_data')
 def daily_volume_dex_data():
-
     con = psycopg2.connect(**POSTGRES_CONFIG)
     cur = con.cursor()
 
@@ -1364,9 +1351,9 @@ def daily_volume_dex_data():
 
     return jsonify(list(reversed(mod)))
 
+
 @app.route('/get_all_asset_holders')
 def get_all_asset_holders():
-
     asset_id = request.args.get('asset_id')
 
     if not isObject(asset_id):
@@ -1411,7 +1398,6 @@ def get_all_asset_holders():
 
 @app.route('/referrer_count')
 def referrer_count():
-
     account_id = request.args.get('account_id')
 
     if not isObject(account_id):
@@ -1430,9 +1416,9 @@ def referrer_count():
 
     return jsonify(results)
 
+
 @app.route('/get_all_referrers')
 def get_all_referrers():
-
     account_id = request.args.get('account_id')
 
     if not isObject(account_id):

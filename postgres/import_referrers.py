@@ -1,11 +1,11 @@
-import os
-from websocket import create_connection
-import time
-
 import json
+import os
+import time
 import urllib
 
 import psycopg2
+from websocket import create_connection
+
 
 # config
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
@@ -15,6 +15,7 @@ POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
                    'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
 }
 # end config
+
 
 ws = create_connection(WEBSOCKET_URL)
 

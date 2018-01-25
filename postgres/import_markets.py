@@ -1,11 +1,11 @@
-import os
-from websocket import create_connection
-import time
-
 import json
+import os
+import time
 import urllib
 
 import psycopg2
+from websocket import create_connection
+
 
 # config
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
@@ -15,6 +15,7 @@ POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
                    'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
 }
 # end config
+
 
 ws = create_connection(WEBSOCKET_URL)
 
@@ -34,30 +35,29 @@ cur.execute(query)
 rows = cur.fetchall()
 
 for row in rows:
-
-    all = []
+    all_assets = []
 
     ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["AAAAA", 100]]}')
     result = ws.recv()
     j = json.loads(result)
 
-    all.append(j);
+    all_assets.append(j);
 
     len_result = len(j["result"])
 
-    while  len_result == 100:
+    while len_result == 100:
         ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["'+j["result"][99]["symbol"]+'", 100]]}')
         result = ws.recv()
         j = json.loads(result)
         len_result = len(j["result"])
-        all.append(j);
+        all_assets.append(j);
 
     try:
-        for x in range (0, len(all)):
+        for x in range (0, len(all_assets)):
             for i in range(0, 100):
 
-                symbol =  all[x]["result"][i]["symbol"]
-                id = all[x]["result"][i]["id"]
+                symbol =  all_assets[x]["result"][i]["symbol"]
+                id_ = all_assets[x]["result"][i]["id"]
 
                 url = "http://23.94.69.140:5000/get_volume?base="+symbol+"&quote=" + row[1]
                 #print "http://23.94.69.140:5000/get_volume?base="+row[1]+"&quote=" + symbol
