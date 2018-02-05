@@ -1,39 +1,27 @@
 import json
-import os
-import time
-import urllib
 
 import psycopg2
 from websocket import create_connection
 
-
-# config
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
-POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
-                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
-}
-# end config
+import api
+import config
 
 
-ws = create_connection(WEBSOCKET_URL)
+ws = create_connection(config.WEBSOCKET_URL)
 
-con = psycopg2.connect(**POSTGRES_CONFIG)
+con = psycopg2.connect(**config.POSTGRES)
 cur = con.cursor()
 
 query = "TRUNCATE assets"
 cur.execute(query)
-#con.commit()
 
 query = "ALTER SEQUENCE assets_id_seq RESTART WITH 1;"
 cur.execute(query)
-#con.commit()
 
 # alter sequence of the ops once a day here
 query = "DELETE FROM ops WHERE oid NOT IN (SELECT oid FROM ops ORDER BY oid DESC LIMIT 10);"
 cur.execute(query)
-#con.commit()
+
 for x in range(0, 10):
     query = "UPDATE ops set oid="+str(x+1)+" WHERE oid IN (SELECT oid FROM ops ORDER BY oid LIMIT 1 OFFSET "+str(x)+");"
     #print query
@@ -72,12 +60,9 @@ for x in range(0, len(all_assets)):
         symbol = all_assets[x]["result"][i]["symbol"]
         asset_id = all_assets[x]["result"][i]["id"]
 
-        url = "http://23.94.69.140:5000/get_asset?asset_id=" + asset_id
-        print url
         precision = 5
-        response3 = urllib.urlopen(url)
         try:
-            data3 = json.loads(response3.read())
+            data3 = api._get_asset(asset_id)
             current_supply = data3[0]["current_supply"]
             precision = data3[0]["precision"]
             # print current_supply
@@ -85,18 +70,14 @@ for x in range(0, len(all_assets)):
             price = 0
             continue
 
-        url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=" + asset_id
-        # print url
-        response4 = urllib.urlopen(url)
         try:
-            data4 = json.loads(response4.read())
-            holders = data4
+            holders = api._get_asset_holders_count(asset_id)
             # print holders
         except:
             holders = 0
             continue
 
-        if symbol == "BTS":
+        if symbol == config.CORE_ASSET_SYMBOL:
             type_ = "Core Token"
         elif all_assets[x]["result"][i]["issuer"] == "1.2.0":
             type_ = "SmartCoin"
@@ -104,22 +85,16 @@ for x in range(0, len(all_assets)):
             type_ = "User Issued"
         #print all_assets[x]["result"][i]
 
-
-        url = "http://23.94.69.140:5000/get_volume?base=BTS&quote=" + symbol
-        response = urllib.urlopen(url)
-
         try:
-            data = json.loads(response.read())
+            data = api._get_volume(config.CORE_ASSET_SYMBOL, symbol)
         except:
             continue
 
         #print symbol
         #print data["quote_volume"]
 
-        url = "http://23.94.69.140:5000/get_ticker?base=BTS&quote=" + symbol
-        response2 = urllib.urlopen(url)
         try:
-            data2 = json.loads(response2.read())
+            data2 = api._get_ticker(config.CORE_ASSET_SYMBOL, symbol)
             price = data2["latest"]
             #print price
 
@@ -165,15 +140,10 @@ con.commit()
 """
 
 # insert core token manually
-url = "http://23.94.69.140:5000/get_asset?asset_id=1.3.0"
-response3 = urllib.urlopen(url)
-data3 = json.loads(response3.read())
+data3 = api._get_asset(config.CORE_ASSET_ID)
 current_supply = data3[0]["current_supply"]
 
-url = "http://23.94.69.140:5000/get_asset_holders_count?asset_id=1.3.0"
-response4 = urllib.urlopen(url)
-data4 = json.loads(response4.read())
-holders = data4
+holders = api._get_asset_holders_count(config.CORE_ASSET_ID)
 
 mcap = int(current_supply)
 
@@ -181,4 +151,5 @@ query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supp
 cur.execute(query)
 con.commit()
 
+cur.close()
 con.close()

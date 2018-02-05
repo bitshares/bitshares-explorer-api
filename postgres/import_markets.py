@@ -1,25 +1,15 @@
 import json
-import os
-import time
-import urllib
 
 import psycopg2
 from websocket import create_connection
 
-
-# config
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
-POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
-                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
-}
-# end config
+import api
+import config
 
 
-ws = create_connection(WEBSOCKET_URL)
+ws = create_connection(config.WEBSOCKET_URL)
 
-con = psycopg2.connect(**POSTGRES_CONFIG)
+con = psycopg2.connect(**config.POSTGRES)
 cur = con.cursor()
 
 query = "TRUNCATE markets"
@@ -59,22 +49,15 @@ for row in rows:
                 symbol =  all_assets[x]["result"][i]["symbol"]
                 id_ = all_assets[x]["result"][i]["id"]
 
-                url = "http://23.94.69.140:5000/get_volume?base="+symbol+"&quote=" + row[1]
-                #print "http://23.94.69.140:5000/get_volume?base="+row[1]+"&quote=" + symbol
-
-                response = urllib.urlopen(url)
-
                 try:
-                    data = json.loads(response.read())
+                    data = api._get_volume(symbol, row[1])
                     volume = data["base_volume"]
                 except:
                     volume = 0
                     continue
 
-                url = "http://23.94.69.140:5000/get_ticker?base="+symbol+"&quote="+ row[1]
-                response2 = urllib.urlopen(url)
                 try:
-                    data2 = json.loads(response2.read())
+                    data2 = api._get_ticker(symbol, row[1])
                     price = data2["latest"]
                     #print price
                 except:
@@ -124,4 +107,5 @@ for row in rows:
         continue
 
 
+cur.close()
 con.close()

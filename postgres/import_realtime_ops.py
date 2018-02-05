@@ -1,21 +1,11 @@
 import json
-import os
 import thread
-import time
-import urllib
 
 import psycopg2
 import websocket
 
-
-# config
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://127.0.0.1:8090/ws")
-POSTGRES_CONFIG = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-                   'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-                   'user': os.environ.get('POSTGRES_USER', 'postgres'),
-                   'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
-}
-# end config
+import api
+import config
 
 
 def on_message(ws, message):
@@ -27,27 +17,15 @@ def on_message(ws, message):
         #print id_[:4]
         if id_[:4] == "2.9.":
             #print j["params"][1][0][0]
-            url = "http://23.94.69.140:5000/get_object?object=" + id_
-            #print url
-            response = urllib.urlopen(url)
-            data = json.loads(response.read())
+            data = api._get_object(id_)
             #print data[0]
             account_id = data[0]["account"]
-            url = "http://23.94.69.140:5000/account_name?account_id=" + account_id
-            response_a = urllib.urlopen(url)
-            data_a = json.loads(response_a.read())
+            data_a = api._account_name(account_id)
+
             #print data_a[0]["name"]
             account_name = data_a[0]["name"]
 
-
-            #print account
-            #print data.operation_id
-            url = "http://23.94.69.140:5000/get_object?object=" + data[0]["operation_id"]
-            #print url
-            #print data.operation_id
-            response2 = urllib.urlopen(url)
-            data2 = json.loads(response2.read())
-            #print data2
+            data2 = api._get_object(data[0]['operation_id'])
             block_num = data2[0]["block_num"]
 
             op_type = data2[0]["op"][0]
@@ -56,7 +34,7 @@ def on_message(ws, message):
             trx_in_block =  data2[0]["trx_in_block"]
             op_in_trx =  data2[0]["op_in_trx"]
 
-            con = psycopg2.connect(**POSTGRES_CONFIG)
+            con = psycopg2.connect(**config.POSTGRES)
             cur = con.cursor()
             query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id_+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
             print query
@@ -86,7 +64,7 @@ def on_open(ws):
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
-    ws = websocket.WebSocketApp(WEBSOCKET_URL,
+    ws = websocket.WebSocketApp(config.WEBSOCKET_URL,
                                 on_message=on_message,
                                 on_error=on_error,
                                 on_close=on_close)
