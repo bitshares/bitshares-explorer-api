@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import json
 import os
 import time
@@ -23,9 +24,7 @@ cur = con.cursor()
 
 query = "SELECT rid FROM referrers ORDER BY rid DESC LIMIT 1"
 cur.execute(query)
-in_database = cur.fetchone()
-#print in_database[0]
-#con.close()
+in_database = cur.fetchone() or [0]
 
 ws.send('{"id":1, "method":"call", "params":[0,"get_account_count",[]]}')
 result = ws.recv()
