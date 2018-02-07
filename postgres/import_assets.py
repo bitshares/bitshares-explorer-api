@@ -24,9 +24,8 @@ query = "DELETE FROM ops WHERE oid NOT IN (SELECT oid FROM ops ORDER BY oid DESC
 cur.execute(query)
 
 for x in range(0, 10):
-    query = "UPDATE ops set oid="+str(x+1)+" WHERE oid IN (SELECT oid FROM ops ORDER BY oid LIMIT 1 OFFSET "+str(x)+");"
-    #print query
-    cur.execute(query)
+    query = "UPDATE ops set oid=%s WHERE oid IN (SELECT oid FROM ops ORDER BY oid LIMIT 1 OFFSET %s);"
+    cur.execute(query, (x+1, x))
 
 query = "ALTER SEQUENCE ops_oid_seq RESTART WITH 11;"
 cur.execute(query)
@@ -110,11 +109,9 @@ for x in range(0, len(all_assets)):
 
         mcap = int(current_supply) * float(price)
 
-        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES('"+symbol+"', '"+asset_id+"', '"+price+"', '"+data['base_volume']+"', '"+str(mcap)+"', '"+type_+"', '"+str(current_supply)+"', '"+str(holders)+"', '','"+str(precision)+"')"
-        #query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders) VALUES('" + symbol + "', '" + asset_id + "', '" + price + "', '0', '" + str(mcap) + "', '" + type_ + "', '" + str(current_supply) + "', '" + str(holders) + "')"
-
-        print query
-        cur.execute(query)
+        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES({})".format(', '.join(('%s',)*9))
+        print(symbol)
+        cur.execute(query, (symbol, asset_id, price, data['base_volume'], str(mcap), type_, str(current_supply), str(holders), str(precision)))
         con.commit()
 
 
@@ -129,9 +126,9 @@ cur.execute(query)
 results = cur.fetchone()
 market_cap = results[0]
 
-query = "INSERT INTO stats (type, value, date) VALUES('volume_bts', '"+str(int(round(volume)))+"', NOW())"
+query = "INSERT INTO stats (type, value, date) VALUES('volume_bts', %s, NOW())"
 print query
-cur.execute(query)
+cur.execute(query, (str(int(round(volume))),))
 con.commit()
 
 """query = "INSERT INTO stats (type, value, date) VALUES('market_cap_bts', '"+str(int(round(market_cap)))+"', NOW())" # out of range for bigint, fix.
@@ -148,8 +145,8 @@ holders = api._get_asset_holders_count(config.CORE_ASSET_ID)
 
 mcap = int(current_supply)
 
-query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype) VALUES('BTS', '1.3.0', '1', '"+str(volume)+"', '"+str(mcap)+"', 'Core Token', '" + str(current_supply) + "', '" + str(holders) + "', '')"
-cur.execute(query)
+query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype) VALUES('BTS', '1.3.0', '1', %s, %s, %s, %s, %s, %s)"
+cur.execute(query, (str(volume), str(mcap), 'Core Token', str(current_supply), str(holders), ''))
 con.commit()
 
 cur.close()

@@ -359,8 +359,8 @@ def get_asset_and_volume():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT volume, mcap FROM assets WHERE aid='"+asset_id+"'"
-    cur.execute(query)
+    query = "SELECT volume, mcap FROM assets WHERE aid=%s"
+    cur.execute(query, (asset_id,))
     results = cur.fetchall()
     con.close()
     try:
@@ -575,8 +575,8 @@ def get_markets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT * FROM markets WHERE aid='"+asset_id+"'"
-    cur.execute(query)
+    query = "SELECT * FROM markets WHERE aid=%s"
+    cur.execute(query, (asset_id,))
     results = cur.fetchall()
     con.close()
     return jsonify(results)
@@ -800,8 +800,8 @@ def top_proxies():
         proxy_id = results[p][0]
         proxy_line[0] = proxy_id
 
-        query = "SELECT account_name, amount FROM holders WHERE account_id='"+proxy_id+"' LIMIT 1"
-        cur.execute(query)
+        query = "SELECT account_name, amount FROM holders WHERE account_id=%s LIMIT 1"
+        cur.execute(query, (proxy_id,))
         proxy = cur.fetchone()
 
         try:
@@ -814,8 +814,8 @@ def top_proxies():
 
         proxy_line[1] = proxy_name
 
-        query = "SELECT amount, account_id FROM holders WHERE voting_as='"+proxy_id+"'"
-        cur.execute(query)
+        query = "SELECT amount, account_id FROM holders WHERE voting_as=%s"
+        cur.execute(query, (proxy_id,))
         results2 = cur.fetchall()
 
         proxy_line[2] = int(proxy_amount)
@@ -1163,8 +1163,8 @@ def lookup_assets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT aname FROM assets WHERE aname LIKE '"+start+"%'"
-    cur.execute(query)
+    query = "SELECT aname FROM assets WHERE aname LIKE %s"
+    cur.execute(query, (start+'%',))
     results = cur.fetchall()
     con.close()
     return jsonify(results)
@@ -1406,8 +1406,8 @@ def referrer_count():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "select count(*) from referrers where referrer='"+account_id+"'"
-    cur.execute(query)
+    query = "select count(*) from referrers where referrer=%s"
+    cur.execute(query, (account_id,))
     results = cur.fetchone()
 
     return jsonify(results)
@@ -1427,8 +1427,8 @@ def get_all_referrers():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "select * from referrers where referrer='"+account_id+"'"
-    cur.execute(query)
+    query = "select * from referrers where referrer=%s"
+    cur.execute(query, (account_id,))
     results = cur.fetchall()
 
     return jsonify(results)

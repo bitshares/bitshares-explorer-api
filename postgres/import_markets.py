@@ -99,14 +99,12 @@ for row in rows:
                 """
 
                 if float(price) > 0 and float(volume) > 0:
-                    query = "INSERT INTO markets (pair, asset_id, price, volume, aid) VALUES('"+row[1]+ "/" + symbol+"', '"+str(row[0])+"', '"+str(float(price))+"', '"+str(float(volume))+"', '"+row[2]+"')"
+                    query = "INSERT INTO markets (pair, asset_id, price, volume, aid) VALUES(%s, %s, %s, %s, %s)"
                     print query
-                    cur.execute(query)
+                    cur.execute(query, ('{}/{}'.format(row[1], symbol), str(row[0]), str(float(price)), str(float(volume)), row[2]))
                     con.commit()
-
     except:
         continue
-
 
 cur.close()
 con.close()

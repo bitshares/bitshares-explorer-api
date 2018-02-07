@@ -54,10 +54,9 @@ for ac in range(in_database[0], account_count):
         print ""
 
         query = "INSERT INTO referrers (account_id, account_name, referrer, referrer_rewards_percentage, lifetime_referrer, lifetime_referrer_fee_percentage) " \
-                "VALUES('"+account_id+"', '"+account_name+"','"+referrer+"', '"+str(referrer_rewards_percentage)+"','"+lifetime_referrer+"', '"+str(lifetime_referrer_fee_percentage)+"')"
-        cur.execute(query)
+                "VALUES(%s, %s, %s, %s, %s, %s)"
+        cur.execute(query, (account_id, account_name, referrer, str(referrer_rewards_percentage), lifetime_referrer, str(lifetime_referrer_fee_percentage)))
         con.commit()
-
     except:
         continue
 
