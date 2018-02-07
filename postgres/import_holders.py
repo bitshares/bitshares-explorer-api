@@ -61,8 +61,8 @@ for ac in range(0, account_count):
         amount = int(amount) + int(total_core_in_orders)
 
         voting_account = j["result"][0]["options"]["voting_account"]
-        query = "INSERT INTO holders (account_id, account_name, amount, voting_as) VALUES('"+account_id+"', '"+account_name+"','"+str(amount)+"', '"+voting_account+"')"
-        cur.execute(query)
+        query = "INSERT INTO holders (account_id, account_name, amount, voting_as) VALUES(%s, %s, %s, %s)"
+        cur.execute(query, (account_id, account_name, str(amount), voting_account))
         con.commit()
 
 con.close()

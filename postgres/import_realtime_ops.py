@@ -37,11 +37,10 @@ def on_message(ws, message):
 
             con = psycopg2.connect(**config.POSTGRES)
             cur = con.cursor()
-            query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('"+id_+"', '"+data[0]["operation_id"]+"', '"+str(block_num)+"', '"+str(trx_in_block)+"', '"+str(op_in_trx)+"', NOW(), '"+account_id+"', '"+str(op_type)+"', '"+account_name+"')"
+            query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES(%s, %s, %s, %s, %s, NOW(), %s, %s, %s)"
             print query
-            cur.execute(query)
+            cur.execute(query, (id_, data[0]['operation_id'], str(block_num), str(trx_in_block), str(op_in_trx), account_id, str(op_type), account_name))
             con.commit()
-
     except:
         pass
 
