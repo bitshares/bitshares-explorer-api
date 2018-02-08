@@ -109,9 +109,9 @@ for x in range(0, len(all_assets)):
 
         mcap = int(current_supply) * float(price)
 
-        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES({})".format(', '.join(('%s',)*9))
+        query = "INSERT INTO assets (aname, aid, price, volume, mcap, type, current_supply, holders, wallettype, precision) VALUES({})".format(', '.join(('%s',)*10))
         print(symbol)
-        cur.execute(query, (symbol, asset_id, price, data['base_volume'], str(mcap), type_, str(current_supply), str(holders), str(precision)))
+        cur.execute(query, (symbol, asset_id, price, data['base_volume'], str(mcap), type_, str(current_supply), str(holders), '', str(precision)))
         con.commit()
 
 

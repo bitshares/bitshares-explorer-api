@@ -31,8 +31,6 @@ services:
       - db
     env_file:
       - explorer_config.env
-    volumes:
-      - .:/explorer:ro
     expose:
       - "5000"
     ports:
@@ -50,8 +48,6 @@ services:
       - db
     env_file:
       - explorer_config.env
-    volumes:
-      - .:/explorer:ro
     networks:
       - private
       - internet
@@ -65,8 +61,6 @@ services:
       - db
     env_file:
       - explorer_config.env
-    volumes:
-      - .:/explorer:ro
     networks:
       - private
       - internet
