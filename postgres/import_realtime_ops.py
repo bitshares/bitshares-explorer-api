@@ -56,8 +56,7 @@ def on_close(ws):
 
 def on_open(ws):
     def run(*args):
-        ws.send('{"method": "call", "params": [1, "database", []], "id": 3}')
-        ws.send('{"method": "call", "params": [2, "set_subscribe_callback", [5, true]], "id": 6}')
+        ws.send('{"method": "set_subscribe_callback", "params": [5, true], "id": 6}')
 
     thread.start_new_thread(run, ())
 
