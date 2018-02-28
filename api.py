@@ -39,7 +39,6 @@ def header():
     j["result"]["bts_market_cap"] = int(market_cap/100000000)
     #print j["result"][0]["bts_market_cap"]
 
-
     ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
     result3 = ws.recv()
     j3 = json.loads(result3)
@@ -1437,3 +1436,22 @@ def get_all_referrers():
     results = cur.fetchall()
 
     return jsonify(results)
+
+@app.route('/get_grouped_limit_orders')
+def get_grouped_limit_orders():
+
+    # connecting to a node with grouper orders plugin active, this is temporal.-
+    ws = create_connection("ws://209.188.21.157:8090/ws")
+
+    base = request.args.get('base')
+    quote = request.args.get('quote')
+    group = request.args.get('group', 10)
+    limit = request.args.get('limit', False)
+    if not limit:
+        limit = 10
+    elif int(limit) > 50:
+        limit = 50
+    ws.send('{"id":1, "method":"call", "params":["orders","get_grouped_limit_orders",["'+base+'", "'+quote+'", '+str(group)+', null, '+str(limit)+']]}')
+    result = ws.recv()
+    j = json.loads(result)
+    return jsonify(j["result"])
