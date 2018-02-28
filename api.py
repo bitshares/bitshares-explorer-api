@@ -598,8 +598,10 @@ def get_most_active_markets():
 def get_order_book():
     base = request.args.get('base')
     quote = request.args.get('quote')
-    limit = request.args.get('limit')
-    if int(limit) > 50 or not limit:
+    limit = request.args.get('limit', False)
+    if not limit:
+        limit = 10
+    elif int(limit) > 50:
         limit = 50
     ws.send('{"id":1, "method":"call", "params":[0,"get_order_book",["'+base+'", "'+quote+'", '+str(limit)+']]}')
     result = ws.recv()
