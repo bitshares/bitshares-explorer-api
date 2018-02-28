@@ -601,7 +601,7 @@ def get_order_book():
     limit = request.args.get('limit')
     if limit > 50 or not limit:
         limit = 50
-    ws.send('{"id":1, "method":"call", "params":[0,"get_order_book",["'+base+'", "'+quote+'", '+limit+']]}')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_order_book",["'+base+'", "'+quote+'", '+str(limit)+']]}')
     result =  ws.recv()
     j = json.loads(result)
 
