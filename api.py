@@ -1447,10 +1447,23 @@ def get_grouped_limit_orders():
     quote = request.args.get('quote')
     group = request.args.get('group', 10)
     limit = request.args.get('limit', False)
+
     if not limit:
         limit = 10
     elif int(limit) > 50:
         limit = 50
+
+    if not isObject(base):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + base + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+        base = j_l["result"][0]["id"]
+    if not isObject(quote):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + quote + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+        quote = j_l["result"][0]["id"]
+
     ws.send('{"id":1, "method":"call", "params":["orders","get_grouped_limit_orders",["'+base+'", "'+quote+'", '+str(group)+', null, '+str(limit)+']]}')
     result = ws.recv()
     j = json.loads(result)
