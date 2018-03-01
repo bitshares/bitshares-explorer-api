@@ -21,7 +21,7 @@ def on_message(ws, message):
             data = api._get_object(id_)
             #print data[0]
             account_id = data[0]["account"]
-            data_a = api._account_name(account_id)
+            data_a = api._account(account_id)
 
             #print data_a[0]["name"]
             account_name = data_a[0]["name"]

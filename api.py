@@ -59,17 +59,28 @@ def header():
     return jsonify(j["result"])
 
 
+@app.route('/account')
+def account():
+    account_id = request.args.get('account_id')
+    return jsonify(_account(account_id))
+
+
+def _account(account_id):
+    ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["'+account_id+'"]]]}')
+    result =  ws.recv()
+    j = json.loads(result)
+    return j["result"]
+
 @app.route('/account_name')
 def account_name():
     account_id = request.args.get('account_id')
     return jsonify(_account_name(account_id))
 
-
 def _account_name(account_id):
     ws.send('{"id":1, "method":"call", "params":[0,"get_accounts",[["'+account_id+'"]]]}')
     result =  ws.recv()
     j = json.loads(result)
-    return j["result"]
+    return j["result"][0]["name"]
 
 
 @app.route('/operation')
