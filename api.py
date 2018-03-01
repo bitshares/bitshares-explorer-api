@@ -435,6 +435,13 @@ def lastnetworkops():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
+
+    # add operation data
+    for o in range(0, len(results)):
+        operation_id = results[o][2]
+        object = _get_object(operation_id)
+        results[o] = results[o] + tuple(object[0]["op"])
+
     return jsonify(results)
 
 
@@ -442,7 +449,6 @@ def lastnetworkops():
 def get_object():
     obj = request.args.get('object')
     return jsonify(_get_object(obj))
-
 
 def _get_object(obj):
     ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+obj+'"]]]}')
