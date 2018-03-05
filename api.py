@@ -936,7 +936,7 @@ def workers_votes():
     workers = workers.response
     workers = ''.join(workers)
     workers = json.loads(workers)
-    workers = workers[:10]
+    workers = workers[:30]
     #print workers
 
     w, h = len(proxies) + 3, len(workers)
