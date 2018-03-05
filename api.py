@@ -939,18 +939,20 @@ def workers_votes():
     workers = workers[:10]
     #print workers
 
-    w, h = len(proxies) + 2, len(workers)
+    w, h = len(proxies) + 3, len(workers)
     workers_votes = [[0 for x in range(w)] for y in range(h)]
 
     for w in range(0, len(workers)):
         vote_id =  workers[w][0]["vote_for"]
         id_worker = workers[w][0]["id"]
         worker_account_name = workers[w][0]["worker_account_name"]
+        worker_name = workers[w][0]["name"]
 
         workers_votes[w][0] = worker_account_name
         workers_votes[w][1] = id_worker
+        workers_votes[w][2] = worker_name
 
-        c = 2
+        c = 3
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
