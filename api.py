@@ -502,6 +502,8 @@ def _get_asset_holders_count(asset_id):
 @app.route('/get_asset_holders')
 def get_asset_holders():
     asset_id = request.args.get('asset_id')
+    start = request.args.get('start', 0)
+    limit = request.args.get('limit', 20)
 
     if not isObject(asset_id):
         ws.send('{"id":1, "method":"call", "params":[0,"lookup_asset_symbols",[["' + asset_id + '"], 0]]}')
@@ -519,7 +521,7 @@ def get_asset_holders():
 
     asset_api = str(asset_j["result"])
 
-    ws.send('{"id":1, "method":"call", "params":['+asset_api+',"get_asset_holders",["'+asset_id+'", 0, 20]]}')
+    ws.send('{"id":1, "method":"call", "params":['+asset_api+',"get_asset_holders",["'+asset_id+'", '+str(start)+', '+str(limit)+']]}')
     result =  ws.recv()
 
     j = json.loads(result)
