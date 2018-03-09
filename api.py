@@ -2,6 +2,7 @@ import datetime
 import json
 import math
 import os
+import urllib2
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
@@ -143,7 +144,7 @@ def operation_full():
 
     operation_id = request.args.get('operation_id')
     ws.send('{"id":1, "method":"call", "params":[0,"get_objects",[["'+operation_id+'"]]]}')
-    result =  ws.recv()
+    result = ws.recv()
     j = json.loads(result)
 
     ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
@@ -189,6 +190,62 @@ def operation_full():
     #print j['result']
 
     return jsonify(j["result"])
+
+
+@app.route('/operation_full_elastic')
+def operation_full_elastic():
+
+    operation_id = request.args.get('operation_id')
+    contents = urllib2.urlopen(config.ES_WRAPPER + "/get_single_operation?operation_id=" + operation_id).read()
+
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
+    result2 =  ws.recv()
+    j2 = json.loads(result2)
+
+    #if not j["result"][0]:
+    #    j["result"][0] = {}
+
+    accounts_registered_this_interval = j2["result"]["accounts_registered_this_interval"]
+
+    # get market cap
+    ws.send('{"id": 1, "method": "call", "params": [0, "get_objects", [["2.3.0"]]]}')
+    result2 = ws.recv()
+    j2 = json.loads(result2)
+
+    current_supply = j2["result"][0]["current_supply"]
+    confidental_supply = j2["result"][0]["confidential_supply"]
+
+    market_cap = int(current_supply) + int(confidental_supply)
+    bts_market_cap = int(market_cap/100000000)
+
+    ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
+    result3 = ws.recv()
+    j3 = json.loads(result3)
+    quote_volume = j3["result"]["quote_volume"]
+
+    # TODO: making this call with every operation is not very efficient as this are static properties
+    ws.send('{"id":1, "method":"call", "params":[0,"get_global_properties",[]]}')
+    result5 = ws.recv()
+    j5 = json.loads(result5)
+
+    commitee_count = len(j5["result"]["active_committee_members"])
+    witness_count = len(j5["result"]["active_witnesses"])
+
+    #j["result"][0]["commitee_count"] = commitee_count
+    #j["result"][0]["witness_count"] = witness_count
+
+    res = json.loads(contents)
+    j = {"result": { "op": json.loads(res[0]["operation_history"]["op"]),
+         "accounts_registered_this_interval": accounts_registered_this_interval,
+         "bts_market_cap": bts_market_cap, "quote_volume": quote_volume, "commitee_count": commitee_count, "witness_count": witness_count,
+         "block_num": res[0]["block_data"]["block_num"], "op_in_trx": res[0]["operation_history"]["op_in_trx"],
+         "result": res[0]["operation_history"]["operation_result"], "trx_in_block": res[0]["operation_history"]["trx_in_block"],
+         "virtual_op": res[0]["operation_history"]["virtual_op"]}}
+
+    a = [0]
+    a[0] = j["result"]
+    return jsonify(a)
 
 
 @app.route('/accounts')
@@ -253,7 +310,7 @@ def fees():
 @app.route('/account_history')
 def account_history():
     ws.send('{"id":2,"method":"call","params":[1,"login",["",""]]}')
-    login =  ws.recv()
+    login = ws.recv()
 
     ws.send('{"id":2,"method":"call","params":[1,"history",[]]}')
     history =  ws.recv()
@@ -1262,6 +1319,31 @@ def account_history_pager():
         return jsonify(j_f["result"])
     else:
         return ""
+
+
+@app.route('/account_history_pager_elastic')
+def account_history_pager_elastic():
+    page = request.args.get('page')
+    account_id = request.args.get('account_id')
+
+    from_ = int(page) * 20
+    contents = urllib2.urlopen(config.ES_WRAPPER + "/get_account_history?account_id="+account_id+"&from_="+str(from_)+"&size=20&sort_by=-block_data.block_time").read()
+
+    j = json.loads(contents)
+
+    results = [0 for x in range(len(j))]
+    for n in range(0, len(j)):
+        results[n] = {"op": json.loads(j[n]["operation_history"]["op"]),
+                      "block_num": j[n]["block_data"]["block_num"],
+                      "id": j[n]["account_history"]["operation_id"],
+                      "op_in_trx": j[n]["operation_history"]["op_in_trx"],
+                      "result": j[n]["operation_history"]["operation_result"],
+                      "timestamp": j[n]["block_data"]["block_time"],
+                      "trx_in_block": j[n]["operation_history"]["trx_in_block"],
+                      "virtual_op": j[n]["operation_history"]["virtual_op"]
+                      }
+
+    return jsonify(list(results))
 
 
 @app.route('/get_limit_orders')
