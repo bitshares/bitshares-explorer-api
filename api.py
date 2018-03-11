@@ -83,6 +83,18 @@ def _account_name(account_id):
     j = json.loads(result)
     return j["result"][0]["name"]
 
+@app.route('/account_id')
+def account_id():
+    account_name = request.args.get('account_name')
+    return jsonify(_account_id(account_name))
+
+def _account_id(account_name):
+    ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_name + '"], 0]]}')
+    result = ws.recv()
+    j = json.loads(result)
+    account_id = j["result"][0]["id"]
+    return account_id
+
 
 @app.route('/operation')
 def get_operation():
