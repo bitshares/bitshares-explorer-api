@@ -1338,6 +1338,13 @@ def account_history_pager_elastic():
     page = request.args.get('page')
     account_id = request.args.get('account_id')
 
+    if not isObject(account_id):
+        ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_id + '"], 0]]}')
+        result_l = ws.recv()
+        j_l = json.loads(result_l)
+
+        account_id = j_l["result"][0]["id"]
+
     from_ = int(page) * 20
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_account_history?account_id="+account_id+"&from_="+str(from_)+"&size=20&sort_by=-block_data.block_time").read()
 
