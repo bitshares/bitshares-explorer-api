@@ -253,7 +253,7 @@ def operation_full_elastic():
          "bts_market_cap": bts_market_cap, "quote_volume": quote_volume, "commitee_count": commitee_count, "witness_count": witness_count,
          "block_num": res[0]["block_data"]["block_num"], "op_in_trx": res[0]["operation_history"]["op_in_trx"],
          "result": res[0]["operation_history"]["operation_result"], "trx_in_block": res[0]["operation_history"]["trx_in_block"],
-         "virtual_op": res[0]["operation_history"]["virtual_op"]}}
+         "virtual_op": res[0]["operation_history"]["virtual_op"], "block_time": res[0]["block_data"]["block_time"]}}
 
     a = [0]
     a[0] = j["result"]
