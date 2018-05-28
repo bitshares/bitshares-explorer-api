@@ -1542,6 +1542,7 @@ def referrer_count():
 @app.route('/get_all_referrers')
 def get_all_referrers():
     account_id = request.args.get('account_id')
+    page = request.args.get('page', 0)
 
     if not isObject(account_id):
         ws.send('{"id":1, "method":"call", "params":[0,"lookup_account_names",[["' + account_id + '"], 0]]}')
@@ -1553,8 +1554,10 @@ def get_all_referrers():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "select * from referrers where referrer=%s"
-    cur.execute(query, (account_id,))
+    offset = int(page) * 20;
+
+    query = "select * from referrers where referrer=%s ORDER BY rid DESC LIMIT 20 OFFSET %s"
+    cur.execute(query, (account_id,str(offset), ))
     results = cur.fetchall()
 
     return jsonify(results)
@@ -1590,3 +1593,4 @@ def get_grouped_limit_orders():
     result = ws.recv()
     j = json.loads(result)
     return jsonify(j["result"])
+
