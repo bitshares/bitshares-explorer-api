@@ -46,7 +46,8 @@ def header():
 
     ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
     result3 = ws.recv()
-    j3 = json.loads(result3)    if config.TESTNET != 1: # Todo: had to do something else for the testnet
+    j3 = json.loads(result3)    
+    if config.TESTNET != 1: # Todo: had to do something else for the testnet
         ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
         result3 = ws.recv()
         j3 = json.loads(result3)
