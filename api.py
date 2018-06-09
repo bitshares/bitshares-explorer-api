@@ -8,19 +8,23 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 import psycopg2
 from websocket import create_connection
+from flasgger import Swagger
 
 import config
-
 
 app = Flask(__name__)
 CORS(app)
 
+app.config['SWAGGER'] = {
+    'title': 'Bitshares Python API',
+    'uiversion': 2
+}
+Swagger(app, template_file='api.yaml')
 
 ws = create_connection(config.WEBSOCKET_URL)
 
-
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5000)
 
 
 @app.route('/header')
@@ -42,7 +46,14 @@ def header():
 
     ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
     result3 = ws.recv()
-    j3 = json.loads(result3)
+    j3 = json.loads(result3)    if config.TESTNET != 1: # Todo: had to do something else for the testnet
+        ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
+        result3 = ws.recv()
+        j3 = json.loads(result3)
+
+        j["result"]["quote_volume"] = j3["result"]["quote_volume"]
+    else:
+        j["result"]["quote_volume"] = 0
 
     j["result"]["quote_volume"] = j3["result"]["quote_volume"]
 
@@ -210,7 +221,6 @@ def operation_full_elastic():
     operation_id = request.args.get('operation_id')
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_single_operation?operation_id=" + operation_id).read()
 
-
     ws.send('{"id":1, "method":"call", "params":[0,"get_dynamic_global_properties",[]]}')
     result2 =  ws.recv()
     j2 = json.loads(result2)
@@ -230,11 +240,14 @@ def operation_full_elastic():
 
     market_cap = int(current_supply) + int(confidental_supply)
     bts_market_cap = int(market_cap/100000000)
-
-    ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
-    result3 = ws.recv()
-    j3 = json.loads(result3)
-    quote_volume = j3["result"]["quote_volume"]
+    
+    if config.TESTNET != 1: # Todo: had to do something else for the testnet
+        ws.send('{"id":1, "method":"call", "params":[0,"get_24_volume",["BTS", "OPEN.BTC"]]}')
+        result3 = ws.recv()
+        j3 = json.loads(result3)
+        quote_volume = j3["result"]["quote_volume"]
+    else:
+        quote_volume = 0
 
     # TODO: making this call with every operation is not very efficient as this are static properties
     ws.send('{"id":1, "method":"call", "params":[0,"get_global_properties",[]]}')
