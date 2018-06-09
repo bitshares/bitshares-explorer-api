@@ -1,0 +1,1390 @@
+info:
+  description: Exposes bitshares calls needed to explore the blockchain
+  title: Bitshares Python API Backend
+version: 1
+swagger: '2.0'
+
+paths:
+  "/header":
+    get:
+      description: Get some blockchain information.
+      operationId: header
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Array of operation data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - blockchain
+  "/account":
+    get:
+      description: Get an account object.
+      operationId: account
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: Account ID (1.2.X)
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 1 account object
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/account_name":
+    get:
+      description: Get account name by ID
+      operationId: account_name
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: Account ID (1.2.X)
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 1 account name
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/account_id":
+    get:
+      description: Get account ID by name
+      operationId: account_id
+      parameters:
+        - in: query
+          name: account_name
+          default: committee-account
+          schema:
+            type: string
+          required: true
+          description: Account name
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 1 account ID
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/operation":
+    get:
+      description: Get operation by ID
+      operationId: operation
+      parameters:
+        - in: query
+          name: operation_id
+          default: 1.11.0
+          schema:
+            type: string
+          required: true
+          description: Operation ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 1 operation
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - operation
+  "/operation_full":
+    get:
+      description: Get operation by ID in a full node connection
+      operationId: operation_full
+      parameters:
+        - in: query
+          name: operation_id
+          default: 1.11.0
+          schema:
+            type: string
+          required: true
+          description: Operation ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 1 operation
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - operation
+  "/operation_full_elastic":
+    get:
+      description: Get operation by ID in a elasticsearch wrapper connection
+      operationId: operation_full_elastic
+      parameters:
+        - in: query
+          name: operation_id
+          default: 1.11.0
+          schema:
+            type: string
+          required: true
+          description: Operation ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 1 operation
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - operation
+  "/accounts":
+    get:
+      description: Get an account list of the most 100 rich CORE holders.
+      operationId: accounts
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Rich list of accounts
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/full_account":
+    get:
+      description: Given an account ID, the call will return full account data.
+      operationId: full_account
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: Account ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Full account data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/assets":
+    get:
+      description: Get list of assets that had volume in the last 24 hours.
+      operationId: assets
+      produces:
+        - application/json
+      responses:
+        200:
+          description: List of assets with 24hs volume
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/fees":
+    get:
+      description: Get network fee data.
+      operationId: fees
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Fee data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - blockchain
+  "/account_history":
+    get:
+      description: Get the last 20 operations of an account
+      operationId: account_history
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: Account ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Last 20 operations for account
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/get_asset":
+    get:
+      description: Get all info about an asset
+      operationId: get_asset
+      parameters:
+        - in: query
+          name: asset_id
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Asset ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Information about asset
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/get_asset_and_volume":
+    get:
+      description: Same as get_asset but with additional volume info.
+      operationId: get_asset_and_volume
+      parameters:
+        - in: query
+          name: asset_id
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Asset ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Information about asset with volume data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/block_header":
+    get:
+      description: Get the block header information of a block_num
+      operationId: block_header
+      parameters:
+        - in: query
+          name: block_num
+          default: 1
+          schema:
+            type: string
+          required: true
+          description: Block number to get the header info
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Block header data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - block
+  "/get_block":
+    get:
+      description: Get full block data
+      operationId: get_header
+      parameters:
+        - in: query
+          name: block_num
+          default: 1
+          schema:
+            type: string
+          required: true
+          description: Block number to get the block info
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Block data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - block
+  "/get_ticker":
+    get:
+      description: Get ticker data for a market
+      operationId: get_ticker
+      parameters:
+        - in: query
+          name: base
+          default: 1
+          schema:
+            type: string
+          required: true
+          description: Base asset name or ID
+        - in: query
+          name: quote
+          default: 1
+          schema:
+            type: string
+          required: true
+          description: Quote asset name or ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Ticker data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_volume":
+    get:
+      description: Get 24hs volume data for a market
+      operationId: get_volume
+      parameters:
+        - in: query
+          name: base
+          default: 1
+          schema:
+            type: string
+          required: true
+          description: Base asset name or ID
+        - in: query
+          name: quote
+          default: 1
+          schema:
+            type: string
+          required: true
+          description: Quote asset name or ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 24hs volume data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/lastnetworkops":
+    get:
+      description: Get the last 10 operations made in the blockchain.
+      operationId: lastnetworkops
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Last 10 operations made in the network.
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - blockchain
+  "/get_object":
+    get:
+      description: Get object from ID
+      operationId: get_object
+      parameters:
+        - in: query
+          name: object_id
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Object ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Object data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - object
+  "/get_asset_holders_count":
+    get:
+      description: Get a count of holders and asset haves.
+      operationId: get_asset_holders_count
+      parameters:
+        - in: query
+          name: asset_id
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Asset ID
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Count of asset holders
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/get_asset_holders":
+    get:
+      description: Get asset holders for an asset.
+      operationId: get_asset_holders
+      parameters:
+        - in: query
+          name: asset_id
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Asset ID
+        - in: query
+          name: start
+          default: 0
+          schema:
+            type: integer
+          required: true
+          description: Pagination start
+        - in: query
+          name: limit
+          default: 0
+          schema:
+            type: integer
+          required: true
+          description: Number of records to retreive
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Account holder and amount
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/get_workers":
+    get:
+      description: Get all workers.
+      operationId: get_workers
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All workers ever submitted to the network.
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - worker
+  "/get_markets":
+    get:
+      description: Get all the active markets for an asset.
+      operationId: get_markets
+      parameters:
+        - in: query
+          name: asset_id
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Asset ID or name
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Active markets for asset
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_most_active_markets":
+    get:
+      description: Get the most active 100 markets in the network.
+      operationId: get_most_active_markets
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 100 top markets
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_order_book":
+    get:
+      description: Get the order book of a market.
+      operationId: get_order_book
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Base asset id
+        - in: query
+          name: quote
+          default: 1.3.1
+          schema:
+            type: string
+          required: true
+          description: Quote asset id
+        - in: query
+          name: limit
+          default: 100
+          schema:
+            type: string
+          required: true
+          description: Number of records to retreive
+      produces:
+        - application/json
+      responses:
+        200:
+          description: the order book for the market
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_margin_positions":
+    get:
+      description: Get margin positions of an account.
+      operationId: get_margin_positions
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: Account id
+      produces:
+        - application/json
+      responses:
+        200:
+          description: open margin positions for account
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+        - account
+  "/get_witnesses":
+    get:
+      description: Get all witnesses.
+      operationId: get_witnesses
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All witnesses in the network
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - witness
+        - governance
+  "/get_committee_members":
+    get:
+      description: Get all committee members.
+      operationId: get_committee_members
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All committee members in the network
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - committee
+        - governane
+  "/get_committee_members":
+    get:
+      description: Get all committee members.
+      operationId: get_committee_members
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All committee members in the network
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - committee
+        - governane
+  "/market_chart_dates":
+    get:
+      description: Utility, get the dates of the last 30 days
+      operationId: market_chart_dates
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Array of dates of the last 30 days
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/market_chart_data":
+    get:
+      description: Get OHLC chart data
+      operationId: market_chart_data
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: Base asset id
+        - in: query
+          name: quote
+          default: 1.3.1
+          schema:
+            type: string
+          required: true
+          description: Quote asset id
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OHLC data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/top_proxies":
+    get:
+      description: Get the top proxies
+      operationId: top_proxies
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Top X proxies
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - proxy
+        - governance
+  "/top_holders":
+    get:
+      description: Get the top holders
+      operationId: top_holders
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Top X holders
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - holder
+        - governance
+  "/witnesses_votes":
+    get:
+      description: Get witness votes
+      operationId: witnesses_votes
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Witnesses votes
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - witness
+        - governance
+  "/workers_votes":
+    get:
+      description: Get worker votes
+      operationId: workers_votes
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Worker votes
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - worker
+        - governance
+  "/committee_votes":
+    get:
+      description: Get committee votes
+      operationId: committee_votes
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Committee votes
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - committee
+        - governance
+  "/top_markets":
+    get:
+      description: Top markets
+      operationId: top_markets
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Top markets
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/top_smartcoins":
+    get:
+      description: Top smartcoins
+      operationId: top_smartcoins
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Top smartcoins
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/top_uias":
+    get:
+      description: Top User Issued Assets
+      operationId: top_uias
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Top uias
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/top_operations":
+    get:
+      description: Top Operations
+      operationId: top_operations
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Top ops
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - operation
+  "/last_network_transactions":
+    get:
+      description: last 20 network transactions
+      operationId: last_network_transactions
+      produces:
+        - application/json
+      responses:
+        200:
+          description: last network ops
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - operation
+  "/lookup_accounts":
+    get:
+      description: Search account by its name start
+      operationId: lookup_accounts
+      parameters:
+        - in: query
+          name: start
+          default: A
+          schema:
+            type: string
+          required: true
+          description: start of the account name
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Accounts matching start
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+  "/lookup_assets":
+    get:
+      description: Search asset by its name start
+      operationId: lookup_assets
+      parameters:
+        - in: query
+          name: start
+          default: A
+          schema:
+            type: string
+          required: true
+          description: start of the asset name
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Assets matching start
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+  "/getlastblocknumbher":
+    get:
+      description: Get current block number
+      operationId: getlastblocknumbher
+      produces:
+        - application/json
+      responses:
+        200:
+          description:  last known block number
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - operation
+  "/account_history_pager":
+    get:
+      description: Get history of account by pages(need full node)
+      operationId: account_history_pager
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: the account to get operations from
+        - in: query
+          name: page
+          default: 0
+          schema:
+            type: integer
+          required: true
+          description: the page
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 20 operations of account by page
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+        - operation
+  "/account_history_pager_elastic":
+    get:
+      description: Get history of account by pages(need elasticsearch node)
+      operationId: account_history_pager_elastic
+      parameters:
+        - in: query
+          name: account_id
+          default: 1.2.0
+          schema:
+            type: string
+          required: true
+          description: the account to get operations from
+        - in: query
+          name: page
+          default: 0
+          schema:
+            type: integer
+          required: true
+          description: the page
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 20 operations of account by page
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+        - operation
+  "/get_limit_orders":
+    get:
+      description: Get open limit orders of a market
+      operationId: get_limit_orders
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: base asset
+        - in: query
+          name: quote
+          default: 0
+          schema:
+            type: string
+          required: true
+          description: quote asset
+      produces:
+        - application/json
+      responses:
+        200:
+          description: open limit orders
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_call_orders":
+    get:
+      description: Get open call orders of a market
+      operationId: get_call_orders
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: base asset
+        - in: query
+          name: quote
+          default: 0
+          schema:
+            type: string
+          required: true
+          description: quote asset
+      produces:
+        - application/json
+      responses:
+        200:
+          description: open call orders
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_settle_orders":
+    get:
+      description: Get open settle orders of a market
+      operationId: get_settle_orders
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: base asset
+        - in: query
+          name: quote
+          default: 0
+          schema:
+            type: string
+          required: true
+          description: quote asset
+      produces:
+        - application/json
+      responses:
+        200:
+          description: open settle orders
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_settle_orders":
+    get:
+      description: Get fill order history of a market
+      operationId: get_settle_orders
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: base asset
+        - in: query
+          name: quote
+          default: 0
+          schema:
+            type: string
+          required: true
+          description: quote asset
+      produces:
+        - application/json
+      responses:
+        200:
+          description: history of fill orders
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
+  "/get_dex_total_volume":
+    get:
+      description: Get some total dex volume figures
+      operationId: get_dex_total_volume
+      produces:
+        - application/json
+      responses:
+        200:
+          description:  dex total volume figures
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - blockchain
+  "/daily_volume_dex_dates":
+    get:
+      description: Get 60 days with of dates
+      operationId: get_dex_total_volume
+      produces:
+        - application/json
+      responses:
+        200:
+          description:  60 days of dates
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - utility
+  "/daily_volume_dex_data":
+    get:
+      description: Get 60 days od plot volume data
+      operationId: daily_volume_dex_data
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 60 days of plot data
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - utility
+  "/get_all_asset_holders":
+    get:
+      description: Get all holders of an asset
+      operationId: get_all_asset_holders
+      parameters:
+        - in: query
+          name: asset_id
+          default: A
+          schema:
+            type: string
+          required: true
+          description: asset id or name
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All holders of an asset
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - asset
+        - holder
+  "/referrer_count":
+    get:
+      description: Get number of referrers an account made
+      operationId: referrer_count
+      parameters:
+        - in: query
+          name: account_id
+          default: 2.2.0
+          schema:
+            type: string
+          required: true
+          description: account id or name
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Count of referrs an account made
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+        - referrer
+  "/get_all_referrers":
+    get:
+      description: Get referrers an account made
+      operationId: get_all_referrers
+      parameters:
+        - in: query
+          name: account_id
+          default: 2.2.0
+          schema:
+            type: string
+          required: true
+          description: account id or name
+        - in: query
+          name: page
+          default: 0
+          schema:
+            type: integer
+          required: true
+          description: page
+      produces:
+        - application/json
+      responses:
+        200:
+          description: referrer an account made by page
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - account
+        - referrer
+  "/get_grouped_limit_orders":
+    get:
+      description: Get the grouped order for a market
+      operationId: get_grouped_limit_orders
+      parameters:
+        - in: query
+          name: base
+          default: 1.3.0
+          schema:
+            type: string
+          required: true
+          description: base
+        - in: query
+          name: quote
+          default: 1.3.1
+          schema:
+            type: string
+          required: true
+          description: page
+        - in: query
+          name: group
+          default: 10
+          schema:
+            type: integer
+          required: true
+          description: group
+        - in: query
+          name: limit
+          default: 0
+          schema:
+            type: integer
+          required: true
+          description: limit
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Grouped order limit book for a market
+        500:
+          description: Error processing parameters
+      schemes:
+        - http
+        - https
+      tags:
+        - api
+        - market
