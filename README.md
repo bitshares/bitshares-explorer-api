@@ -6,21 +6,21 @@ http://23.94.69.140:5000/apidocs/
 
 Index:
 
-- [Installation](#Installation)
-  - [Manual](#Manual)
-    - [Install elasticsearch](#Install-elasticsearch)
-    - [Install a bitshares node with requirements](#Install-a-bitshares-node-with-requirements)
-    - [Install and setup postgres](#Install-and-setup-postgres)
-    - [Install Bitshares REST and dependencies](#Install-Bitshares-REST-and-dependencies)
-    - [Real Time ops grabber](#Real-Time-ops-grabber)
-    - [Cronjobs](#Cronjobs)
-    - [Simple running](#Simple-running)
-    - [Nginx and uwsgi](#Nginx-and-uwsgi)
-    - [Domain setup and SSL](#Domain-setup-and-SSL)
-  - [By Docker](#By-Docker)
-- [Usage](#Usage)
-  - [Swagger](#Swagger)
-  - [Open Explorer](#Open-Explorer)
+- [Installation](#installation)
+  - [Manual](#manual)
+    - [Install elasticsearch](#install-elasticsearch)
+    - [Install a bitshares node with requirements](#install-a-bitshares-node-with-requirements)
+    - [Install and setup postgres](#install-and-setup-postgres)
+    - [Install Bitshares REST and dependencies](#install-Bitshares-rest-and-dependencies)
+    - [Real Time ops grabber](#real-time-ops-grabber)
+    - [Cronjobs](#cronjobs)
+    - [Simple running](#simple-running)
+    - [Nginx and uwsgi](#nginx-and-uwsgi)
+    - [Domain setup and SSL](#domain-setup-and-SSL)
+  - [By Docker](#by-Docker)
+- [Usage](#usage)
+  - [Swagger](#swagger)
+  - [Open Explorer](#open-Explorer)
 
 ## Installation
 
