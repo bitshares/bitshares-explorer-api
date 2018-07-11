@@ -7,7 +7,6 @@ from websocket import create_connection
 import api
 import config
 
-
 ws = create_connection(config.WEBSOCKET_URL)
 
 con = psycopg2.connect(**config.POSTGRES)
@@ -31,6 +30,11 @@ query = "ALTER SEQUENCE ops_oid_seq RESTART WITH 11;"
 cur.execute(query)
 
 con.commit()
+
+if config.TESTNET == 1:
+    core_symbol = config.CORE_ASSET_SYMBOL_TESTNET
+else:
+    core_symbol = config.CORE_ASSET_SYMBOL
 
 all_assets = []
 
@@ -77,7 +81,7 @@ for x in range(0, len(all_assets)):
             holders = 0
             continue
 
-        if symbol == config.CORE_ASSET_SYMBOL:
+        if symbol == core_symbol:
             type_ = "Core Token"
         elif all_assets[x]["result"][i]["issuer"] == "1.2.0":
             type_ = "SmartCoin"
@@ -86,7 +90,7 @@ for x in range(0, len(all_assets)):
         #print all_assets[x]["result"][i]
 
         try:
-            data = api._get_volume(config.CORE_ASSET_SYMBOL, symbol)
+            data = api._get_volume(core_symbol, symbol)
         except:
             continue
 
@@ -94,7 +98,7 @@ for x in range(0, len(all_assets)):
         #print data["quote_volume"]
 
         try:
-            data2 = api._get_ticker(config.CORE_ASSET_SYMBOL, symbol)
+            data2 = api._get_ticker(core_symbol, symbol)
             price = data2["latest"]
             #print price
 
@@ -120,6 +124,8 @@ query = "select sum(volume) from assets WHERE aname!='BTS'"
 cur.execute(query)
 results = cur.fetchone()
 volume = results[0]
+if volume is None:
+    volume = 0
 
 query = "select sum(mcap) from assets"
 cur.execute(query)

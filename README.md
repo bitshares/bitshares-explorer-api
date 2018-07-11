@@ -1,299 +1,325 @@
-# BPAB - Bitshares Python Api Backend
+# Bitshares REST API
 
-Simple Python wrapper for front end applications to be called by GET urls. api calls are added on demand as front end applications requiere it. 
+REST api wrapper for the bitshares blockchain.
 
-The current main purpose of the api is to serve the bitshares explorer: http://bitshares-explorer.io but it is expected to serve more applications. 
+http://23.94.69.140:5000/apidocs/
 
-## Install API:
+Index:
 
-For debian based linux distros:
+- [Installation](#installation)
+  - [Manual](#manual)
+    - [Install elasticsearch](#install-elasticsearch)
+    - [Install a bitshares node with requirements](#install-a-bitshares-node-with-requirements)
+    - [Install and setup postgres](#install-and-setup-postgres)
+    - [Install Bitshares REST and dependencies](#install-Bitshares-rest-and-dependencies)
+    - [Real Time ops grabber](#real-time-ops-grabber)
+    - [Cronjobs](#cronjobs)
+    - [Simple running](#simple-running)
+    - [Nginx and uwsgi](#nginx-and-uwsgi)
+    - [Domain setup and SSL](#domain-setup-and-SSL)
+  - [By Docker](#by-Docker)
+- [Usage](#usage)
+  - [Swagger](#swagger)
+  - [Open Explorer](#open-Explorer)
 
-```
-apt-get install python-virtualenv
+## Installation
 
-apt-get install python-pip
+The following procedure will work in Debian based Linux, more specifically the commands to make the guide were executed in `Ubuntu 16.04.4 LTS` with `Python 2.7`.
 
-pip install flask
+### Manual
 
-pip install -U flask-cors
+Step by step on everything needed to have your own REST wrapper up and running for a production environment.
 
-pip install websocket-client
+#### Install ElasticSearch
 
-git clone https://github.com/oxarbitrage/bitshares-python-api-backend
+For full elasticsearch installation and usage tutorial please go to: https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin
 
-cd bitshares-python-api-backend/
+The following is a  quick installation guide for elasticsearch in Ubuntu.
 
-virtualenv venv
+Install the requirements:
 
-. venv/bin/activate
+    apt-get install default-jre
+    apt-get install default-jdk
+    apt-get install software-properties-common
+    add-apt-repository ppa:webupd8team/java
+    apt-get update
+    apt-get install oracle-java8-installer
+    apt-get install unzip
+    apt-get install libcurl4-openssl-dev
 
-export FLASK_APP=api.py
+Add an elasticsearch account to the system as the database can not run by root:
 
-flask run --host=0.0.0.0
-```
+    root@oxarbitrage ~ # adduser elastic
+    Adding user `elastic' ...
+    Adding new group `elastic' (1000) ...
+    Adding new user `elastic' (1000) with group `elastic' ...
+    Creating home directory `/home/elastic' ...
+    Copying files from `/etc/skel' ...
+    Enter new UNIX password: 
+    Retype new UNIX password: 
+    passwd: password updated successfully
+    Changing the user information for elastic
+    Enter the new value, or press ENTER for the default
+            Full Name []: 
+            Room Number []: 
+            Work Phone []: 
+            Home Phone []: 
+            Other []: 
+    Is the information correct? [Y/n] 
+    root@oxarbitrage ~ # 
 
-## Setup Postgres
+Download and run elasticsearch  database:
 
-The explorer use a postgres database to store some temporal data in order to do certain heavy operations and temporal storage of data that are not possible in the current bitshares-node.
+    root@oxarbitrage ~ # su elastic
+    elastic@oxarbitrage:/root$ cd
+    elastic@oxarbitrage:~$ 
+    elastic@oxarbitrage:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.4.zip
+    elastic@oxarbitrage:~$ unzip elasticsearch-6.2.0.zip
+    elastic@oxarbitrage:~$ cd elasticsearch-6.2.0
+    elastic@oxarbitrage:~$ ./bin/elasticsearch
 
-You need to have postgres installed somewhere and have host, user, pass and database details.
+Stop the program with ctrl-c, daemonize and forget:
 
-This details, among with a websocket url need to be added to python files. Here is how the config looks in the header of all the files:
+    elastic@oxarbitrage:~$ ./elasticsearch-6.2.0/bin/elasticsearch --daemonize
+    elastic@oxarbitrage:~$ netstat -an | grep 9200
+    tcp6       0      0 127.0.0.1:9200          :::*                    LISTEN     
+    tcp6       0      0 ::1:9200                :::*                    LISTEN     
+    elastic@oxarbitrage:~$ 
 
-```
-# config
-websocket_url = "ws://127.0.0.1:8090/ws"
-postgres_host = 'localhost'
-postgres_database = 'explorer'
-postgres_username = 'postgres'
-postgres_password = 'posta'
-# end config
-```
+#### Install a bitshares node with requirements.
 
-Make sure you add your data in the following files:
+This API backend connects to a bitshares `witness_node` to get data. This witness node must be configured with the following plugins:
 
-- api.py
-- postgres/import_realtime_ops.py
-- postgres/import_assets.py
-- postgres/import_markets.py
-- postgres/import_holders.py
+- `market_history`   
+- `grouped_orders` 
+- `elasticsearch`
 
-You need to create the tables where the data will be stored into postgres. Here is a pg_dump file of what you will need to do in your database:
+Additionally, the node must have `asset_api` enabled(off by default). 
 
-https://github.com/oxarbitrage/bitshares-python-api-backend/blob/master/postgres/schema.txt
+First download and build `bitshares-core`:
 
-## Setup Cron
+    git clone https://github.com/bitshares/bitshares-core.git
+    cd bitshares-core/
+    
+    git submodule update --init --recursive
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
+    make
 
-The API backend runs 3 scripts once a day and store results in a postgres database. The 3 scripts can be added to cron.
+Next, create `api-access.json` file as shown:
 
- `crontab -e`
+    {
+       "permission_map" :
+       [
+          [
+             "*",
+             {
+                "password_hash_b64" : "*",
+                "password_salt_b64" : "*",
+                "allowed_apis" : ["database_api", "network_broadcast_api", "history_api", "asset_api"]
+             }
+          ]
+       ]
+    }
 
- Add 3 lines:
+Finally run the start command with the required plugins and api-access.json, please note elasticsearch must be running on port 9200 of localhost in order for this command to work:
 
-```
-0 22 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_holders.py >/dev/null
-0 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_assets.py >/dev/null
-15 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_markets.py >/dev/null
-30 23 * * *  python /root/bitshares-munich/explorer/repo/bitshares-python-api-backend/postgres/import_referrers.py >/dev/null
-```
+    programs/witness_node/witness_node --data-dir blockchain --rpc-endpoint "127.0.0.1:8091" --plugins "witness elasticsearch market_history grouped_orders" --api-access /full/path/to/api-access.json
 
-## Setup real time operation grabber
+If you adding the wrapper to a testnet/private network backend you will need to change a bit the elasticsearch default parameters to start getting data faster. For example a testnet setup command may look as:
 
-I use `screen` to run the grabber but you can also run it in the background, as a service, etc.
+    programs/witness_node/witness_node --data-dir blockchain --rpc-endpoint "127.0.0.1:8091" --plugins "witness elasticsearch market_history grouped_orders" --elasticsearch-bulk-replay 1000 elasticsearch-bulk-sync 10 --elasticsearch-logs true --elasticsearch-visitor true --api-access /full/path/to/api-access.json
 
-command to start it is just:
+Check if it is working with:
+
+    curl -X GET 'http://localhost:9200/graphene-*/data/_count?pretty=true' -H 'Content-Type: application/j
+    son' -d '
+    {
+        "query" : {
+            "bool" : { "must" : [{"match_all": {}}] }
+        }
+    }
+    '
+
+note: ask @clockwork about performance increment suggested for mainnet and elasticsearch.
+
+#### Install and setup postgres.
+
+Postgres is needed as a helper to store some data as stats we want to have and takes too much time to do client side so they are made once a day with cronjobs. Data is saved to postgres and available all the time to serve REST calls.
+
+It is expected that the use of postgres gets deprecated in future versions of this program, most likely with the introduction of `es_objects` plugin.
+
+By now, you need postgres, install by:
+
+`apt-get install postgresql`
+
+Create username and database:
+
+    su postgres
+    createuser explorer
+    createdb explorer
+    psql
+    psql=# alter user explorer with encrypted password 'exp10r3r';
+    psql=# grant all privileges on database explorer to explorer ;
+
+Import schema:
+
+    cd 
+    wget https://raw.githubusercontent.com/oxarbitrage/bitshares-python-api-backend/master/postgres/schema.txt
+    psql explorer < schema.txt
+
+Check your database tables were created:
+
+    postgres@oxarbitrage:~$ psql -d explorer
+    psql (9.5.12)
+    Type "help" for help.
+    explorer=# \dt
+               List of relations
+     Schema |   Name    | Type  |  Owner   
+    --------+-----------+-------+----------
+     public | assets    | table | postgres
+     public | holders   | table | postgres
+     public | markets   | table | postgres
+     public | ops       | table | postgres
+     public | proxies   | table | postgres
+     public | referrers | table | postgres
+     public | stats     | table | postgres
+    (7 rows)
+    
+    explorer=# select * from ops;
+     oid | oh | ath | block_num | trx_in_block | op_in_trx | datetime | account_id | account_name | op_type 
+    -----+----+-----+-----------+--------------+-----------+----------+------------+--------------+---------
+    (0 rows)
+    
+    explorer=# 
+
+#### Install Bitshares REST and dependencies.
+
+Install python and pip:
+
+`apt-get install -y python python-pip`
+
+Install virtual environment and setup:
+
+    pip install virtualenv 
+    virtualenv -p python2 wrappers_env/ 
+    source wrappers_env/bin/activate
+
+Now you are in an isolated environment where you install dependencies with `pip install` without affecting anything else or creating version race conditions.
+You can also simply switch or recreate the environment by deleting the env folder that will be created in your working directory.
+
+    root@oxarbitrage ~/bitshares #  source env_wrappers/bin/activate
+    (env_wrappers) root@oxarbitrage ~/bitshares # 
+
+Deactivate with:
+
+`deactivate`
+
+Install dependencies in virtual env activated:
+
+    pip install flask
+    pip install flask-cors
+    pip install websocket-client
+    pip install psycopg2
+    pip install psycopg2-binary
+    pip install flasgger
+
+Clone the app:
+
+    git clone https://github.com/oxarbitrage/bitshares-python-api-backend
+    cd bitshares-python-api-backend/
+
+To run the api, always need to have the full path to program in `PYTHONPATH` environment variable exported:
+
+`export PYTHONPATH=/root/bitshares/bitshares-python-api-backend` 
+
+#### Real Time ops grabber
+
+First step to check if everything is correctly installed is by installing the real time operation grabber. This will subscribe by websocket to the bitshares-core backend and add every operation broadcasted by the node into the postgres database. This data is cleaned at the end of the day by one of the cronjobs, during that time data stored is used for daily calculations of network state.
+
+Make sure you have `PYTHONPATH` set up and run the following command(can be in a `screen` session as the script will have to run permanently, can run in the background, can be added to init, etc:
 
 `python import_realtime_ops.py`
 
-this need to be constantly running as it is connected to the websocket getting the real time operations and saving them temporally in a database.
+You should see some output of sql queries being sent to postgres, make sure data is inserted by `select * from ops;` inside postgres `explorer` database.
 
-expected output for the grabber:
+#### Cronjobs
 
-```
-GET /ws HTTP/1.1
-Upgrade: websocket
-Connection: Upgrade
-Host: 127.0.0.1:8090
-Origin: http://127.0.0.1:8090
-Sec-WebSocket-Key: xr2KHygFlayuciZC/Oj63A==
-Sec-WebSocket-Version: 13
+Similar as postgres, it is expected that the cronjobs will not be needed in the future but by now, they are.
 
+Add the following taks to cron file with `crontab -e`:
 
------------------------
---- response header ---
-HTTP/1.1 101 Switching Protocols
-Connection: upgrade
-Sec-WebSocket-Accept: 1YT6X2SDtwPzg/iJHtb32vKT9Pw=
-Server: WebSocket++/0.7.0
-Upgrade: websocket
------------------------
-send: '\x81\xba\xe2\x8bZ\xce\x99\xa97\xab\x96\xe35\xaa\xc0\xb1z\xec\x81\xea6\xa2\xc0\xa7z\xec\x92\xea(\xaf\x8f\xf8x\xf4\xc2\xd0k\xe2\xc2\xa9>\xaf\x96\xea8\xaf\x91\x
-eex\xe2\xc2\xd0\x07\x93\xce\xabx\xa7\x86\xa9`\xee\xd1\xf6'
-send: '\x81\xcf\x00\xf9\xd6\x80{\xdb\xbb\xe5t\x91\xb9\xe4"\xc3\xf6\xa2c\x98\xba\xec"\xd5\xf6\xa2p\x98\xa4\xe1m\x8a\xf4\xba \xa2\xe4\xac \xdb\xa5\xe5t\xa6\xa5\xf5b\x
-8a\xb5\xf2i\x9b\xb3\xdfc\x98\xba\xecb\x98\xb5\xeb"\xd5\xf6\xdb5\xd5\xf6\xf4r\x8c\xb3\xdd]\xd5\xf6\xa2i\x9d\xf4\xba \xcf\xab'
-INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734829', '1.11.61956083', '19533294', '2',
-'4', NOW(), '1.2.214390', '1', 'julien430')
-INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734836', '1.11.61956090', '19533295', '5',
-'0', NOW(), '1.2.116747', '2', 'lbwbtswithdrawal')
-INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734850', '1.11.61956104', '19533297', '2',
-'1', NOW(), '1.2.133075', '1', 'usd-btc-mm')
-INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES('2.9.62734856', '1.11.61956110', '19533298', '3',
-'2', NOW(), '1.2.214390', '1', 'julien430')
+    0 1 * * *  export PYTHONPATH=/root/bitshares/bitshares-python-api-backend; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-python-api-backend/postgres/import_holders.py > /tmp/cronlog_holders.txt 2>&1 
+    0 2 * * *  export PYTHONPATH=/root/bitshares/bitshares-python-api-backend; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-python-api-backend/postgres/import_assets.py > /tmp/cronlog_assets.txt 2>&1
+    15 2 * * * export PYTHONPATH=/root/bitshares/bitshares-python-api-backend; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-python-api-backend/postgres/import_markets.py > /tmp/cronlog_markets.txt 2>&1
+    30 2 * * * export PYTHONPATH=/root/bitshares/bitshares-python-api-backend; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-python-api-backend/postgres/import_referrers.py > /tmp/cronlog_refs.txt 2>&1
+                                                  
+    
+#### Simple running
 
-...
-```
+In order to simply test and run the backend api you can do:
 
-## Usage:
+    export FLASK_APP=wrapper.py
+    flask run --host=0.0.0.0
 
-Point your browser to:
+Then go to apidocs with your server external address:
 
-http://yoursever.com:5000/header
+http://23.94.69.140:5000/apidocs/
 
-## Available API Calls
+#### Nginx and uwsgi
 
-- `header` - Get explorer data needed for header.
+In a production environment, when multiple requests start to happen at the same time, flask alone is not enough to handle the load. Nginx and uwsgi are alternatives to host a production backend.
 
-Sample URL: http://23.94.69.140:5000/header
+Install nginx:
 
--  `account_name` - Get account data(including account name) from id.
+    apt-get install nginx
 
-Sample URL: http://23.94.69.140:5000/account_name?account_id=1.2.356589
+Install uwgsi:
 
-- `operation` - Get full data from an operation a 1.11.X id.
+    pip install uwsgi
 
-Sample URL: http://23.94.69.140:5000/operation?operation_id=1.11.2673910
+Create config file in /etc/nginx/sites-available:
 
-- `operation_full` - Same as above but connecting to a full node to get old operation history data. 
+    server {
+        listen 5000;
+        server_name 23.94.69.140;
+        location / {
+            include uwsgi_params;
+            uwsgi_pass unix:/tmp/api.sock;
+        }
+    }
 
-Sample URL: http://23.94.69.140:5000/operation_full?operation_id=1.11.2673910
+Create symbolic link to sites-enabled and restart nginx:
 
-- `accounts` - Get a list of the 100 richest accounts in the bitshares network.
+    ln -s /etc/nginx/sites-available/api /etc/nginx/sites-enabled/api
+    /etc/init.d/nginx restart
 
-Sample URL: http://23.94.69.140:5000/accounts
+Now api can be started with:
 
-- `full_account` - Get full data from account.
+    (wrappers) root@oxarbitrage ~/bitshares/bitshares-python-api-backend # uwsgi --ini api.ini
 
-Sample URL: http://23.94.69.140:5000/full_account?account_id=1.2.356589
+#### Domain setup and SSL
 
-- `assets` - Get list of active assets.
+[Todo]
 
-Sample URL: http://23.94.69.140:5000/assets
 
-- `fees` - Get fees data from the network.
+### Docker
 
-Sample URL: http://23.94.69.140:5000/fees
+Installation is too long, docker is here to automate this things. [Todo]
 
-- `account_history` - Get last history of the account.
+## Usage
 
-Sample URL: http://23.94.69.140:5000/account_history?account_id=1.2.356589
+There are a lot of ways and application for this collection of API calls, at the moment of writing there are mainly 2 use cases.
 
-- `get_asset` - Get data from specific asset.
+### Swagger
 
-Sample URL: http://23.94.69.140:5000/get_asset?asset_id=1.3.0
+http://23.94.69.140:5000/apidocs/
 
-- `block_header` - Get block header data.
+Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
 
-Sample URL: http://23.94.69.140:5000/block_header?block_num=18584158
+### Open Explorer
 
--  `get_block` - Get full data of block including operations on it.
+- http://open-explorer.io
+- http://bitshares-explorer.io/
+- http://bitshares-testnet.xyz
 
-Sample URL: http://23.94.69.140:5000/get_block?block_num=18584158
-
-- `get_ticker` - Get ticker data of a base/quote pair.
-
-Sample URL: http://23.94.69.140:5000/get_ticker?base=BTS&quote=CNY
-
-- `get_volume` - Get volume data of a base/quote pair.
-
-Sample URL : http://23.94.69.140:5000/get_volume?base=BTS&quote=CNY
-
-- `lastnetworkops` - Get the last 10 network operations.
-
-Sample URL: http://23.94.69.140:5000/lastnetworkops
-
--  `get_object` - Get object data from id.
-
-Sample URL: http://23.94.69.140:5000/get_object?object=1.14.55
-
-- `get_asset_holders_count` - Get the count of assets holders from asset id.
-
-Sample URL: http://23.94.69.140:5000/get_asset_holders_count?asset_id=1.3.0
-
-- `get_asset_holders` - Get the list of assets holders from asset id.
-
-Sample URL: http://23.94.69.140:5000/get_asset_holders?asset_id=1.3.113
-
-- `get_workers` - Get full workers list in the network.
-
-Sample URL: http://23.94.69.140:5000/get_workers
-
--  `get_markets` - Get active markets for asset.
-
-Sample URL: http://23.94.69.140:5000/get_markets?asset_id=1.3.113
-
--  `get_most_active_markets` - Get the network most active markets by volume in the last 24 hours.
-
-Sample URL http://23.94.69.140:5000/get_most_active_markets
-
-- `get_order_book` - Get the order book for a market.
-
-Sample URL: http://23.94.69.140:5000/get_order_book?base=BTS&quote=CNY
-
--  `get_margin_positions` - Get the margin positions for an account.
-
-Sample URL: http://23.94.69.140:5000/get_margin_positions?account_id=1.2.12376
-
-- `get_witnesses` - Get all witnesses, ordered by voting, active and inactive.
-
-Sample URL: http://23.94.69.140:5000/get_witnesses
-
-- `get_committee_members` - Get all the committee members, ordered by voting, active and inactive.
-
-Sample URL: http://23.94.69.140:5000/get_committee_members
-
-- `market_chart_dates` - Utility call to get dates from now and back each day in the last 100 days. Used to build market charts.
-
-Sample URL: http://23.94.69.140:5000/market_chart_dates
-
--  `market_chart_data` - Get 100 days OHLC candlestick data from a market. Data is formatted to build candlestick charts for a market.
-
-Sample URL: http://23.94.69.140:5000/market_chart_data?base=USD&quote=BTS
-
-- `top_proxies` - Get the top network proxies in the Bitshares chain.
-
-Sample URL: http://23.94.69.140:5000/top_proxies
-
-- `top_holders` - Get the individual accounts with most BTS in their accounts.
-
-Sample URL: http://23.94.69.140:5000/top_holders
-
-- `witnesses_votes` - Get proxy votes for each witness.
-
-Sample URL: http://23.94.69.140:5000/witnesses_votes
-
-- `workers_votes` - Get proxy votes for each worker.
-
-Sample URL: http://23.94.69.140:5000/workers_votes
-
-- `committee_votes` - Get proxy votes for each committee member.
-
-Sample URL: http://23.94.69.140:5000/committee_votes
-
-- `top_markets` - Most 6 active markets in the last 24 hours in the chain.
-
-Sample URL: http://23.94.69.140:5000/top_markets
-
--  `top_smartcoins` - Most active by volume smartcoins in the last24 hours.
-
-Sample URL: http://23.94.69.140:5000/top_smartcoins
-
--  `top_uias` - Most active by volume user issued assets in the last24 hours.
-
-Sample URL: http://23.94.69.140:5000/top_uias
-
-- `top_operations` - Top 3 most called operations in the last 24 hours.
-
-Sample URL: http://23.94.69.140:5000/top_operations
-
-- `last_network_transactions` - Incomplete - Work in progress in the node side.
-
-Sample URL: None yet
-
-- `lookup_accounts` - Get accounts from the network that start with parameter. Useful for autocomplete.
-
-Sample URL: http://23.94.69.140:5000/lookup_accounts?start=alfredo
-
--  `lookup_assets` - Get assets from the network that start with parameter. Useful for autocomplete.
-
-Sample URL: http://23.94.69.140:5000/lookup_assets?start=A
-
--  `getlastblocknumbher` - Utility function that will get the current last block number at the moment of calling.
-
-Sample URL: http://23.94.69.140:5000/getlastblocknumbher
-
-
-
-
-
-
-
+All versions of open-explorer uses this backend to get data.
