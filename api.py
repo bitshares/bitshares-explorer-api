@@ -1104,17 +1104,20 @@ def committee_votes():
             votes = j["result"][0]["options"]["votes"]
             #print votes
             p_vote = "-"
-            for v in range(0, len(votes)):
+            if(len(votes) > 0):
+            	for v in range(0, len(votes)):
 
-                if votes[v] == vote_id:
-                    p_vote = "Y"
-                    committee_votes[w][c] = id_proxy + ":" + p_vote
-                    break
-                else:
-                    p_vote = "-"
-                    committee_votes[w][c] = id_proxy + ":" + p_vote
+                    if votes[v] == vote_id:
+                    	p_vote = "Y"
+                    	committee_votes[w][c] = id_proxy + ":" + p_vote
+                    	break
+                    else:
+                    	p_vote = "-"
+                    	committee_votes[w][c] = id_proxy + ":" + p_vote
 
-            c = c + 1
+            	c = c + 1
+	    else:
+		committee_votes[w][c] = id_proxy + ":-"
 
     #print witnesses_votes
     return jsonify(committee_votes)
