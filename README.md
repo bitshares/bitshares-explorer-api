@@ -205,6 +205,13 @@ Install python and pip:
 
 `apt-get install -y python python-pip`
 
+Install also this:
+
+```
+apt-get install python-websocket
+apt-get install python-psycopg2
+```
+
 Install virtual environment and setup:
 
     pip install virtualenv 
