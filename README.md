@@ -2,7 +2,7 @@
 
 REST api wrapper for the bitshares blockchain.
 
-http://23.94.69.140:5000/apidocs/
+http://185.208.208.184:5000/apidocs/
 
 Index:
 
