@@ -152,6 +152,13 @@ By now, you need postgres, install by:
 
 `apt-get install postgresql`
 
+Make sure postgres is up and running. Start with `/etc/init.d/postgresql start`.
+If you get a warning of no cluster solve with:
+
+`pg_createcluster 9.4 main --start`
+
+where `9.4` is your postgres version.
+
 Create username and database:
 
     su postgres
