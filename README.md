@@ -205,13 +205,6 @@ Install python and pip:
 
 `apt-get install -y python python-pip`
 
-Install also this:
-
-```
-apt-get install python-websocket
-apt-get install python-psycopg2
-```
-
 Install virtual environment and setup:
 
     pip install virtualenv 
@@ -246,6 +239,12 @@ To run the api, always need to have the full path to program in `PYTHONPATH` env
 
 `export PYTHONPATH=/root/bitshares/bitshares-python-api-backend` 
 
+If you have errors in the output about websocket or psycopg you may need to also do:
+```
+apt-get install python-websocket
+apt-get install python-psycopg2
+```
+
 #### Real Time ops grabber
 
 First step to check if everything is correctly installed is by installing the real time operation grabber. This will subscribe by websocket to the bitshares-core backend and add every operation broadcasted by the node into the postgres database. This data is cleaned at the end of the day by one of the cronjobs, during that time data stored is used for daily calculations of network state.
@@ -277,7 +276,7 @@ In order to simply test and run the backend api you can do:
 
 Then go to apidocs with your server external address:
 
-http://23.94.69.140:5000/apidocs/
+http://185.208.208.184:5000/apidocs/
 
 #### Nginx and uwsgi
 
@@ -326,7 +325,7 @@ There are a lot of ways and application for this collection of API calls, at the
 
 ### Swagger
 
-http://23.94.69.140:5000/apidocs/
+http://185.208.208.184:5000/apidocs/
 
 Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
 
