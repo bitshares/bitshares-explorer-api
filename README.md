@@ -2,7 +2,7 @@
 
 REST api wrapper for the bitshares blockchain.
 
-http://185.208.208.184:5000/apidocs/
+http://23.94.69.140:5000/apidocs/
 
 Index:
 
@@ -276,7 +276,7 @@ In order to simply test and run the backend api you can do:
 
 Then go to apidocs with your server external address:
 
-http://185.208.208.184:5000/apidocs/
+http://23.94.69.140:5000/apidocs/
 
 #### Nginx and uwsgi
 
@@ -325,7 +325,7 @@ There are a lot of ways and application for this collection of API calls, at the
 
 ### Swagger
 
-http://185.208.208.184:5000/apidocs/
+http://23.94.69.140:5000/apidocs/
 
 Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
 
