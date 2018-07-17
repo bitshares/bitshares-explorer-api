@@ -214,8 +214,8 @@ Install virtual environment and setup:
 Now you are in an isolated environment where you install dependencies with `pip install` without affecting anything else or creating version race conditions.
 You can also simply switch or recreate the environment by deleting the env folder that will be created in your working directory.
 
-    root@oxarbitrage ~/bitshares #  source env_wrappers/bin/activate
-    (env_wrappers) root@oxarbitrage ~/bitshares # 
+    root@oxarbitrage ~/bitshares #  source wrappers_env/bin/activate
+    (wrappers_env) root@oxarbitrage ~/bitshares # 
 
 Deactivate with:
 
@@ -245,7 +245,7 @@ First step to check if everything is correctly installed is by installing the re
 
 Make sure you have `PYTHONPATH` set up and run the following command(can be in a `screen` session as the script will have to run permanently, can run in the background, can be added to init, etc:
 
-`python import_realtime_ops.py`
+`python postgres/import_realtime_ops.py`
 
 You should see some output of sql queries being sent to postgres, make sure data is inserted by `select * from ops;` inside postgres `explorer` database.
 
