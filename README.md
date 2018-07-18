@@ -162,11 +162,11 @@ where `9.4` is your postgres version.
 Create username and database:
 
     su postgres
-    createuser explorer
+    createuser postgres
     createdb explorer
     psql
-    psql=# alter user explorer with encrypted password 'exp10r3r';
-    psql=# grant all privileges on database explorer to explorer ;
+    psql=# alter user postgres with encrypted password 'posta';
+    psql=# grant all privileges on database explorer to postgres ;
 
 Import schema:
 
