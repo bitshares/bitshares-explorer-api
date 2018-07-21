@@ -2,7 +2,7 @@
 
 REST api wrapper for the bitshares blockchain.
 
-http://23.94.69.140:5000/apidocs/
+http://185.208.208.184:5000/apidocs/
 
 Index:
 
@@ -162,11 +162,11 @@ where `9.4` is your postgres version.
 Create username and database:
 
     su postgres
-    createuser explorer
+    createuser postgres
     createdb explorer
     psql
-    psql=# alter user explorer with encrypted password 'exp10r3r';
-    psql=# grant all privileges on database explorer to explorer ;
+    psql=# alter user postgres with encrypted password 'posta';
+    psql=# grant all privileges on database explorer to postgres ;
 
 Import schema:
 
@@ -214,8 +214,8 @@ Install virtual environment and setup:
 Now you are in an isolated environment where you install dependencies with `pip install` without affecting anything else or creating version race conditions.
 You can also simply switch or recreate the environment by deleting the env folder that will be created in your working directory.
 
-    root@oxarbitrage ~/bitshares #  source env_wrappers/bin/activate
-    (env_wrappers) root@oxarbitrage ~/bitshares # 
+    root@oxarbitrage ~/bitshares #  source wrappers_env/bin/activate
+    (wrappers_env) root@oxarbitrage ~/bitshares # 
 
 Deactivate with:
 
@@ -239,13 +239,19 @@ To run the api, always need to have the full path to program in `PYTHONPATH` env
 
 `export PYTHONPATH=/root/bitshares/bitshares-python-api-backend` 
 
+If you have errors in the output about websocket or psycopg you may need to also do:
+```
+apt-get install python-websocket
+apt-get install python-psycopg2
+```
+
 #### Real Time ops grabber
 
 First step to check if everything is correctly installed is by installing the real time operation grabber. This will subscribe by websocket to the bitshares-core backend and add every operation broadcasted by the node into the postgres database. This data is cleaned at the end of the day by one of the cronjobs, during that time data stored is used for daily calculations of network state.
 
 Make sure you have `PYTHONPATH` set up and run the following command(can be in a `screen` session as the script will have to run permanently, can run in the background, can be added to init, etc:
 
-`python import_realtime_ops.py`
+`python postgres/import_realtime_ops.py`
 
 You should see some output of sql queries being sent to postgres, make sure data is inserted by `select * from ops;` inside postgres `explorer` database.
 
@@ -270,7 +276,7 @@ In order to simply test and run the backend api you can do:
 
 Then go to apidocs with your server external address:
 
-http://23.94.69.140:5000/apidocs/
+http://185.208.208.184:5000/apidocs/
 
 #### Nginx and uwsgi
 
@@ -288,7 +294,7 @@ Create config file in /etc/nginx/sites-available:
 
     server {
         listen 5000;
-        server_name 23.94.69.140;
+        server_name 185.208.208.184;
         location / {
             include uwsgi_params;
             uwsgi_pass unix:/tmp/api.sock;
@@ -319,7 +325,7 @@ There are a lot of ways and application for this collection of API calls, at the
 
 ### Swagger
 
-http://23.94.69.140:5000/apidocs/
+http://185.208.208.184:5000/apidocs/
 
 Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
 
