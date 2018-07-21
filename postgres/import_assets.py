@@ -42,7 +42,7 @@ ws.send('{"id":1, "method":"call", "params":[0,"list_assets",["AAAAA", 100]]}')
 result = ws.recv()
 j = json.loads(result)
 
-all_assets.append(j);
+all_assets.append(j)
 
 len_result = len(j["result"])
 
@@ -54,7 +54,7 @@ while len_result == 100:
     result = ws.recv()
     j = json.loads(result)
     len_result = len(j["result"])
-    all_assets.append(j);
+    all_assets.append(j)
 
 for x in range(0, len(all_assets)):
     size = len(all_assets[x]["result"])
@@ -69,14 +69,12 @@ for x in range(0, len(all_assets)):
             data3 = api._get_asset(asset_id)
             current_supply = data3[0]["current_supply"]
             precision = data3[0]["precision"]
-            # print current_supply
         except:
             price = 0
             continue
 
         try:
             holders = api._get_asset_holders_count(asset_id)
-            # print holders
         except:
             holders = 0
             continue
@@ -95,7 +93,7 @@ for x in range(0, len(all_assets)):
             continue
 
         #print symbol
-        #print data["quote_volume"]
+        print data["quote_volume"]
 
         try:
             data2 = api._get_ticker(core_symbol, symbol)

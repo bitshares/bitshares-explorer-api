@@ -1583,7 +1583,7 @@ def get_all_referrers():
 def get_grouped_limit_orders():
 
     # connecting to a node with grouper orders plugin active, this is temporal.-
-    ws = create_connection("ws://209.188.21.157:8090/ws")
+    #ws = create_connection("ws://209.188.21.157:8090/ws")
 
     base = request.args.get('base')
     quote = request.args.get('quote')
