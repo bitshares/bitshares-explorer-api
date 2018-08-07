@@ -3,4 +3,5 @@ flask-cors
 websocket-client
 psycopg2
 schedule
+flasgger
 uwsgi==2.0.15
