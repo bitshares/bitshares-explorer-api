@@ -247,13 +247,24 @@ apt-get install python-psycopg2
 
 #### Real Time ops grabber
 
+<strike>
 First step to check if everything is correctly installed is by installing the real time operation grabber. This will subscribe by websocket to the bitshares-core backend and add every operation broadcasted by the node into the postgres database. This data is cleaned at the end of the day by one of the cronjobs, during that time data stored is used for daily calculations of network state.
+</strike>
 
+
+<strike>
+  
 Make sure you have `PYTHONPATH` set up and run the following command(can be in a `screen` session as the script will have to run permanently, can run in the background, can be added to init, etc:
+</strike>
 
 `python postgres/import_realtime_ops.py`
 
+
+<strike>
 You should see some output of sql queries being sent to postgres, make sure data is inserted by `select * from ops;` inside postgres `explorer` database.
+</strike>
+
+The realtime ops grabber had been deprecated by elasticsearch.
 
 #### Cronjobs
 
