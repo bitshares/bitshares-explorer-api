@@ -807,13 +807,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: USD
+          default: 1.3.0
           type: string
           required: true
           description: base asset
         - in: query
           name: quote
-          default: CNY
+          default: 1.3.2
           type: string
           required: true
           description: quote asset
