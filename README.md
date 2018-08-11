@@ -6,21 +6,22 @@ http://185.208.208.184:5000/apidocs/
 
 Index:
 
-- [Installation](#installation)
-  - [Manual](#manual)
-    - [Install elasticsearch](#install-elasticsearch)
-    - [Install a bitshares node with requirements](#install-a-bitshares-node-with-requirements)
-    - [Install and setup postgres](#install-and-setup-postgres)
-    - [Install Bitshares REST and dependencies](#install-Bitshares-rest-and-dependencies)
-    - [Real Time ops grabber](#real-time-ops-grabber)
-    - [Cronjobs](#cronjobs)
-    - [Simple running](#simple-running)
-    - [Nginx and uwsgi](#nginx-and-uwsgi)
-    - [Domain setup and SSL](#domain-setup-and-SSL)
-  - [By Docker](#by-Docker)
-- [Usage](#usage)
-  - [Swagger](#swagger)
-  - [Open Explorer](#open-Explorer)
+- [Bitshares REST API](#bitshares-rest-api)
+    - [Installation](#installation)
+        - [Manual](#manual)
+            - [Install ElasticSearch](#install-elasticsearch)
+            - [Install a bitshares node with requirements.](#install-a-bitshares-node-with-requirements)
+            - [Install and setup postgres.](#install-and-setup-postgres)
+            - [Install Bitshares REST and dependencies.](#install-bitshares-rest-and-dependencies)
+            - [Real Time ops grabber](#real-time-ops-grabber)
+            - [Cronjobs](#cronjobs)
+            - [Simple running](#simple-running)
+            - [Nginx and uwsgi](#nginx-and-uwsgi)
+            - [Domain setup and SSL](#domain-setup-and-ssl)
+        - [Docker](#docker)
+    - [Usage](#usage)
+        - [Swagger](#swagger)
+        - [Open Explorer](#open-explorer)
 
 ## Installation
 
@@ -94,7 +95,7 @@ This API backend connects to a bitshares `witness_node` to get data. This witnes
 - `grouped_orders` 
 - `elasticsearch`
 
-Additionally, the node must have `asset_api` enabled(off by default). 
+Additionally, the node must have `asset_api` and `orders_api` enabled(off by default). 
 
 First download and build `bitshares-core`:
 
@@ -115,7 +116,7 @@ Next, create `api-access.json` file as shown:
              {
                 "password_hash_b64" : "*",
                 "password_salt_b64" : "*",
-                "allowed_apis" : ["database_api", "network_broadcast_api", "history_api", "asset_api"]
+                "allowed_apis" : ["database_api", "network_broadcast_api", "history_api", "asset_api", "orders_api"]
              }
           ]
        ]
