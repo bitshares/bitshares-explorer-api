@@ -1395,9 +1395,8 @@ def get_limit_orders():
 
 @app.route('/get_call_orders')
 def get_call_orders():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
-    ws.send('{"id":1, "method":"call", "params":[0,"get_call_orders",["' + base + '", "' + quote + '", 100]]}')
+    asset_id = request.args.get('asset_id')
+    ws.send('{"id":1, "method":"call", "params":[0,"get_call_orders",["' + asset_id + '", 100]]}')
     result = ws.recv()
     j = json.loads(result)
 

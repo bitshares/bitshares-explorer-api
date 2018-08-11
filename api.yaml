@@ -831,17 +831,11 @@ paths:
       operationId: get_call_orders
       parameters:
         - in: query
-          name: base
+          name: asset_id
           default: 1.3.0
           type: string
           required: true
-          description: base asset
-        - in: query
-          name: quote
-          default: 0
-          type: string
-          required: true
-          description: quote asset
+          description: ID of asset being settled
       responses:
         '200':
           description: open call orders
