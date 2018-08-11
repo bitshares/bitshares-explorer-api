@@ -292,13 +292,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1
+          default: USD
           type: string
           required: true
           description: Base asset name or ID
         - in: query
           name: quote
-          default: 1
+          default: CNY
           type: string
           required: true
           description: Quote asset name or ID
@@ -317,13 +317,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1
+          default: USD
           type: string
           required: true
           description: Base asset name or ID
         - in: query
           name: quote
-          default: 1
+          default: CNY
           type: string
           required: true
           description: Quote asset name or ID
@@ -755,7 +755,7 @@ paths:
       parameters:
         - in: query
           name: account_id
-          default: 1.2.0
+          default: 1.2.100
           type: string
           required: true
           description: the account to get operations from
@@ -807,13 +807,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1.3.0
+          default: USD
           type: string
           required: true
           description: base asset
         - in: query
           name: quote
-          default: 0
+          default: CNY
           type: string
           required: true
           description: quote asset
@@ -832,7 +832,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: 1.3.0
+          default: 1.3.219
           type: string
           required: true
           description: ID of asset being settled
@@ -912,7 +912,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: A
+          default: USD
           type: string
           required: true
           description: asset id or name
