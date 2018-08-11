@@ -1,7 +1,8 @@
 flask
 flask-cors
 websocket-client
-psycopg2
+psycopg2-binary
 schedule
 flasgger
+simplejson
 uwsgi==2.0.15
