@@ -536,55 +536,43 @@ def top_proxies():
 
     query = "SELECT voting_as FROM holders WHERE voting_as<>'1.2.5' group by voting_as"
     cur.execute(query)
-    results = cur.fetchall()
-    #con.close()
+    proxy_id_rows = cur.fetchall()
 
     proxies = []
 
-    for reffered_account in results:
-
-        proxy_line = [0] * 5
-
-        proxy_id = reffered_account[0]
-        proxy_line[0] = proxy_id
+    for proxy_id_row in proxy_id_rows:
+        proxy_id = proxy_id_row[0]
 
         query = "SELECT account_name, amount FROM holders WHERE account_id=%s LIMIT 1"
         cur.execute(query, (proxy_id,))
-        proxy = cur.fetchone()
+        proxy_row = cur.fetchone()
 
         try:
-            proxy_name = proxy[0]
-            proxy_amount = proxy[1]
+            proxy_name = proxy_row[0]
+            proxy_amount = int(proxy_row[1])
         except:
             proxy_name = "unknown"
             proxy_amount = 0
 
-
-        proxy_line[1] = proxy_name
-
-        query = "SELECT amount, account_id FROM holders WHERE voting_as=%s"
+        query = "SELECT amount FROM holders WHERE voting_as=%s"
         cur.execute(query, (proxy_id,))
-        results2 = cur.fetchall()
+        follower_rows = cur.fetchall()
 
-        proxy_line[2] = int(proxy_amount)
+        proxy_followers = 0
+        for follower_row in follower_rows:
+            folower_amount = follower_row[0]
+            proxy_amount += int(folower_amount)  # total proxy votes
+            proxy_followers += 1
 
-        for account_with_proxy in results2:
-            amount = account_with_proxy[0]
-            account_id = account_with_proxy[1]
-            proxy_line[2] = proxy_line[2] + int(amount)  # total proxy votes
-            proxy_line[3] = proxy_line[3] + 1       # followers
-
-        if proxy_line[3] > 2:
-            percentage = float(float(proxy_line[2]) * 100.0/ float(total_votes))
-            proxy_line[4] = percentage
-            proxies.append(proxy_line)
+        if proxy_followers > 2:
+            proxy_total_percentage = float(float(proxy_amount) * 100.0/ float(total_votes))
+            proxies.append([proxy_id, proxy_name, proxy_amount, proxy_followers, proxy_total_percentage])
 
     con.close()
 
-    proxies = sorted(proxies, key=lambda k: int(k[2]))
-    r_proxies = proxies[::-1]
+    proxies = sorted(proxies, key=lambda k: -k[2]) # Reverse amount order
 
-    return jsonify(filter(None, r_proxies))
+    return jsonify(proxies)
 
 
 @app.route('/top_holders')
