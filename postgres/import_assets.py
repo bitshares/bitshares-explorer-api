@@ -67,8 +67,8 @@ for x in range(0, len(all_assets)):
         precision = 5
         try:
             data3 = api._get_asset(asset_id)
-            current_supply = data3[0]["current_supply"]
-            precision = data3[0]["precision"]
+            current_supply = data3["current_supply"]
+            precision = data3["precision"]
         except:
             price = 0
             continue
@@ -143,7 +143,7 @@ con.commit()
 
 # insert core token manually
 data3 = api._get_asset(config.CORE_ASSET_ID)
-current_supply = data3[0]["current_supply"]
+current_supply = data3["current_supply"]
 
 holders = api._get_asset_holders_count(config.CORE_ASSET_ID)
 
