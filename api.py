@@ -81,10 +81,7 @@ def _account_id(account_name):
     account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_name], 0])
     return account[0]['id']
 
-def _get_operation(operation_id, ws_client):
-    objects = ws_client.request('database', 'get_objects', [[operation_id]])
-    operation = objects[0] if objects[0] else {} 
-
+def _enrich_operation(operation, ws_client):
     dynamic_global_properties = ws_client.request('database', 'get_dynamic_global_properties', [])
     operation["accounts_registered_this_interval"] = dynamic_global_properties["accounts_registered_this_interval"]
 
@@ -111,7 +108,11 @@ def _get_operation(operation_id, ws_client):
 @app.route('/operation')
 def get_operation():
     operation_id = request.args.get('operation_id')
-    operation = _get_operation(operation_id, bitshares_ws_client)
+    
+    results = bitshares_ws_client.request('database', 'get_objects', [[operation_id]])
+    operation = results[0] if results[0] else {} 
+
+    operation = _enrich_operation(operation, bitshares_ws_client)
     return jsonify(operation)
 
 
@@ -122,7 +123,10 @@ def operation_full():
     # lets connect the operations to a full node
     bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
 
-    operation = _get_operation(operation_id, bitshares_ws_full_client)
+    results = bitshares_ws_full_client.request('database', 'get_objects', [[operation_id]])
+    operation = results[0] if results[0] else {} 
+
+    operation = _enrich_operation(operation, bitshares_ws_full_client)
     return jsonify(operation)
 
 @app.route('/operation_full_elastic')
@@ -130,39 +134,19 @@ def operation_full_elastic():
 
     operation_id = request.args.get('operation_id')
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_single_operation?operation_id=" + operation_id).read()
-
-    dynamic_global_properties = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
-    accounts_registered_this_interval = dynamic_global_properties["accounts_registered_this_interval"]
-
-    # get market cap
-    core_asset = bitshares_ws_client.request('database', 'get_objects', [["2.3.0"]])[0]
-    current_supply = core_asset["current_supply"]
-    confidental_supply = core_asset["confidential_supply"]
-    market_cap = int(current_supply) + int(confidental_supply)
-    bts_market_cap = int(market_cap/100000000)
-    
-    if config.TESTNET != 1: # Todo: had to do something else for the testnet
-        btsBtcVolume = bitshares_ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
-        quote_volume = btsBtcVolume["quote_volume"]
-    else:
-        quote_volume = 0
-    
-    # TODO: making this call with every operation is not very efficient as this are static properties
-    global_properties = bitshares_ws_client.request('database', 'get_global_properties', [])
-
-    commitee_count = len(global_properties["active_committee_members"])
-    witness_count = len(global_properties["active_witnesses"])
-
     res = json.loads(contents)
-    operation = { "op": json.loads(res[0]["operation_history"]["op"]),
-         "accounts_registered_this_interval": accounts_registered_this_interval,
-         "bts_market_cap": bts_market_cap, "quote_volume": quote_volume, "commitee_count": commitee_count, "witness_count": witness_count,
-         "block_num": res[0]["block_data"]["block_num"], "op_in_trx": res[0]["operation_history"]["op_in_trx"],
-         "result": res[0]["operation_history"]["operation_result"], "trx_in_block": res[0]["operation_history"]["trx_in_block"],
-         "virtual_op": res[0]["operation_history"]["virtual_op"], "block_time": res[0]["block_data"]["block_time"]}
+    operation = { 
+        "op": json.loads(res[0]["operation_history"]["op"]),
+        "block_num": res[0]["block_data"]["block_num"], 
+        "op_in_trx": res[0]["operation_history"]["op_in_trx"],
+        "result": res[0]["operation_history"]["operation_result"], 
+        "trx_in_block": res[0]["operation_history"]["trx_in_block"],
+        "virtual_op": res[0]["operation_history"]["virtual_op"], 
+        "block_time": res[0]["block_data"]["block_time"]
+    }
 
-    return jsonify([operation])
-
+    operation = _enrich_operation(operation, bitshares_ws_client)
+    return jsonify(operation)
 
 @app.route('/accounts')
 def accounts():
