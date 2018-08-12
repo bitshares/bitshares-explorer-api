@@ -206,10 +206,10 @@ def account_history():
     account_history = bitshares_ws_client.request('history', 'get_account_history', [account_id, "1.11.1", 20, "1.11.9999999999"])
 
     if(len(account_history) > 0):
-        for c in range(0, len(account_history)):
-            creation_block = bitshares_ws_client.request('database', 'get_block_header', [str(account_history[c]["block_num"]), 0])
-            account_history[c]["timestamp"] = creation_block["timestamp"]
-            account_history[c]["witness"] = creation_block["witness"]
+        for transaction in account_history:
+            creation_block = bitshares_ws_client.request('database', 'get_block_header', [str(transaction["block_num"]), 0])
+            transaction["timestamp"] = creation_block["timestamp"]
+            transaction["witness"] = creation_block["witness"]
     try:
         return jsonify(account_history)
     except:
@@ -497,17 +497,17 @@ def market_chart_data():
     market_history = bitshares_ws_client.request('history', 'get_market_history', [base_id, quote_id, 86400, ago.strftime("%Y-%m-%dT%H:%M:%S"), now.strftime("%Y-%m-%dT%H:%M:%S")])
 
     data = []
-    for w in range(0, len(market_history)):
+    for market_operation in market_history:
 
-        open_quote = float(market_history[w]["open_quote"])
-        high_quote = float(market_history[w]["high_quote"])
-        low_quote = float(market_history[w]["low_quote"])
-        close_quote = float(market_history[w]["close_quote"])
+        open_quote = float(market_operation["open_quote"])
+        high_quote = float(market_operation["high_quote"])
+        low_quote = float(market_operation["low_quote"])
+        close_quote = float(market_operation["close_quote"])
 
-        open_base = float(market_history[w]["open_base"])
-        high_base = float(market_history[w]["high_base"])
-        low_base = float(market_history[w]["low_base"])
-        close_base = float(market_history[w]["close_base"])
+        open_base = float(market_operation["open_base"])
+        high_base = float(market_operation["high_base"])
+        low_base = float(market_operation["low_base"])
+        close_base = float(market_operation["close_base"])
 
         open = 1/(float(open_base/base_precision)/float(open_quote/quote_precision))
         high = 1/(float(high_base/base_precision)/float(high_quote/quote_precision))
@@ -562,11 +562,11 @@ def top_proxies():
 
     proxies = []
 
-    for p in range(0, len(results)):
+    for reffered_account in results:
 
         proxy_line = [0] * 5
 
-        proxy_id = results[p][0]
+        proxy_id = reffered_account[0]
         proxy_line[0] = proxy_id
 
         query = "SELECT account_name, amount FROM holders WHERE account_id=%s LIMIT 1"
@@ -589,9 +589,9 @@ def top_proxies():
 
         proxy_line[2] = int(proxy_amount)
 
-        for p2 in range(0, len(results2)):
-            amount = results2[p2][0]
-            account_id = results2[p2][1]
+        for account_with_proxy in results2:
+            amount = account_with_proxy[0]
+            account_id = account_with_proxy[1]
             proxy_line[2] = proxy_line[2] + int(amount)  # total proxy votes
             proxy_line[3] = proxy_line[3] + 1       # followers
 
@@ -778,8 +778,8 @@ def top_markets():
     cur.execute(query)
     results = cur.fetchall()
     total = 0
-    for v in range(0, len(results)):
-        total = total + results[v][0]
+    for v in results:
+        total = total + v[0]
 
     query = "SELECT pair, volume FROM markets ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
@@ -808,8 +808,8 @@ def top_smartcoins():
     cur.execute(query)
     results = cur.fetchall()
     total = 0
-    for v in range(0, len(results)):
-        total = total + results[v][0]
+    for v in results:
+        total = total + v[0]
 
     query = "SELECT aname, volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
@@ -838,8 +838,8 @@ def top_uias():
     cur.execute(query)
     results = cur.fetchall()
     total = 0
-    for v in range(0, len(results)):
-        total = total + results[v][0]
+    for v in results:
+        total = total + v[0]
 
     query = "SELECT aname, volume FROM assets WHERE TYPE='User Issued' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
@@ -953,10 +953,10 @@ def account_history_pager():
 
     if start > 0:
         account_history = bitshares_ws_full_client.request('history', 'get_relative_account_history', [account_id, stop, 20, start])
-        for c in range(0, len(account_history)):
-            block_header = bitshares_ws_full_client.request('database', 'get_block_header', [account_history[c]["block_num"], 0])
-            account_history[c]["timestamp"] = block_header["timestamp"]
-            account_history[c]["witness"] = block_header["witness"]
+        for transaction in account_history:
+            block_header = bitshares_ws_full_client.request('database', 'get_block_header', [transaction["block_num"], 0])
+            transaction["timestamp"] = block_header["timestamp"]
+            transaction["witness"] = block_header["witness"]
 
         return jsonify(account_history)
     else:
@@ -1091,8 +1091,7 @@ def get_all_asset_holders():
 
     asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, 0, 100])
 
-    for r in range(0, len(asset_holders)):
-        all.append(asset_holders[r])
+    all.extend(asset_holders)
 
     len_result = len(asset_holders)
     start = 100
@@ -1100,9 +1099,7 @@ def get_all_asset_holders():
         start = start + 100
         asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, start, 100])
         len_result = len(asset_holders)
-        for r in range(0, len(asset_holders)):
-            all.append(asset_holders[r])
-
+        all.extend(asset_holders)
 
     return jsonify(all)
 
