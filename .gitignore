@@ -2,3 +2,4 @@ wrappers_env
 *.pyc
 .vscode
 .pytest_cache
+non_reg/test_result.txt
