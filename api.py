@@ -362,12 +362,7 @@ def get_workers():
 
 
 def isObject(string):
-    parts = string.split(".")
-    if len(parts) == 3:
-        return True
-    else:
-        return False
-
+    return len(string.split(".")) == 3
 
 @app.route('/get_markets')
 def get_markets():
