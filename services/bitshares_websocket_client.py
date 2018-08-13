@@ -25,11 +25,11 @@ class BitsharesWebsocketClient():
             ]
         }
         request_string = json.dumps(payload) 
-        print('> {}'.format(request_string))
+        #print('> {}'.format(request_string))
         self.ws.send(request_string)
         self.request_id += 1
         reply =  self.ws.recv()
-        print('< {}'.format(reply))
+        #print('< {}'.format(reply))
 
         ret = {}
         try:
@@ -51,4 +51,7 @@ class BitsharesWebsocketClient():
             api_id = self.request('login', api, [])
             self.api_ids[api] = api_id
         return self.api_ids[api]
+
+    def get_object(self, object_id):
+        return self.request('database', 'get_objects', [[object_id]])[0]
         

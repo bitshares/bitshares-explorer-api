@@ -10,7 +10,7 @@ bitshares_ws_client = BitsharesWebsocketClient(config.WEBSOCKET_URL)
 def header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
 
-    core_asset_description = bitshares_ws_client.request('database', 'get_objects', [["2.3.0"]])[0]
+    core_asset_description = bitshares_ws_client.get_object('2.3.0')
 
     current_supply = core_asset_description["current_supply"]
     confidental_supply = core_asset_description["confidential_supply"]
@@ -35,7 +35,6 @@ def header():
 def account(account_id):
     return _account(account_id)
 
-
 def _account(account_id):
     return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
 
@@ -59,7 +58,7 @@ def _enrich_operation(operation, ws_client):
     operation["accounts_registered_this_interval"] = dynamic_global_properties["accounts_registered_this_interval"]
 
     # get market cap
-    core_asset = ws_client.request('database', 'get_objects', [["2.3.0"]])[0]
+    core_asset = ws_client.get_object('2.3.0')
     current_supply = core_asset["current_supply"]
     confidental_supply = core_asset["confidential_supply"]
     market_cap = int(current_supply) + int(confidental_supply)
@@ -79,8 +78,9 @@ def _enrich_operation(operation, ws_client):
     return [ operation ]
 
 def get_operation(operation_id):
-    results = bitshares_ws_client.request('database', 'get_objects', [[operation_id]])
-    operation = results[0] if results[0] else {} 
+    operation = bitshares_ws_client.get_object(operation_id)
+    if not operation:
+        operation = {} 
 
     operation = _enrich_operation(operation, bitshares_ws_client)
     return operation
@@ -90,8 +90,9 @@ def operation_full(operation_id):
     # lets connect the operations to a full node
     bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
 
-    results = bitshares_ws_full_client.request('database', 'get_objects', [[operation_id]])
-    operation = results[0] if results[0] else {} 
+    operation = bitshares_ws_full_client.get_object(operation_id)
+    if not operation:
+        operation = {} 
 
     operation = _enrich_operation(operation, bitshares_ws_full_client)
     return operation
@@ -167,13 +168,13 @@ def _get_asset(asset_id_or_name):
     else:
         asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id_or_name], 0])[0]
 
-    dynamic_asset_data = bitshares_ws_client.request('database', 'get_objects', [[asset["dynamic_asset_data_id"]]])[0]
+    dynamic_asset_data = bitshares_ws_client.get_object(asset["dynamic_asset_data_id"])
     asset["current_supply"] = dynamic_asset_data["current_supply"]
     asset["confidential_supply"] = dynamic_asset_data["confidential_supply"]
     asset["accumulated_fees"] = dynamic_asset_data["accumulated_fees"]
     asset["fee_pool"] = dynamic_asset_data["fee_pool"]
 
-    issuer = bitshares_ws_client.request('database', 'get_objects', [[asset["issuer"]]])[0]
+    issuer = bitshares_ws_client.get_object(asset["issuer"])
     asset["issuer_name"] = issuer["name"]
 
     return asset
@@ -237,18 +238,14 @@ def lastnetworkops():
     # add operation data
     for o in range(0, len(results)):
         operation_id = results[o][2]
-        object = _get_object(operation_id)
-        results[o] = results[o] + tuple(object[0]["op"])
+        object = bitshares_ws_client.get_object(operation_id)
+        results[o] = results[o] + tuple(object["op"])
 
     return results
 
 
 def get_object(object):
-    return _get_object(object)
-
-def _get_object(obj):
-    return bitshares_ws_client.request('database', 'get_objects', [[obj]])
-
+    return [ bitshares_ws_client.get_object(object) ]
 
 def get_asset_holders_count(asset_id):
     return _get_asset_holders_count(asset_id)
@@ -274,12 +271,12 @@ def get_workers():
 
 
     # get the votes of worker 114.0 - refund 400k
-    refund400k = bitshares_ws_client.request('database', 'get_objects', [["1.14.0"]])[0]
+    refund400k = bitshares_ws_client.get_object("1.14.0")
     thereshold =  int(refund400k["total_votes_for"])
 
     workers = []
     for w in range(0, workers_count):
-        worker = bitshares_ws_client.request('database', 'get_objects', [["1.14." + str(w)]])[0]
+        worker = bitshares_ws_client.get_object("1.14." + str(w))
         worker["worker_account_name"] = _account_name(worker["worker_account"])
 
         current_votes = int(worker["total_votes_for"])
@@ -341,7 +338,7 @@ def get_witnesses():
 
     witnesses = []
     for w in range(0, witnesses_count):
-        witness = bitshares_ws_client.request('database', 'get_objects', [["1.6." + str(w)]])[0]
+        witness = bitshares_ws_client.get_object("1.6." + str(w))
         if witness:
             witness["witness_account_name"] = _account_name(witness["witness_account"])
             witnesses.append([witness])
@@ -357,7 +354,7 @@ def get_committee_members():
 
     committee_members = []
     for w in range(0, committee_count):
-        committee_member = bitshares_ws_client.request('database', 'get_objects', [["1.5." + str(w)]])[0]
+        committee_member = bitshares_ws_client.get_object("1.5." + str(w))
         if committee_member:
             committee_member["committee_member_account_name"] = _account_name(committee_member["committee_member_account"])
             committee_members.append([committee_member])
@@ -521,7 +518,7 @@ def witnesses_votes():
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.request('database', 'get_objects', [[id_proxy]])[0]
+            proxy = bitshares_ws_client.get_object(id_proxy)
             votes = proxy["options"]["votes"]
             #print votes
             p_vote = "-"
@@ -563,7 +560,7 @@ def workers_votes():
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.request('database', 'get_objects', [[id_proxy]])[0]
+            proxy = bitshares_ws_client.get_object(id_proxy)
             votes = proxy["options"]["votes"]
             #print votes
             p_vote = "-"
@@ -603,7 +600,7 @@ def committee_votes():
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.request('database', 'get_objects', [[id_proxy]])[0]
+            proxy = bitshares_ws_client.get_object(id_proxy)
             votes = proxy["options"]["votes"]
 
             #print votes
@@ -784,7 +781,7 @@ def account_history_pager(account_id, page):
 
     # need to get total ops for account
     account = bitshares_ws_full_client.request('database', 'get_accounts', [[account_id]])[0]
-    statistics = bitshares_ws_full_client.request('database', 'get_objects', [[account["statistics"]]])[0]
+    statistics = bitshares_ws_full_client.get_object(account["statistics"])
 
     total_ops = statistics["total_ops"]
     #print total_ops
