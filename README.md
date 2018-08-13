@@ -206,6 +206,11 @@ Install python and pip:
 
 `apt-get install -y python python-pip`
 
+Clone the app:
+
+    git clone https://github.com/oxarbitrage/bitshares-python-api-backend
+    cd bitshares-python-api-backend/
+    
 Install virtual environment and setup:
 
     pip install virtualenv 
@@ -224,17 +229,8 @@ Deactivate with:
 
 Install dependencies in virtual env activated:
 
-    pip install flask
-    pip install flask-cors
-    pip install websocket-client
-    pip install psycopg2
-    pip install psycopg2-binary
-    pip install flasgger
+    pip install -r requirements/production.pip
 
-Clone the app:
-
-    git clone https://github.com/oxarbitrage/bitshares-python-api-backend
-    cd bitshares-python-api-backend/
 
 To run the api, always need to have the full path to program in `PYTHONPATH` environment variable exported:
 
@@ -283,7 +279,7 @@ Add the following taks to cron file with `crontab -e`:
 
 In order to simply test and run the backend api you can do:
 
-    export FLASK_APP=wrapper.py
+    export FLASK_APP=app.py
     flask run --host=0.0.0.0
 
 Then go to apidocs with your server external address:
@@ -309,7 +305,7 @@ Create config file in /etc/nginx/sites-available:
         server_name 185.208.208.184;
         location / {
             include uwsgi_params;
-            uwsgi_pass unix:/tmp/api.sock;
+            uwsgi_pass unix:/tmp/app.sock;
         }
     }
 
@@ -320,7 +316,7 @@ Create symbolic link to sites-enabled and restart nginx:
 
 Now api can be started with:
 
-    (wrappers) root@oxarbitrage ~/bitshares/bitshares-python-api-backend # uwsgi --ini api.ini
+    (wrappers) root@oxarbitrage ~/bitshares/bitshares-python-api-backend # uwsgi --ini app.ini
 
 #### Domain setup and SSL
 

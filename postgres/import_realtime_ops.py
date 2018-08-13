@@ -5,7 +5,7 @@ import thread
 import psycopg2
 import websocket
 
-import api
+import api.explorer
 import config
 
 
@@ -18,15 +18,15 @@ def on_message(ws, message):
         #print id_[:4]
         if id_[:4] == "2.9.":
             #print j["params"][1][0][0]
-            data = api._get_object(id_)
+            data = api.explorer._get_object(id_)
             #print data[0]
             account_id = data[0]["account"]
-            data_a = api._account(account_id)
+            data_a = api.explorer._account(account_id)
 
             #print data_a[0]["name"]
             account_name = data_a[0]["name"]
 
-            data2 = api._get_object(data[0]['operation_id'])
+            data2 = api.explorer._get_object(data[0]['operation_id'])
             block_num = data2[0]["block_num"]
 
             op_type = data2[0]["op"][0]

@@ -25,11 +25,11 @@ class BitsharesWebsocketClient():
             ]
         }
         request_string = json.dumps(payload) 
-        #print('> {}'.format(request_string))
+        print('> {}'.format(request_string))
         self.ws.send(request_string)
         self.request_id += 1
         reply =  self.ws.recv()
-        #print('< {}'.format(reply))
+        print('< {}'.format(reply))
 
         ret = {}
         try:
