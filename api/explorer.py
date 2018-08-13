@@ -9,28 +9,7 @@ bitshares_ws_client = BitsharesWebsocketClient(config.WEBSOCKET_URL)
 
 def header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
-
-    core_asset_description = bitshares_ws_client.get_object('2.3.0')
-
-    current_supply = core_asset_description["current_supply"]
-    confidental_supply = core_asset_description["confidential_supply"]
-
-    market_cap = int(current_supply) + int(confidental_supply)
-    response["bts_market_cap"] = int(market_cap/100000000)
-
-    if config.TESTNET != 1: # Todo: had to do something else for the testnet
-        btsBtcVolume = bitshares_ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
-        response["quote_volume"] = btsBtcVolume["quote_volume"]
-    else:
-        response["quote_volume"] = 0
-
-    global_properties = bitshares_ws_client.request('database', 'get_global_properties', [])
-
-    response["commitee_count"] = len(global_properties["active_committee_members"])
-    response["witness_count"] = len(global_properties["active_witnesses"])
-
-    return response
-
+    return _add_global_informations(response, bitshares_ws_client)
 
 def account(account_id):
     return _account(account_id)
@@ -53,29 +32,32 @@ def _account_id(account_name):
     account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_name], 0])
     return account[0]['id']
 
-def _enrich_operation(operation, ws_client):
-    dynamic_global_properties = ws_client.request('database', 'get_dynamic_global_properties', [])
-    operation["accounts_registered_this_interval"] = dynamic_global_properties["accounts_registered_this_interval"]
-
+def _add_global_informations(response, ws_client):
     # get market cap
     core_asset = ws_client.get_object('2.3.0')
     current_supply = core_asset["current_supply"]
     confidental_supply = core_asset["confidential_supply"]
     market_cap = int(current_supply) + int(confidental_supply)
-    operation["bts_market_cap"] = int(market_cap/100000000)
+    response["bts_market_cap"] = int(market_cap/100000000)
 
     if config.TESTNET != 1: # Todo: had to do something else for the testnet
         btsBtcVolume = ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
-        operation["quote_volume"] = btsBtcVolume["quote_volume"]
+        response["quote_volume"] = btsBtcVolume["quote_volume"]
     else:
-        operation["quote_volume"] = 0
+        response["quote_volume"] = 0
 
     # TODO: making this call with every operation is not very efficient as this are static properties
     global_properties = ws_client.request('database', 'get_global_properties', [])
-    operation["commitee_count"] = len(global_properties["active_committee_members"])
-    operation["witness_count"] = len(global_properties["active_witnesses"])
+    response["commitee_count"] = len(global_properties["active_committee_members"])
+    response["witness_count"] = len(global_properties["active_witnesses"])
 
-    return [ operation ]
+    return response
+
+def _enrich_operation(operation, ws_client):
+    dynamic_global_properties = ws_client.request('database', 'get_dynamic_global_properties', [])
+    operation["accounts_registered_this_interval"] = dynamic_global_properties["accounts_registered_this_interval"]
+
+    return _add_global_informations(operation, ws_client)
 
 def get_operation(operation_id):
     operation = bitshares_ws_client.get_object(operation_id)
@@ -83,7 +65,7 @@ def get_operation(operation_id):
         operation = {} 
 
     operation = _enrich_operation(operation, bitshares_ws_client)
-    return operation
+    return [ operation ]
 
 
 def operation_full(operation_id):
@@ -95,7 +77,7 @@ def operation_full(operation_id):
         operation = {} 
 
     operation = _enrich_operation(operation, bitshares_ws_full_client)
-    return operation
+    return [ operation ]
 
 def operation_full_elastic(operation_id):
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_single_operation?operation_id=" + operation_id).read()
@@ -111,7 +93,7 @@ def operation_full_elastic(operation_id):
     }
 
     operation = _enrich_operation(operation, bitshares_ws_client)
-    return operation
+    return [ operation ]
 
 def accounts():
     core_asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', ['1.3.0', 0, 100])
