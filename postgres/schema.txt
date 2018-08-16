@@ -280,7 +280,7 @@ ALTER SEQUENCE referrers_rid_seq OWNED BY referrers.rid;
 CREATE TABLE stats (
     sid integer NOT NULL,
     type character varying(40) NOT NULL,
-    value bigint NOT NULL,
+    value numeric NOT NULL,
     date date NOT NULL,
     CONSTRAINT stats_type_check CHECK (((type)::text <> ''::text))
 );

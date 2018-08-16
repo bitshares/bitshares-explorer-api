@@ -1,24 +1,23 @@
-info:
-  description: Exposes bitshares calls needed to explore the blockchain
-  title: Bitshares Python API Backend
-version: 1
 swagger: '2.0'
-
+info:
+  title: Bitshares Python API Backend
+  description: Exposes bitshares calls needed to explore the blockchain
+  version: '1'
+schemes:
+  - http
+  - https
+produces:
+  - application/json
 paths:
   "/header":
     get:
       description: Get some blockchain information.
       operationId: header
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Array of operation data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - blockchain
@@ -30,20 +29,14 @@ paths:
         - in: query
           name: account_id
           default: 1.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Account ID (1.2.X)
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 1 account object
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -55,20 +48,14 @@ paths:
         - in: query
           name: account_id
           default: 1.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Account ID (1.2.X)
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 1 account name
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -80,20 +67,14 @@ paths:
         - in: query
           name: account_name
           default: committee-account
-          schema:
-            type: string
+          type: string
           required: true
           description: Account name
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 1 account ID
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -105,20 +86,14 @@ paths:
         - in: query
           name: operation_id
           default: 1.11.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Operation ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 1 operation
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - operation
@@ -130,20 +105,14 @@ paths:
         - in: query
           name: operation_id
           default: 1.11.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Operation ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 1 operation
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - operation
@@ -155,20 +124,14 @@ paths:
         - in: query
           name: operation_id
           default: 1.11.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Operation ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 1 operation
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - operation
@@ -176,16 +139,11 @@ paths:
     get:
       description: Get an account list of the most 100 rich CORE holders.
       operationId: accounts
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Rich list of accounts
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -197,20 +155,14 @@ paths:
         - in: query
           name: account_id
           default: 1.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Account ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Full account data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -218,16 +170,11 @@ paths:
     get:
       description: Get list of assets that had volume in the last 24 hours.
       operationId: assets
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: List of assets with 24hs volume
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -235,16 +182,11 @@ paths:
     get:
       description: Get network fee data.
       operationId: fees
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Fee data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - blockchain
@@ -256,20 +198,14 @@ paths:
         - in: query
           name: account_id
           default: 1.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Account ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Last 20 operations for account
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -281,20 +217,14 @@ paths:
         - in: query
           name: asset_id
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Asset ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Information about asset
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -306,20 +236,14 @@ paths:
         - in: query
           name: asset_id
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Asset ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Information about asset with volume data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -331,20 +255,14 @@ paths:
         - in: query
           name: block_num
           default: 1
-          schema:
-            type: string
+          type: string
           required: true
           description: Block number to get the header info
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Block header data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - block
@@ -356,20 +274,14 @@ paths:
         - in: query
           name: block_num
           default: 1
-          schema:
-            type: string
+          type: string
           required: true
           description: Block number to get the block info
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Block data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - block
@@ -380,28 +292,21 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1
-          schema:
-            type: string
+          default: USD
+          type: string
           required: true
           description: Base asset name or ID
         - in: query
           name: quote
-          default: 1
-          schema:
-            type: string
+          default: CNY
+          type: string
           required: true
           description: Quote asset name or ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Ticker data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -412,28 +317,21 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1
-          schema:
-            type: string
+          default: USD
+          type: string
           required: true
           description: Base asset name or ID
         - in: query
           name: quote
-          default: 1
-          schema:
-            type: string
+          default: CNY
+          type: string
           required: true
           description: Quote asset name or ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 24hs volume data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -441,16 +339,11 @@ paths:
     get:
       description: Get the last 10 operations made in the blockchain.
       operationId: lastnetworkops
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Last 10 operations made in the network.
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - blockchain
@@ -460,22 +353,16 @@ paths:
       operationId: get_object
       parameters:
         - in: query
-          name: object_id
+          name: object
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Object ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Object data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - object
@@ -487,20 +374,14 @@ paths:
         - in: query
           name: asset_id
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Asset ID
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Count of asset holders
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -512,34 +393,26 @@ paths:
         - in: query
           name: asset_id
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Asset ID
         - in: query
           name: start
           default: 0
-          schema:
-            type: integer
+          type: integer
           required: true
           description: Pagination start
         - in: query
           name: limit
           default: 0
-          schema:
-            type: integer
+          type: integer
           required: true
           description: Number of records to retreive
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Account holder and amount
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -547,16 +420,11 @@ paths:
     get:
       description: Get all workers.
       operationId: get_workers
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: All workers ever submitted to the network.
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - worker
@@ -568,20 +436,14 @@ paths:
         - in: query
           name: asset_id
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Asset ID or name
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Active markets for asset
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -589,16 +451,11 @@ paths:
     get:
       description: Get the most active 100 markets in the network.
       operationId: get_most_active_markets
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 100 top markets
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -610,34 +467,26 @@ paths:
         - in: query
           name: base
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Base asset id
         - in: query
           name: quote
           default: 1.3.1
-          schema:
-            type: string
+          type: string
           required: true
           description: Quote asset id
         - in: query
           name: limit
           default: 100
-          schema:
-            type: string
+          type: string
           required: true
           description: Number of records to retreive
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: the order book for the market
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -649,20 +498,14 @@ paths:
         - in: query
           name: account_id
           default: 1.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Account id
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: open margin positions for account
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -671,16 +514,11 @@ paths:
     get:
       description: Get all witnesses.
       operationId: get_witnesses
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: All witnesses in the network
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - witness
@@ -689,52 +527,24 @@ paths:
     get:
       description: Get all committee members.
       operationId: get_committee_members
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: All committee members in the network
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - committee
-        - governane
-  "/get_committee_members":
-    get:
-      description: Get all committee members.
-      operationId: get_committee_members
-      produces:
-        - application/json
-      responses:
-        200:
-          description: All committee members in the network
-        500:
-          description: Error processing parameters
-      schemes:
-        - http
-        - https
-      tags:
-        - api
-        - committee
-        - governane
+        - governance
   "/market_chart_dates":
     get:
       description: Utility, get the dates of the last 30 days
       operationId: market_chart_dates
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Array of dates of the last 30 days
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -746,27 +556,20 @@ paths:
         - in: query
           name: base
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: Base asset id
         - in: query
           name: quote
           default: 1.3.1
-          schema:
-            type: string
+          type: string
           required: true
           description: Quote asset id
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: OHLC data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -774,16 +577,11 @@ paths:
     get:
       description: Get the top proxies
       operationId: top_proxies
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Top X proxies
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - proxy
@@ -792,16 +590,11 @@ paths:
     get:
       description: Get the top holders
       operationId: top_holders
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Top X holders
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - holder
@@ -810,16 +603,11 @@ paths:
     get:
       description: Get witness votes
       operationId: witnesses_votes
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Witnesses votes
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - witness
@@ -828,16 +616,11 @@ paths:
     get:
       description: Get worker votes
       operationId: workers_votes
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Worker votes
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - worker
@@ -846,16 +629,11 @@ paths:
     get:
       description: Get committee votes
       operationId: committee_votes
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Committee votes
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - committee
@@ -864,16 +642,11 @@ paths:
     get:
       description: Top markets
       operationId: top_markets
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Top markets
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -881,16 +654,11 @@ paths:
     get:
       description: Top smartcoins
       operationId: top_smartcoins
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Top smartcoins
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -898,16 +666,11 @@ paths:
     get:
       description: Top User Issued Assets
       operationId: top_uias
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Top uias
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -915,16 +678,11 @@ paths:
     get:
       description: Top Operations
       operationId: top_operations
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Top ops
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - operation
@@ -932,16 +690,11 @@ paths:
     get:
       description: last 20 network transactions
       operationId: last_network_transactions
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: last network ops
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - operation
@@ -953,20 +706,14 @@ paths:
         - in: query
           name: start
           default: A
-          schema:
-            type: string
+          type: string
           required: true
           description: start of the account name
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Accounts matching start
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -978,20 +725,14 @@ paths:
         - in: query
           name: start
           default: A
-          schema:
-            type: string
+          type: string
           required: true
           description: start of the asset name
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Assets matching start
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -999,16 +740,11 @@ paths:
     get:
       description: Get current block number
       operationId: getlastblocknumbher
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description:  last known block number
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - operation
@@ -1019,28 +755,21 @@ paths:
       parameters:
         - in: query
           name: account_id
-          default: 1.2.0
-          schema:
-            type: string
+          default: 1.2.100
+          type: string
           required: true
           description: the account to get operations from
         - in: query
           name: page
           default: 0
-          schema:
-            type: integer
+          type: integer
           required: true
           description: the page
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 20 operations of account by page
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -1053,27 +782,20 @@ paths:
         - in: query
           name: account_id
           default: 1.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: the account to get operations from
         - in: query
           name: page
           default: 0
-          schema:
-            type: integer
+          type: integer
           required: true
           description: the page
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 20 operations of account by page
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -1086,27 +808,20 @@ paths:
         - in: query
           name: base
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: base asset
         - in: query
           name: quote
-          default: 0
-          schema:
-            type: string
+          default: 1.3.2
+          type: string
           required: true
           description: quote asset
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: open limit orders
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -1116,29 +831,16 @@ paths:
       operationId: get_call_orders
       parameters:
         - in: query
-          name: base
-          default: 1.3.0
-          schema:
-            type: string
+          name: asset_id
+          default: 1.3.219
+          type: string
           required: true
-          description: base asset
-        - in: query
-          name: quote
-          default: 0
-          schema:
-            type: string
-          required: true
-          description: quote asset
-      produces:
-        - application/json
+          description: ID of asset being settled
       responses:
-        200:
+        '200':
           description: open call orders
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -1150,59 +852,20 @@ paths:
         - in: query
           name: base
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: base asset
         - in: query
           name: quote
           default: 0
-          schema:
-            type: string
+          type: string
           required: true
           description: quote asset
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: open settle orders
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
-      tags:
-        - api
-        - market
-  "/get_settle_orders":
-    get:
-      description: Get fill order history of a market
-      operationId: get_settle_orders
-      parameters:
-        - in: query
-          name: base
-          default: 1.3.0
-          schema:
-            type: string
-          required: true
-          description: base asset
-        - in: query
-          name: quote
-          default: 0
-          schema:
-            type: string
-          required: true
-          description: quote asset
-      produces:
-        - application/json
-      responses:
-        200:
-          description: history of fill orders
-        500:
-          description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
@@ -1210,33 +873,23 @@ paths:
     get:
       description: Get some total dex volume figures
       operationId: get_dex_total_volume
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description:  dex total volume figures
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - blockchain
   "/daily_volume_dex_dates":
     get:
       description: Get 60 days with of dates
-      operationId: get_dex_total_volume
-      produces:
-        - application/json
+      operationId: daily_volume_dex_dates
       responses:
-        200:
+        '200':
           description:  60 days of dates
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - utility
@@ -1244,16 +897,11 @@ paths:
     get:
       description: Get 60 days od plot volume data
       operationId: daily_volume_dex_data
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: 60 days of plot data
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - utility
@@ -1264,21 +912,15 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: A
-          schema:
-            type: string
+          default: USD
+          type: string
           required: true
           description: asset id or name
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: All holders of an asset
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - asset
@@ -1291,20 +933,14 @@ paths:
         - in: query
           name: account_id
           default: 2.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: account id or name
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Count of referrs an account made
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -1317,27 +953,20 @@ paths:
         - in: query
           name: account_id
           default: 2.2.0
-          schema:
-            type: string
+          type: string
           required: true
           description: account id or name
         - in: query
           name: page
           default: 0
-          schema:
-            type: integer
+          type: integer
           required: true
           description: page
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: referrer an account made by page
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - account
@@ -1350,41 +979,32 @@ paths:
         - in: query
           name: base
           default: 1.3.0
-          schema:
-            type: string
+          type: string
           required: true
           description: base
         - in: query
           name: quote
           default: 1.3.1
-          schema:
-            type: string
+          type: string
           required: true
           description: page
         - in: query
           name: group
           default: 10
-          schema:
-            type: integer
+          type: integer
           required: true
           description: group
         - in: query
           name: limit
           default: 0
-          schema:
-            type: integer
+          type: integer
           required: true
           description: limit
-      produces:
-        - application/json
       responses:
-        200:
+        '200':
           description: Grouped order limit book for a market
-        500:
+        '500':
           description: Error processing parameters
-      schemes:
-        - http
-        - https
       tags:
         - api
         - market
