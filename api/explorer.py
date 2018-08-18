@@ -444,131 +444,67 @@ def get_top_holders():
     return results
 
 
+def _get_formatted_proxy_votes(proxies, vote_id):
+    return list(map(lambda p : '{}:{}'.format(p['id'], 'Y' if vote_id in p["options"]["votes"] else '-'), proxies))
+
 def get_witnesses_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
 
     witnesses = get_witnesses()
-    witnesses = witnesses[:25]
+    witnesses = witnesses[:25] # FIXME: Witness number is variable.
 
-    w, h = len(proxies) + 2, len(witnesses)
-    witnesses_votes = [[0 for x in range(w)] for y in range(h)]
+    witnesses_votes = []
+    for witness in witnesses:
+        vote_id =  witness[0]["vote_id"]
+        id_witness = witness[0]["id"]
+        witness_account_name = witness[0]["witness_account_name"]
+        proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-    for w in range(0, len(witnesses)):
-        vote_id =  witnesses[w][0]["vote_id"]
-        id_witness = witnesses[w][0]["id"]
-        witness_account_name = witnesses[w][0]["witness_account_name"]
+        witnesses_votes.append([witness_account_name, id_witness] + proxy_votes)
 
-        witnesses_votes[w][0] = witness_account_name
-        witnesses_votes[w][1] = id_witness
-
-        c = 2
-
-        for p in range(0, len(proxies)):
-            id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.get_object(id_proxy)
-            votes = proxy["options"]["votes"]
-            #print votes
-            p_vote = "-"
-            for v in range(0, len(votes)):
-
-                if votes[v] == vote_id:
-                    p_vote = "Y"
-
-            witnesses_votes[w][c] = id_proxy + ":" + p_vote
-
-            c = c + 1
-
-    #print witnesses_votes
     return witnesses_votes
 
 
 def get_workers_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
 
     workers = get_workers()
     workers = workers[:30]
-    #print workers
 
-    w, h = len(proxies) + 3, len(workers)
-    workers_votes = [[0 for x in range(w)] for y in range(h)]
+    workers_votes = []
+    for worker in workers:
+        vote_id =  worker[0]["vote_for"]
+        id_worker = worker[0]["id"]
+        worker_account_name = worker[0]["worker_account_name"]
+        worker_name = worker[0]["name"]
+        proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-    for w in range(0, len(workers)):
-        vote_id =  workers[w][0]["vote_for"]
-        id_worker = workers[w][0]["id"]
-        worker_account_name = workers[w][0]["worker_account_name"]
-        worker_name = workers[w][0]["name"]
+        workers_votes.append([worker_account_name, id_worker, worker_name] + proxy_votes)
 
-        workers_votes[w][0] = worker_account_name
-        workers_votes[w][1] = id_worker
-        workers_votes[w][2] = worker_name
-
-        c = 3
-
-        for p in range(0, len(proxies)):
-            id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.get_object(id_proxy)
-            votes = proxy["options"]["votes"]
-            #print votes
-            p_vote = "-"
-            for v in range(0, len(votes)):
-
-                if votes[v] == vote_id:
-                    p_vote = "Y"
-
-            workers_votes[w][c] = id_proxy + ":" + p_vote
-
-            c = c + 1
-
-    #print witnesses_votes
     return workers_votes
 
 
 def get_committee_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
 
-    committee = get_committee_members()
-    committee = committee[:11]
-    #print workers
+    committee_members = get_committee_members()
+    committee_members = committee_members[:11]
 
-    w, h = len(proxies) + 2, len(committee)
-    committee_votes = [[0 for x in range(w)] for y in range(h)]
+    committee_votes = []
+    for committee_member in committee_members:
+        vote_id =  committee_member[0]["vote_id"]
+        id_committee = committee_member[0]["id"]
+        committee_account_name = committee_member[0]["committee_member_account_name"]
+        proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-    for w in range(0, len(committee)):
-        vote_id =  committee[w][0]["vote_id"]
-        id_committee = committee[w][0]["id"]
-        committee_account_name = committee[w][0]["committee_member_account_name"]
+        committee_votes.append([committee_account_name, id_committee] + proxy_votes)
 
-        committee_votes[w][0] = committee_account_name
-        committee_votes[w][1] = id_committee
-
-        c = 2
-
-        for p in range(0, len(proxies)):
-            id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.get_object(id_proxy)
-            votes = proxy["options"]["votes"]
-
-            #print votes
-            p_vote = "-"
-            if(len(votes) > 0):
-            	for v in range(0, len(votes)):
-
-                    if votes[v] == vote_id:
-                    	p_vote = "Y"
-                    	committee_votes[w][c] = id_proxy + ":" + p_vote
-                    	break
-                    else:
-                    	p_vote = "-"
-                    	committee_votes[w][c] = id_proxy + ":" + p_vote
-
-            	c = c + 1
-	    else:
-		committee_votes[w][c] = id_proxy + ":-"
-
-    #print witnesses_votes
     return committee_votes
 
 
