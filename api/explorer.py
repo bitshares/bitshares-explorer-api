@@ -106,7 +106,7 @@ def get_assets():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
-    #print results
+    
     return results
 
 
@@ -335,7 +335,6 @@ def get_market_chart_dates():
     base = datetime.date.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, 100)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
-    #print len(list(reversed(date_list)))
     return list(reversed(date_list))
 
 
@@ -597,7 +596,6 @@ def get_account_history_pager(account_id, page):
     statistics = bitshares_ws_full_client.get_object(account["statistics"])
 
     total_ops = statistics["total_ops"]
-    #print total_ops
     start = total_ops - (20 * int(page))
     stop = total_ops - (40 * int(page))
 
@@ -694,7 +692,6 @@ def get_daily_volume_dex_dates():
     base = datetime.date.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, 60)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
-    #print len(list(reversed(date_list)))
     return list(reversed(date_list))
 
  
