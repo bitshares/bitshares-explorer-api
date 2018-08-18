@@ -213,17 +213,20 @@ def get_last_network_ops():
 def get_object(object):
     return [ bitshares_ws_client.get_object(object) ]
 
-def get_asset_holders_count(asset_id):
+def _ensure_asset_id(asset_id):
     if not _is_object(asset_id):
         asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
-        asset_id = asset['id']
+        return asset['id']
+    else:
+        return asset_id
+
+def get_asset_holders_count(asset_id):
+    asset_id = _ensure_asset_id(asset_id)
     return bitshares_ws_client.request('asset', 'get_asset_holders_count', [asset_id])
 
 
 def get_asset_holders(asset_id, start=0, limit=20):
-    if not _is_object(asset_id):
-        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
-        asset_id = asset['id']
+    asset_id = _ensure_asset_id(asset_id)
     asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, start, limit])
     return asset_holders
 
@@ -255,9 +258,7 @@ def _is_object(string):
     return len(string.split(".")) == 3
 
 def get_markets(asset_id):
-    if not _is_object(asset_id):
-        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
-        asset_id = asset['id']
+    asset_id = _ensure_asset_id(asset_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -844,9 +845,7 @@ def get_daily_volume_dex_data():
 
 
 def get_all_asset_holders(asset_id):
-    if not _is_object(asset_id):
-        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
-        asset_id = asset['id']
+    asset_id = _ensure_asset_id(asset_id)
 
     all = []
 
@@ -898,12 +897,8 @@ def get_grouped_limit_orders(quote, base, group=10, limit=False):
     elif int(limit) > 50:
         limit = 50
 
-    if not _is_object(base):
-        base_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[base],  0])[0]
-        base = base_asset['id']
-    if not _is_object(quote):
-        quote_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[quote],  0])[0]
-        quote = base_asset['id']
+    base = _ensure_asset_id(base)
+    quote = _ensure_asset_id(quote)
 
     grouped_limit_orders = bitshares_ws_client.request('orders', 'get_grouped_limit_orders', [base, quote, group, None, limit])
 
