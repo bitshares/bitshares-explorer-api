@@ -12,25 +12,21 @@ def header():
     return _add_global_informations(response, bitshares_ws_client)
 
 def account(account_id):
-    return _account(account_id)
-
-def _account(account_id):
     return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
 
 def account_name(account_id):
-    account = _account(account_id)
-    return account[0]['name']
-
-def _account_name(account_id):
-    account = _account(account_id)
-    return account[0]['name']
+    account_obj = account(account_id)
+    return account_obj[0]['name']
 
 def account_id(account_name):
-    return _account_id(account_name)
+    return _ensure_account_id(account_name)
 
-def _account_id(account_name):
-    account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_name], 0])
-    return account[0]['id']
+def _ensure_account_id(account_id_or_name):
+    if not isObject(account_id_or_name):
+        account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_id_or_name], 0])
+        return account[0]['id']
+    else:
+        return account_id_or_name
 
 def _add_global_informations(response, ws_client):
     # get market cap
@@ -123,8 +119,7 @@ def fees():
 
 
 def account_history(account_id):
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+    account_id = _ensure_account_id(account_id)
 
     account_history = bitshares_ws_client.request('history', 'get_account_history', [account_id, "1.11.1", 20, "1.11.9999999999"])
 
@@ -259,7 +254,7 @@ def get_workers():
     workers = []
     for w in range(0, workers_count):
         worker = bitshares_ws_client.get_object("1.14." + str(w))
-        worker["worker_account_name"] = _account_name(worker["worker_account"])
+        worker["worker_account_name"] = account_name(worker["worker_account"])
 
         current_votes = int(worker["total_votes_for"])
         perc = (current_votes*100)/thereshold
@@ -322,7 +317,7 @@ def get_witnesses():
     for w in range(0, witnesses_count):
         witness = bitshares_ws_client.get_object("1.6." + str(w))
         if witness:
-            witness["witness_account_name"] = _account_name(witness["witness_account"])
+            witness["witness_account_name"] = account_name(witness["witness_account"])
             witnesses.append([witness])
 
     witnesses = sorted(witnesses, key=lambda k: int(k[0]['total_votes']))
@@ -338,7 +333,7 @@ def get_committee_members():
     for w in range(0, committee_count):
         committee_member = bitshares_ws_client.get_object("1.5." + str(w))
         if committee_member:
-            committee_member["committee_member_account_name"] = _account_name(committee_member["committee_member_account"])
+            committee_member["committee_member_account_name"] = account_name(committee_member["committee_member_account"])
             committee_members.append([committee_member])
 
     committee_members = sorted(committee_members, key=lambda k: int(k[0]['total_votes']))
@@ -755,8 +750,7 @@ def getlastblocknumber():
 
 
 def account_history_pager(account_id, page):
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+    account_id =_ensure_account_id(account_id)
 
     # connecting into a full node.
     bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
@@ -786,8 +780,7 @@ def account_history_pager(account_id, page):
 
 
 def account_history_pager_elastic(account_id, page):
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+    account_id = _ensure_account_id(account_id)
 
     from_ = int(page) * 20
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_account_history?account_id="+account_id+"&from_="+str(from_)+"&size=20&sort_by=-block_data.block_time").read()
@@ -906,8 +899,7 @@ def get_all_asset_holders(asset_id):
 
 
 def referrer_count(account_id):
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+    account_id = _ensure_account_id(account_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -920,8 +912,7 @@ def referrer_count(account_id):
 
 
 def get_all_referrers(account_id, page=0):
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+    account_id = _ensure_account_id(account_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
