@@ -24,7 +24,7 @@ def on_message(ws, message):
             data = bitshares_ws_client.get_object(id_)
             #print data[0]
             account_id = data["account"]
-            data_a = api.explorer.account(account_id)
+            data_a = api.explorer.get_account(account_id)
 
             #print data_a[0]["name"]
             account_name = data_a[0]["name"]

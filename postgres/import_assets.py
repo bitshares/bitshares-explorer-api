@@ -74,7 +74,7 @@ for x in range(0, len(all_assets)):
             continue
 
         try:
-            holders = api.explorer._get_asset_holders_count(asset_id)
+            holders = api.explorer.get_asset_holders_count(asset_id)
         except:
             holders = 0
             continue
@@ -88,7 +88,7 @@ for x in range(0, len(all_assets)):
         #print all_assets[x]["result"][i]
 
         try:
-            data = api.explorer._get_volume(core_symbol, symbol)
+            data = api.explorer.get_volume(core_symbol, symbol)
         except:
             continue
 
@@ -96,7 +96,7 @@ for x in range(0, len(all_assets)):
         print data["quote_volume"]
 
         try:
-            data2 = api.explorer._get_ticker(core_symbol, symbol)
+            data2 = api.explorer.get_ticker(core_symbol, symbol)
             price = data2["latest"]
             #print price
 
@@ -145,7 +145,7 @@ con.commit()
 data3 = api.explorer._get_asset(config.CORE_ASSET_ID)
 current_supply = data3["current_supply"]
 
-holders = api.explorer._get_asset_holders_count(config.CORE_ASSET_ID)
+holders = api.explorer.get_asset_holders_count(config.CORE_ASSET_ID)
 
 mcap = int(current_supply)
 

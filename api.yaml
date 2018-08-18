@@ -12,7 +12,7 @@ paths:
   "/header":
     get:
       description: Get some blockchain information.
-      operationId: api.explorer.header
+      operationId: api.explorer.get_header
       responses:
         '200':
           description: Array of operation data
@@ -24,7 +24,7 @@ paths:
   "/account":
     get:
       description: Get an account object.
-      operationId: api.explorer.account
+      operationId: api.explorer.get_account
       parameters:
         - in: query
           name: account_id
@@ -43,7 +43,7 @@ paths:
   "/account_name":
     get:
       description: Get account name by ID
-      operationId: api.explorer.account_name
+      operationId: api.explorer.get_account_name
       parameters:
         - in: query
           name: account_id
@@ -62,7 +62,7 @@ paths:
   "/account_id":
     get:
       description: Get account ID by name
-      operationId: api.explorer.account_id
+      operationId: api.explorer.get_account_id
       parameters:
         - in: query
           name: account_name
@@ -100,7 +100,7 @@ paths:
   "/operation_full":
     get:
       description: Get operation by ID in a full node connection
-      operationId: api.explorer.operation_full
+      operationId: api.explorer.get_operation_full
       parameters:
         - in: query
           name: operation_id
@@ -119,7 +119,7 @@ paths:
   "/operation_full_elastic":
     get:
       description: Get operation by ID in a elasticsearch wrapper connection
-      operationId: api.explorer.operation_full_elastic
+      operationId: api.explorer.get_operation_full_elastic
       parameters:
         - in: query
           name: operation_id
@@ -138,7 +138,7 @@ paths:
   "/accounts":
     get:
       description: Get an account list of the most 100 rich CORE holders.
-      operationId: api.explorer.accounts
+      operationId: api.explorer.get_accounts
       responses:
         '200':
           description: Rich list of accounts
@@ -150,7 +150,7 @@ paths:
   "/full_account":
     get:
       description: Given an account ID, the call will return full account data.
-      operationId: api.explorer.full_account
+      operationId: api.explorer.get_full_account
       parameters:
         - in: query
           name: account_id
@@ -169,7 +169,7 @@ paths:
   "/assets":
     get:
       description: Get list of assets that had volume in the last 24 hours.
-      operationId: api.explorer.assets
+      operationId: api.explorer.get_assets
       responses:
         '200':
           description: List of assets with 24hs volume
@@ -181,7 +181,7 @@ paths:
   "/fees":
     get:
       description: Get network fee data.
-      operationId: api.explorer.fees
+      operationId: api.explorer.get_fees
       responses:
         '200':
           description: Fee data
@@ -193,7 +193,7 @@ paths:
   "/account_history":
     get:
       description: Get the last 20 operations of an account
-      operationId: api.explorer.account_history
+      operationId: api.explorer.get_account_history
       parameters:
         - in: query
           name: account_id
@@ -250,7 +250,7 @@ paths:
   "/block_header":
     get:
       description: Get the block header information of a block_num
-      operationId: api.explorer.block_header
+      operationId: api.explorer.get_block_header
       parameters:
         - in: query
           name: block_num
@@ -338,7 +338,7 @@ paths:
   "/lastnetworkops":
     get:
       description: Get the last 10 operations made in the blockchain.
-      operationId: api.explorer.lastnetworkops
+      operationId: api.explorer.get_last_network_ops
       responses:
         '200':
           description: Last 10 operations made in the network.
@@ -539,7 +539,7 @@ paths:
   "/market_chart_dates":
     get:
       description: Utility, get the dates of the last 30 days
-      operationId: api.explorer.market_chart_dates
+      operationId: api.explorer.get_market_chart_dates
       responses:
         '200':
           description: Array of dates of the last 30 days
@@ -551,7 +551,7 @@ paths:
   "/market_chart_data":
     get:
       description: Get OHLC chart data
-      operationId: api.explorer.market_chart_data
+      operationId: api.explorer.get_market_chart_data
       parameters:
         - in: query
           name: base
@@ -576,7 +576,7 @@ paths:
   "/top_proxies":
     get:
       description: Get the top proxies
-      operationId: api.explorer.top_proxies
+      operationId: api.explorer.get_top_proxies
       responses:
         '200':
           description: Top X proxies
@@ -589,7 +589,7 @@ paths:
   "/top_holders":
     get:
       description: Get the top holders
-      operationId: api.explorer.top_holders
+      operationId: api.explorer.get_top_holders
       responses:
         '200':
           description: Top X holders
@@ -602,7 +602,7 @@ paths:
   "/witnesses_votes":
     get:
       description: Get witness votes
-      operationId: api.explorer.witnesses_votes
+      operationId: api.explorer.get_witnesses_votes
       responses:
         '200':
           description: Witnesses votes
@@ -615,7 +615,7 @@ paths:
   "/workers_votes":
     get:
       description: Get worker votes
-      operationId: api.explorer.workers_votes
+      operationId: api.explorer.get_workers_votes
       responses:
         '200':
           description: Worker votes
@@ -628,7 +628,7 @@ paths:
   "/committee_votes":
     get:
       description: Get committee votes
-      operationId: api.explorer.committee_votes
+      operationId: api.explorer.get_committee_votes
       responses:
         '200':
           description: Committee votes
@@ -641,7 +641,7 @@ paths:
   "/top_markets":
     get:
       description: Top markets
-      operationId: api.explorer.top_markets
+      operationId: api.explorer.get_top_markets
       responses:
         '200':
           description: Top markets
@@ -653,7 +653,7 @@ paths:
   "/top_smartcoins":
     get:
       description: Top smartcoins
-      operationId: api.explorer.top_smartcoins
+      operationId: api.explorer.get_top_smartcoins
       responses:
         '200':
           description: Top smartcoins
@@ -665,7 +665,7 @@ paths:
   "/top_uias":
     get:
       description: Top User Issued Assets
-      operationId: api.explorer.top_uias
+      operationId: api.explorer.get_top_uias
       responses:
         '200':
           description: Top uias
@@ -677,7 +677,7 @@ paths:
   "/top_operations":
     get:
       description: Top Operations
-      operationId: api.explorer.top_operations
+      operationId: api.explorer.get_top_operations
       responses:
         '200':
           description: Top ops
@@ -689,7 +689,7 @@ paths:
   "/last_network_transactions":
     get:
       description: last 20 network transactions
-      operationId: api.explorer.last_network_transactions
+      operationId: api.explorer.get_last_network_transactions
       responses:
         '200':
           description: last network ops
@@ -739,7 +739,7 @@ paths:
   "/getlastblocknumbher":
     get:
       description: Get current block number
-      operationId: api.explorer.getlastblocknumber
+      operationId: api.explorer.get_last_block_number
       responses:
         '200':
           description:  last known block number
@@ -751,7 +751,7 @@ paths:
   "/account_history_pager":
     get:
       description: Get history of account by pages(need full node)
-      operationId: api.explorer.account_history_pager
+      operationId: api.explorer.get_account_history_pager
       parameters:
         - in: query
           name: account_id
@@ -777,7 +777,7 @@ paths:
   "/account_history_pager_elastic":
     get:
       description: Get history of account by pages(need elasticsearch node)
-      operationId: api.explorer.account_history_pager_elastic
+      operationId: api.explorer.get_account_history_pager_elastic
       parameters:
         - in: query
           name: account_id
@@ -884,7 +884,7 @@ paths:
   "/daily_volume_dex_dates":
     get:
       description: Get 60 days with of dates
-      operationId: api.explorer.daily_volume_dex_dates
+      operationId: api.explorer.get_daily_volume_dex_dates
       responses:
         '200':
           description:  60 days of dates
@@ -896,7 +896,7 @@ paths:
   "/daily_volume_dex_data":
     get:
       description: Get 60 days od plot volume data
-      operationId: api.explorer.daily_volume_dex_data
+      operationId: api.explorer.get_daily_volume_dex_data
       responses:
         '200':
           description: 60 days of plot data
@@ -928,7 +928,7 @@ paths:
   "/referrer_count":
     get:
       description: Get number of referrers an account made
-      operationId: api.explorer.referrer_count
+      operationId: api.explorer.get_referrer_count
       parameters:
         - in: query
           name: account_id
