@@ -576,115 +576,45 @@ def get_top_markets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT volume FROM markets ORDER BY volume DESC LIMIT 7"
-    cur.execute(query)
-    results = cur.fetchall()
-    total = 0
-    for v in results:
-        total = total + v[0]
-
     query = "SELECT pair, volume FROM markets ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
     results = cur.fetchall()
 
-    w = 2
-    h = len(results)
-    top_markets = [[0 for x in range(w)] for y in range(h)]
-
-    for tp in range(0, h):
-        #print results[tp][1]
-        top_markets[tp][0] = results[tp][0]
-        #perc = (results[tp][1]*100)/total
-        top_markets[tp][1] = results[tp][1]
-
     con.close()
-    return top_markets
+    return results
 
 
 def get_top_smartcoins():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
-    cur.execute(query)
-    results = cur.fetchall()
-    total = 0
-    for v in results:
-        total = total + v[0]
-
     query = "SELECT aname, volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
     results = cur.fetchall()
 
-    w = 2
-    h = len(results)
-    top_smartcoins = [[0 for x in range(w)] for y in range(h)]
-
-    for tp in range(0, h):
-        #print results[tp][1]
-        top_smartcoins[tp][0] = results[tp][0]
-        #perc = (results[tp][1]*100)/total
-        top_smartcoins[tp][1] = results[tp][1]
-
-    con.close()
-    return top_smartcoins
+    return results
 
 
 def get_top_uias():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT volume FROM assets WHERE type='User Issued' ORDER BY volume DESC LIMIT 7"
-    cur.execute(query)
-    results = cur.fetchall()
-    total = 0
-    for v in results:
-        total = total + v[0]
-
     query = "SELECT aname, volume FROM assets WHERE TYPE='User Issued' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
     results = cur.fetchall()
-
-    w = 2
-    h = len(results)
-    top_uias = [[0 for x in range(w)] for y in range(h)]
-
-    for tp in range(0, h):
-        #print results[tp][1]
-        top_uias[tp][0] = results[tp][0]
-        #perc = (results[tp][1]*100)/total
-        top_uias[tp][1] = results[tp][1]
-
     con.close()
-    return top_uias
+    return results
 
 
 def get_top_operations():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
-    query = "SELECT count(*) FROM ops"
-    cur.execute(query)
-    results = cur.fetchone()
-    total = results[0]
-
     query = "SELECT op_type, count(op_type) AS counter FROM ops GROUP BY op_type ORDER BY counter DESC"
     cur.execute(query)
     results = cur.fetchall()
-
-
-    w = 2
-    h = len(results)
-    top_operations = [[0 for x in range(w)] for y in range(h)]
-
-    for tp in range(0, h):
-        #print results[tp][1]
-        top_operations[tp][0] = results[tp][0]
-        #perc = (results[tp][1]*100)/total
-        top_operations[tp][1] = results[tp][1]
-
     con.close()
-    return top_operations
+    return results
 
 
 def get_last_network_transactions():
@@ -695,7 +625,7 @@ def get_last_network_transactions():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
-    #print results
+
     return results
 
 
