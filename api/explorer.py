@@ -281,12 +281,15 @@ def get_most_active_markets():
     return results
 
 
-def get_order_book(base, quote, limit=False):
+def _ensure_safe_limit(limit):
     if not limit:
         limit = 10
     elif int(limit) > 50:
         limit = 50
-    
+    return limit
+
+def get_order_book(base, quote, limit=False):
+    limit = _ensure_safe_limit(limit)    
     order_book = bitshares_ws_client.request('database', 'get_order_book', [base, quote, limit])
     return order_book
 
@@ -892,10 +895,7 @@ def get_all_referrers(account_id, page=0):
     return results
 
 def get_grouped_limit_orders(quote, base, group=10, limit=False):
-    if not limit:
-        limit = 10
-    elif int(limit) > 50:
-        limit = 50
+    limit = _ensure_safe_limit(limit)    
 
     base = _ensure_asset_id(base)
     quote = _ensure_asset_id(quote)
