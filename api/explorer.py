@@ -706,9 +706,7 @@ def get_daily_volume_dex_data():
     cur.execute(query)
     results = cur.fetchall()
 
-    mod = [0 for x in range(len(results))]
-    for r in range(0, len(results)):
-        mod[r] = results[r][0]
+    mod = [ r[0] for r in results ]
 
     return list(reversed(mod))
 
