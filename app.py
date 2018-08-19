@@ -10,6 +10,10 @@ from services.cache import cache
 cache.init_app(app.app)
 
 app.add_api('api.yaml')
+
+import services.profiler
+services.profiler.init_app(app.app)
+
 application = app.app
 
 if __name__ == "__main__":

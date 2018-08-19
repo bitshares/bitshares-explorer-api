@@ -21,6 +21,7 @@ Index:
         - [Docker](#docker)
     - [Usage](#usage)
         - [Swagger](#swagger)
+        - [Profiler](#profiler)
         - [Open Explorer](#open-explorer)
 
 ## Installation
@@ -336,6 +337,17 @@ There are a lot of ways and application for this collection of API calls, at the
 http://185.208.208.184:5000/apidocs/
 
 Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
+
+### Profiler
+
+To activate profiler use:
+
+    PROFILER_ENABLED=true flask run
+
+Then you will be able to access profiling data at `http://localhost:5000/profiler`.
+
+By default the profiler is not protected, to add basic authentification add username and password in `config.py` or using environment variables `PROFILER_USERNAME` and `PROFILER_PASSWORD`.
+
 
 ### Open Explorer
 
