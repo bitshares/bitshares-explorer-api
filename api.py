@@ -982,7 +982,7 @@ def account_history_pager_elastic():
                       "block_num": j[n]["block_data"]["block_num"],
                       "id": j[n]["account_history"]["operation_id"],
                       "op_in_trx": j[n]["operation_history"]["op_in_trx"],
-                      "result": j[n]["operation_history"]["operation_result"],
+                      "result": json.loads(j[n]["operation_history"]["operation_result"]),
                       "timestamp": j[n]["block_data"]["block_time"],
                       "trx_in_block": j[n]["operation_history"]["trx_in_block"],
                       "virtual_op": j[n]["operation_history"]["virtual_op"]
