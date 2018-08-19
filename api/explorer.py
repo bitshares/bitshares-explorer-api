@@ -233,25 +233,23 @@ def get_asset_holders(asset_id, start=0, limit=20):
 
 def get_workers():
     workers_count = bitshares_ws_client.request('database', 'get_worker_count', [])
+    workers = bitshares_ws_client.request('database', 'get_objects', [ [ '1.14.{}'.format(i) for i in range(0, workers_count) ] ])
 
-
-    # get the votes of worker 114.0 - refund 400k
+    # get the votes of worker 1.14.0 - refund 400k
     refund400k = bitshares_ws_client.get_object("1.14.0")
     thereshold =  int(refund400k["total_votes_for"])
 
-    workers = []
-    for w in range(0, workers_count):
-        worker = bitshares_ws_client.get_object("1.14." + str(w))
-        worker["worker_account_name"] = get_account_name(worker["worker_account"])
+    result = []
+    for worker in workers:
+        if worker:
+            worker["worker_account_name"] = get_account_name(worker["worker_account"])
+            current_votes = int(worker["total_votes_for"])
+            perc = (current_votes*100)/thereshold
+            worker["perc"] = perc
+            result.append([worker])
 
-        current_votes = int(worker["total_votes_for"])
-        perc = (current_votes*100)/thereshold
-        worker["perc"] = perc
-
-        workers.append([worker])
-
-    r_workers = workers[::-1]
-    return filter(None, r_workers)
+    result = result[::-1] # Reverse list.
+    return result
 
 
 def _is_object(string):
@@ -301,34 +299,33 @@ def get_margin_positions(account_id):
 
 def get_witnesses():
     witnesses_count = bitshares_ws_client.request('database', 'get_witness_count', [])
-
-    witnesses = []
-    for w in range(0, witnesses_count):
-        witness = bitshares_ws_client.get_object("1.6." + str(w))
+    witnesses = bitshares_ws_client.request('database', 'get_objects', [ ['1.6.{}'.format(w) for w in range(0, witnesses_count)] ])
+    result = []
+    for witness in witnesses:
         if witness:
             witness["witness_account_name"] = get_account_name(witness["witness_account"])
-            witnesses.append([witness])
+            result.append([witness])
 
-    witnesses = sorted(witnesses, key=lambda k: int(k[0]['total_votes']))
-    r_witnesses = witnesses[::-1]
+    result = sorted(result, key=lambda k: int(k[0]['total_votes']))
+    result = result[::-1] # Reverse list.
+    return result
 
-    return filter(None, r_witnesses)
 
 
 def get_committee_members():
     committee_count = bitshares_ws_client.request('database', 'get_committee_count', [])
+    committee_members = bitshares_ws_client.request('database', 'get_objects', [ ['1.5.{}'.format(i) for i in range(0, committee_count)] ])
 
-    committee_members = []
-    for w in range(0, committee_count):
-        committee_member = bitshares_ws_client.get_object("1.5." + str(w))
+    result = []
+    for committee_member in committee_members:
         if committee_member:
             committee_member["committee_member_account_name"] = get_account_name(committee_member["committee_member_account"])
-            committee_members.append([committee_member])
+            result.append([committee_member])
 
-    committee_members = sorted(committee_members, key=lambda k: int(k[0]['total_votes']))
-    r_committee = committee_members[::-1] # this reverses array
+    result = sorted(result, key=lambda k: int(k[0]['total_votes']))
+    result = result[::-1] # this reverses array
 
-    return filter(None, r_committee)
+    return result
 
 
 def get_market_chart_dates():
