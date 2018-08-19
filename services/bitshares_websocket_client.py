@@ -1,5 +1,6 @@
 from websocket import create_connection
 import json
+from services.cache import cache
 
 class RPCError(Exception):
     pass
@@ -54,4 +55,10 @@ class BitsharesWebsocketClient():
 
     def get_object(self, object_id):
         return self.request('database', 'get_objects', [[object_id]])[0]
-        
+
+    @cache.memoize()
+    def get_global_properties(self):
+        return self.request('database', 'get_global_properties', [])
+
+import config
+client = BitsharesWebsocketClient(config.WEBSOCKET_URL)

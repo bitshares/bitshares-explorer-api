@@ -1,11 +1,9 @@
 import datetime
 import json
 import urllib2
-import config
 import psycopg2
-from services.bitshares_websocket_client import BitsharesWebsocketClient
-
-bitshares_ws_client = BitsharesWebsocketClient(config.WEBSOCKET_URL)
+from services.bitshares_websocket_client import BitsharesWebsocketClient, client as bitshares_ws_client
+import config
 
 def get_header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
@@ -39,8 +37,7 @@ def _add_global_informations(response, ws_client):
     else:
         response["quote_volume"] = 0
 
-    # TODO: making this call with every operation is not very efficient as this are static properties
-    global_properties = ws_client.request('database', 'get_global_properties', [])
+    global_properties = ws_client.get_global_properties()
     response["commitee_count"] = len(global_properties["active_committee_members"])
     response["witness_count"] = len(global_properties["active_witnesses"])
 
@@ -111,8 +108,7 @@ def get_assets():
 
 
 def get_fees():
-    global_properties = bitshares_ws_client.request('database', 'get_global_properties', [])
-    return global_properties
+    return bitshares_ws_client.get_global_properties()
 
 
 def get_account_history(account_id):
