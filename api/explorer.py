@@ -3,7 +3,9 @@ import json
 import urllib2
 import psycopg2
 from services.bitshares_websocket_client import BitsharesWebsocketClient, client as bitshares_ws_client
+from services.cache import cache
 import config
+
 
 def get_header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
@@ -374,7 +376,7 @@ def get_market_chart_data(base, quote):
 
     return data
 
-
+@cache.memoize()
 def get_top_proxies():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -499,6 +501,7 @@ def get_top_markets():
     return results
 
 
+@cache.memoize()
 def get_top_smartcoins():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -510,6 +513,7 @@ def get_top_smartcoins():
     return results
 
 
+@cache.memoize()
 def get_top_uias():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -521,6 +525,7 @@ def get_top_uias():
     return results
 
 
+@cache.memoize()
 def get_top_operations():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
