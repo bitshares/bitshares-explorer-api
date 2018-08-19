@@ -106,7 +106,7 @@ def get_assets():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
-    
+
     return results
 
 
@@ -391,39 +391,26 @@ def get_top_proxies():
     total = cur.fetchone()
     total_votes = total[0]
 
-    query = "SELECT voting_as FROM holders WHERE voting_as<>'1.2.5' group by voting_as"
+    query = """
+        SELECT follower.voting_as, proxy.account_name, proxy.amount, sum(follower.amount), count(1)
+        FROM holders AS follower 
+        LEFT OUTER JOIN holders AS proxy ON proxy.account_id = follower.voting_as 
+        WHERE follower.voting_as<>'1.2.5' 
+        GROUP BY follower.voting_as, proxy.account_name, proxy.amount
+        HAVING count(1) > 2
+        """
     cur.execute(query)
-    proxy_id_rows = cur.fetchall()
+    proxy_rows = cur.fetchall()
 
     proxies = []
-
-    for proxy_id_row in proxy_id_rows:
-        proxy_id = proxy_id_row[0]
-
-        query = "SELECT account_name, amount FROM holders WHERE account_id=%s LIMIT 1"
-        cur.execute(query, (proxy_id,))
-        proxy_row = cur.fetchone()
-
-        try:
-            proxy_name = proxy_row[0]
-            proxy_amount = int(proxy_row[1])
-        except:
-            proxy_name = "unknown"
-            proxy_amount = 0
-
-        query = "SELECT amount FROM holders WHERE voting_as=%s"
-        cur.execute(query, (proxy_id,))
-        follower_rows = cur.fetchall()
-
-        proxy_followers = 0
-        for follower_row in follower_rows:
-            folower_amount = follower_row[0]
-            proxy_amount += int(folower_amount)  # total proxy votes
-            proxy_followers += 1
-
-        if proxy_followers > 2:
-            proxy_total_percentage = float(float(proxy_amount) * 100.0/ float(total_votes))
-            proxies.append([proxy_id, proxy_name, proxy_amount, proxy_followers, proxy_total_percentage])
+    for proxy_row in proxy_rows:
+        proxy_id = proxy_row[0]
+        proxy_name = proxy_row[1] if proxy_row[1] else "unknown"
+        proxy_amount = proxy_row[2] + proxy_row[3] if proxy_row[2] else proxy_row[3]
+        proxy_followers = proxy_row[4]
+        proxy_total_percentage = float(float(proxy_amount) * 100.0/ float(total_votes))
+        
+        proxies.append([proxy_id, proxy_name, proxy_amount, proxy_followers, proxy_total_percentage])
 
     con.close()
 
