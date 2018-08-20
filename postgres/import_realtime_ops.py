@@ -5,8 +5,11 @@ import thread
 import psycopg2
 import websocket
 
-import api
+import api.explorer
 import config
+from services.bitshares_websocket_client import BitsharesWebsocketClient
+
+bitshares_ws_client = BitsharesWebsocketClient(config.WEBSOCKET_URL)
 
 
 def on_message(ws, message):
@@ -18,28 +21,28 @@ def on_message(ws, message):
         #print id_[:4]
         if id_[:4] == "2.9.":
             #print j["params"][1][0][0]
-            data = api._get_object(id_)
+            data = bitshares_ws_client.get_object(id_)
             #print data[0]
-            account_id = data[0]["account"]
-            data_a = api._account(account_id)
+            account_id = data["account"]
+            data_a = api.explorer.account(account_id)
 
             #print data_a[0]["name"]
             account_name = data_a[0]["name"]
 
-            data2 = api._get_object(data[0]['operation_id'])
-            block_num = data2[0]["block_num"]
+            data2 = bitshares_ws_client.get_object(data['operation_id'])
+            block_num = data2["block_num"]
 
-            op_type = data2[0]["op"][0]
+            op_type = data2["op"][0]
 
             #print block_num
-            trx_in_block =  data2[0]["trx_in_block"]
-            op_in_trx =  data2[0]["op_in_trx"]
+            trx_in_block =  data2["trx_in_block"]
+            op_in_trx =  data2["op_in_trx"]
 
             con = psycopg2.connect(**config.POSTGRES)
             cur = con.cursor()
             query = "INSERT INTO ops (oh, ath, block_num, trx_in_block, op_in_trx, datetime, account_id, op_type, account_name) VALUES(%s, %s, %s, %s, %s, NOW(), %s, %s, %s)"
             print query
-            cur.execute(query, (id_, data[0]['operation_id'], str(block_num), str(trx_in_block), str(op_in_trx), account_id, str(op_type), account_name))
+            cur.execute(query, (id_, data['operation_id'], str(block_num), str(trx_in_block), str(op_in_trx), account_id, str(op_type), account_name))
             con.commit()
     except:
         pass

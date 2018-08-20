@@ -1,183 +1,106 @@
 import datetime
 import json
 import urllib2
-
-from flask import Flask, jsonify, request
-from flask_cors import CORS, cross_origin
-import psycopg2
-from websocket import create_connection
-from flasgger import Swagger
-
-from services.bitshares_websocket_client import BitsharesWebsocketClient
-
 import config
-
-app = Flask('bitshares-explorer-api')
-CORS(app)
-
-app.config['SWAGGER'] = {
-    'title': 'Bitshares Python API',
-    'uiversion': 2
-}
-Swagger(app, template_file='api.yaml')
+import psycopg2
+from services.bitshares_websocket_client import BitsharesWebsocketClient
 
 bitshares_ws_client = BitsharesWebsocketClient(config.WEBSOCKET_URL)
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-
-
-@app.route('/header')
 def header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
+    return _add_global_informations(response, bitshares_ws_client)
 
-    core_asset_description = bitshares_ws_client.request('database', 'get_objects', [["2.3.0"]])[0]
+def account(account_id):
+    return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
 
-    current_supply = core_asset_description["current_supply"]
-    confidental_supply = core_asset_description["confidential_supply"]
+def account_name(account_id):
+    account_obj = account(account_id)
+    return account_obj[0]['name']
 
+def account_id(account_name):
+    return _ensure_account_id(account_name)
+
+def _ensure_account_id(account_id_or_name):
+    if not isObject(account_id_or_name):
+        account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_id_or_name], 0])
+        return account[0]['id']
+    else:
+        return account_id_or_name
+
+def _add_global_informations(response, ws_client):
+    # get market cap
+    core_asset = ws_client.get_object('2.3.0')
+    current_supply = core_asset["current_supply"]
+    confidental_supply = core_asset["confidential_supply"]
     market_cap = int(current_supply) + int(confidental_supply)
     response["bts_market_cap"] = int(market_cap/100000000)
 
     if config.TESTNET != 1: # Todo: had to do something else for the testnet
-        btsBtcVolume = bitshares_ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
+        btsBtcVolume = ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
         response["quote_volume"] = btsBtcVolume["quote_volume"]
     else:
         response["quote_volume"] = 0
 
-    global_properties = bitshares_ws_client.request('database', 'get_global_properties', [])
-
+    # TODO: making this call with every operation is not very efficient as this are static properties
+    global_properties = ws_client.request('database', 'get_global_properties', [])
     response["commitee_count"] = len(global_properties["active_committee_members"])
     response["witness_count"] = len(global_properties["active_witnesses"])
 
-    return jsonify(response)
+    return response
 
-
-@app.route('/account')
-def account():
-    account_id = request.args.get('account_id')
-    return jsonify(_account(account_id))
-
-
-def _account(account_id):
-    return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
-
-@app.route('/account_name')
-def account_name():
-    account_id = request.args.get('account_id')
-    account = _account(account_id)
-    return jsonify(account[0]['name'])
-
-def _account_name(account_id):
-    account = _account(account_id)
-    return account[0]['name']
-
-@app.route('/account_id')
-def account_id():
-    account_name = request.args.get('account_name')
-    return jsonify(_account_id(account_name))
-
-def _account_id(account_name):
-    account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_name], 0])
-    return account[0]['id']
-
-def _get_operation(operation_id, ws_client):
-    objects = ws_client.request('database', 'get_objects', [[operation_id]])
-    operation = objects[0] if objects[0] else {} 
-
+def _enrich_operation(operation, ws_client):
     dynamic_global_properties = ws_client.request('database', 'get_dynamic_global_properties', [])
     operation["accounts_registered_this_interval"] = dynamic_global_properties["accounts_registered_this_interval"]
 
-    # get market cap
-    core_asset = ws_client.request('database', 'get_objects', [["2.3.0"]])[0]
-    current_supply = core_asset["current_supply"]
-    confidental_supply = core_asset["confidential_supply"]
-    market_cap = int(current_supply) + int(confidental_supply)
-    operation["bts_market_cap"] = int(market_cap/100000000)
+    return _add_global_informations(operation, ws_client)
 
-    if config.TESTNET != 1: # Todo: had to do something else for the testnet
-        btsBtcVolume = ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
-        operation["quote_volume"] = btsBtcVolume["quote_volume"]
-    else:
-        operation["quote_volume"] = 0
+def get_operation(operation_id):
+    operation = bitshares_ws_client.get_object(operation_id)
+    if not operation:
+        operation = {} 
 
-    # TODO: making this call with every operation is not very efficient as this are static properties
-    global_properties = ws_client.request('database', 'get_global_properties', [])
-    operation["commitee_count"] = len(global_properties["active_committee_members"])
-    operation["witness_count"] = len(global_properties["active_witnesses"])
-
+    operation = _enrich_operation(operation, bitshares_ws_client)
     return [ operation ]
 
-@app.route('/operation')
-def get_operation():
-    operation_id = request.args.get('operation_id')
-    operation = _get_operation(operation_id, bitshares_ws_client)
-    return jsonify(operation)
 
-
-@app.route('/operation_full')
-def operation_full():
-    operation_id = request.args.get('operation_id')
-
+def operation_full(operation_id):
     # lets connect the operations to a full node
     bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
 
-    operation = _get_operation(operation_id, bitshares_ws_full_client)
-    return jsonify(operation)
+    operation = bitshares_ws_full_client.get_object(operation_id)
+    if not operation:
+        operation = {} 
 
-@app.route('/operation_full_elastic')
-def operation_full_elastic():
+    operation = _enrich_operation(operation, bitshares_ws_full_client)
+    return [ operation ]
 
-    operation_id = request.args.get('operation_id')
+def operation_full_elastic(operation_id):
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_single_operation?operation_id=" + operation_id).read()
-
-    dynamic_global_properties = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
-    accounts_registered_this_interval = dynamic_global_properties["accounts_registered_this_interval"]
-
-    # get market cap
-    core_asset = bitshares_ws_client.request('database', 'get_objects', [["2.3.0"]])[0]
-    current_supply = core_asset["current_supply"]
-    confidental_supply = core_asset["confidential_supply"]
-    market_cap = int(current_supply) + int(confidental_supply)
-    bts_market_cap = int(market_cap/100000000)
-    
-    if config.TESTNET != 1: # Todo: had to do something else for the testnet
-        btsBtcVolume = bitshares_ws_client.request('database', 'get_24_volume', ["BTS", "OPEN.BTC"])
-        quote_volume = btsBtcVolume["quote_volume"]
-    else:
-        quote_volume = 0
-    
-    # TODO: making this call with every operation is not very efficient as this are static properties
-    global_properties = bitshares_ws_client.request('database', 'get_global_properties', [])
-
-    commitee_count = len(global_properties["active_committee_members"])
-    witness_count = len(global_properties["active_witnesses"])
-
     res = json.loads(contents)
-    operation = { "op": json.loads(res[0]["operation_history"]["op"]),
-         "accounts_registered_this_interval": accounts_registered_this_interval,
-         "bts_market_cap": bts_market_cap, "quote_volume": quote_volume, "commitee_count": commitee_count, "witness_count": witness_count,
-         "block_num": res[0]["block_data"]["block_num"], "op_in_trx": res[0]["operation_history"]["op_in_trx"],
-         "result": res[0]["operation_history"]["operation_result"], "trx_in_block": res[0]["operation_history"]["trx_in_block"],
-         "virtual_op": res[0]["operation_history"]["virtual_op"], "block_time": res[0]["block_data"]["block_time"]}
+    operation = { 
+        "op": json.loads(res[0]["operation_history"]["op"]),
+        "block_num": res[0]["block_data"]["block_num"], 
+        "op_in_trx": res[0]["operation_history"]["op_in_trx"],
+        "result": res[0]["operation_history"]["operation_result"], 
+        "trx_in_block": res[0]["operation_history"]["trx_in_block"],
+        "virtual_op": res[0]["operation_history"]["virtual_op"], 
+        "block_time": res[0]["block_data"]["block_time"]
+    }
 
-    return jsonify([operation])
+    operation = _enrich_operation(operation, bitshares_ws_client)
+    return [ operation ]
 
-
-@app.route('/accounts')
 def accounts():
     core_asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', ['1.3.0', 0, 100])
-    return jsonify(core_asset_holders)
+    return core_asset_holders
 
 
-@app.route('/full_account')
-def full_account():
-    account_id = request.args.get('account_id')
+def full_account(account_id):
     account = bitshares_ws_client.request('database', 'get_full_accounts', [[account_id], 0])
-    return jsonify(account)
+    return account
 
 
-@app.route('/assets')
 def assets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -187,39 +110,32 @@ def assets():
     results = cur.fetchall()
     con.close()
     #print results
-    return jsonify(results)
+    return results
 
 
-@app.route('/fees')
 def fees():
     global_properties = bitshares_ws_client.request('database', 'get_global_properties', [])
-    return jsonify(global_properties)
+    return global_properties
 
 
-@app.route('/account_history')
-def account_history():
-    account_id = request.args.get('account_id')
-
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+def account_history(account_id):
+    account_id = _ensure_account_id(account_id)
 
     account_history = bitshares_ws_client.request('history', 'get_account_history', [account_id, "1.11.1", 20, "1.11.9999999999"])
 
     if(len(account_history) > 0):
-        for c in range(0, len(account_history)):
-            creation_block = bitshares_ws_client.request('database', 'get_block_header', [str(account_history[c]["block_num"]), 0])
-            account_history[c]["timestamp"] = creation_block["timestamp"]
-            account_history[c]["witness"] = creation_block["witness"]
+        for transaction in account_history:
+            creation_block = bitshares_ws_client.request('database', 'get_block_header', [str(transaction["block_num"]), 0])
+            transaction["timestamp"] = creation_block["timestamp"]
+            transaction["witness"] = creation_block["witness"]
     try:
-        return jsonify(account_history)
+        return account_history
     except:
         return {}
 
 
-@app.route('/get_asset')
-def get_asset():
-    asset_id = request.args.get('asset_id')
-    return jsonify([ _get_asset(asset_id) ])
+def get_asset(asset_id):
+    return [ _get_asset(asset_id) ]
 
 
 def _get_asset(asset_id_or_name):
@@ -229,21 +145,19 @@ def _get_asset(asset_id_or_name):
     else:
         asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id_or_name], 0])[0]
 
-    dynamic_asset_data = bitshares_ws_client.request('database', 'get_objects', [[asset["dynamic_asset_data_id"]]])[0]
+    dynamic_asset_data = bitshares_ws_client.get_object(asset["dynamic_asset_data_id"])
     asset["current_supply"] = dynamic_asset_data["current_supply"]
     asset["confidential_supply"] = dynamic_asset_data["confidential_supply"]
     asset["accumulated_fees"] = dynamic_asset_data["accumulated_fees"]
     asset["fee_pool"] = dynamic_asset_data["fee_pool"]
 
-    issuer = bitshares_ws_client.request('database', 'get_objects', [[asset["issuer"]]])[0]
+    issuer = bitshares_ws_client.get_object(asset["issuer"])
     asset["issuer_name"] = issuer["name"]
 
     return asset
 
 
-@app.route('/get_asset_and_volume')
-def get_asset_and_volume():
-    asset_id = request.args.get('asset_id')
+def get_asset_and_volume(asset_id):
     asset = _get_asset(asset_id)
 
     con = psycopg2.connect(**config.POSTGRES)
@@ -260,46 +174,35 @@ def get_asset_and_volume():
         asset[0]["volume"] = 0
         asset[0]["mcap"] = 0
 
-    return jsonify([asset])
+    return [asset]
 
 
-@app.route('/block_header')
-def block_header():
-    block_num = request.args.get('block_num')
+def block_header(block_num):
     block_header = bitshares_ws_client.request('database', 'get_block_header', [block_num, 0])
-    return jsonify(block_header)
+    return block_header
 
 
-@app.route('/get_block')
-def get_block():
-    block_num = request.args.get('block_num')
+def get_block(block_num):
     block = bitshares_ws_client.request('database', 'get_block', [block_num, 0])
-    return jsonify(block)
+    return block
 
 
-@app.route('/get_ticker')
-def get_ticker():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
-    return jsonify(_get_ticker(base, quote))
+def get_ticker(base, quote):
+    return _get_ticker(base, quote)
 
 
 def _get_ticker(base, quote):
     return bitshares_ws_client.request('database', 'get_ticker', [base, quote])
 
 
-@app.route('/get_volume')
-def get_volume():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
-    return jsonify(_get_volume(base, quote))
+def get_volume(base, quote):
+    return _get_volume(base, quote)
 
 
 def _get_volume(base, quote):
     return bitshares_ws_client.request('database', 'get_24_volume', [base, quote])
 
 
-@app.route('/lastnetworkops')
 def lastnetworkops():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -312,25 +215,17 @@ def lastnetworkops():
     # add operation data
     for o in range(0, len(results)):
         operation_id = results[o][2]
-        object = _get_object(operation_id)
-        results[o] = results[o] + tuple(object[0]["op"])
+        object = bitshares_ws_client.get_object(operation_id)
+        results[o] = results[o] + tuple(object["op"])
 
-    return jsonify(results)
-
-
-@app.route('/get_object')
-def get_object():
-    obj = request.args.get('object')
-    return jsonify(_get_object(obj))
-
-def _get_object(obj):
-    return bitshares_ws_client.request('database', 'get_objects', [[obj]])
+    return results
 
 
-@app.route('/get_asset_holders_count')
-def get_asset_holders_count():
-    asset_id = request.args.get('asset_id')
-    return jsonify(_get_asset_holders_count(asset_id))
+def get_object(object):
+    return [ bitshares_ws_client.get_object(object) ]
+
+def get_asset_holders_count(asset_id):
+    return _get_asset_holders_count(asset_id)
 
 
 def _get_asset_holders_count(asset_id):
@@ -340,32 +235,26 @@ def _get_asset_holders_count(asset_id):
     return bitshares_ws_client.request('asset', 'get_asset_holders_count', [asset_id])
 
 
-@app.route('/get_asset_holders')
-def get_asset_holders():
-    asset_id = request.args.get('asset_id')
-    start = request.args.get('start', 0)
-    limit = request.args.get('limit', 20)
-
+def get_asset_holders(asset_id, start=0, limit=20):
     if not isObject(asset_id):
         asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
         asset_id = asset['id']
     asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, start, limit])
-    return jsonify(asset_holders)
+    return asset_holders
 
 
-@app.route('/get_workers')
 def get_workers():
     workers_count = bitshares_ws_client.request('database', 'get_worker_count', [])
 
 
     # get the votes of worker 114.0 - refund 400k
-    refund400k = bitshares_ws_client.request('database', 'get_objects', [["1.14.0"]])[0]
+    refund400k = bitshares_ws_client.get_object("1.14.0")
     thereshold =  int(refund400k["total_votes_for"])
 
     workers = []
     for w in range(0, workers_count):
-        worker = bitshares_ws_client.request('database', 'get_objects', [["1.14." + str(w)]])[0]
-        worker["worker_account_name"] = _account_name(worker["worker_account"])
+        worker = bitshares_ws_client.get_object("1.14." + str(w))
+        worker["worker_account_name"] = account_name(worker["worker_account"])
 
         current_votes = int(worker["total_votes_for"])
         perc = (current_votes*100)/thereshold
@@ -374,21 +263,13 @@ def get_workers():
         workers.append([worker])
 
     r_workers = workers[::-1]
-    return jsonify(filter(None, r_workers))
+    return filter(None, r_workers)
 
 
 def isObject(string):
-    parts = string.split(".")
-    if len(parts) == 3:
-        return True
-    else:
-        return False
+    return len(string.split(".")) == 3
 
-
-@app.route('/get_markets')
-def get_markets():
-    asset_id = request.args.get('asset_id')
-
+def get_markets(asset_id):
     if not isObject(asset_id):
         asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
         asset_id = asset['id']
@@ -400,10 +281,9 @@ def get_markets():
     cur.execute(query, (asset_id,))
     results = cur.fetchall()
     con.close()
-    return jsonify(results)
+    return results
 
 
-@app.route('/get_most_active_markets')
 def get_most_active_markets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -412,78 +292,65 @@ def get_most_active_markets():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
-    return jsonify(results)
+    return results
 
 
-@app.route('/get_order_book')
-def get_order_book():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
-    limit = request.args.get('limit', False)
+def get_order_book(base, quote, limit=False):
     if not limit:
         limit = 10
     elif int(limit) > 50:
         limit = 50
     
     order_book = bitshares_ws_client.request('database', 'get_order_book', [base, quote, limit])
-    return jsonify(order_book)
+    return order_book
 
 
-@app.route('/get_margin_positions')
-def get_open_orders():
-    account_id = request.args.get('account_id')
+def get_margin_positions(account_id):
     margin_positions = bitshares_ws_client.request('database', 'get_margin_positions', [account_id])
-    return jsonify(margin_positions)
+    return margin_positions
 
 
-@app.route('/get_witnesses')
 def get_witnesses():
     witnesses_count = bitshares_ws_client.request('database', 'get_witness_count', [])
 
     witnesses = []
     for w in range(0, witnesses_count):
-        witness = bitshares_ws_client.request('database', 'get_objects', [["1.6." + str(w)]])[0]
+        witness = bitshares_ws_client.get_object("1.6." + str(w))
         if witness:
-            witness["witness_account_name"] = _account_name(witness["witness_account"])
+            witness["witness_account_name"] = account_name(witness["witness_account"])
             witnesses.append([witness])
 
     witnesses = sorted(witnesses, key=lambda k: int(k[0]['total_votes']))
     r_witnesses = witnesses[::-1]
 
-    return jsonify(filter(None, r_witnesses))
+    return filter(None, r_witnesses)
 
 
-@app.route('/get_committee_members')
 def get_committee_members():
     committee_count = bitshares_ws_client.request('database', 'get_committee_count', [])
 
     committee_members = []
     for w in range(0, committee_count):
-        committee_member = bitshares_ws_client.request('database', 'get_objects', [["1.5." + str(w)]])[0]
+        committee_member = bitshares_ws_client.get_object("1.5." + str(w))
         if committee_member:
-            committee_member["committee_member_account_name"] = _account_name(committee_member["committee_member_account"])
+            committee_member["committee_member_account_name"] = account_name(committee_member["committee_member_account"])
             committee_members.append([committee_member])
 
     committee_members = sorted(committee_members, key=lambda k: int(k[0]['total_votes']))
     r_committee = committee_members[::-1] # this reverses array
 
-    return jsonify(filter(None, r_committee))
+    return filter(None, r_committee)
 
 
-@app.route('/market_chart_dates')
 def market_chart_dates():
     base = datetime.date.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, 100)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
     #print len(list(reversed(date_list)))
-    return jsonify(list(reversed(date_list)))
+    return list(reversed(date_list))
 
 
-@app.route('/market_chart_data')
-def market_chart_data():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
-
+def market_chart_data(base, quote):
     base_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[base], 0])[0]
     base_id = base_asset["id"]
     base_precision = 10**base_asset["precision"]
@@ -497,17 +364,17 @@ def market_chart_data():
     market_history = bitshares_ws_client.request('history', 'get_market_history', [base_id, quote_id, 86400, ago.strftime("%Y-%m-%dT%H:%M:%S"), now.strftime("%Y-%m-%dT%H:%M:%S")])
 
     data = []
-    for w in range(0, len(market_history)):
+    for market_operation in market_history:
 
-        open_quote = float(market_history[w]["open_quote"])
-        high_quote = float(market_history[w]["high_quote"])
-        low_quote = float(market_history[w]["low_quote"])
-        close_quote = float(market_history[w]["close_quote"])
+        open_quote = float(market_operation["open_quote"])
+        high_quote = float(market_operation["high_quote"])
+        low_quote = float(market_operation["low_quote"])
+        close_quote = float(market_operation["close_quote"])
 
-        open_base = float(market_history[w]["open_base"])
-        high_base = float(market_history[w]["high_base"])
-        low_base = float(market_history[w]["low_base"])
-        close_base = float(market_history[w]["close_base"])
+        open_base = float(market_operation["open_base"])
+        high_base = float(market_operation["high_base"])
+        low_base = float(market_operation["low_base"])
+        close_base = float(market_operation["close_base"])
 
         open = 1/(float(open_base/base_precision)/float(open_quote/quote_precision))
         high = 1/(float(high_base/base_precision)/float(high_quote/quote_precision))
@@ -524,7 +391,7 @@ def market_chart_data():
         for c in range(0, complete):
             data.insert(0, append)
 
-    return jsonify(data)
+    return data
 
 
 def findMax(a,b):
@@ -545,7 +412,6 @@ def findMin(a, b):
         return a
 
 
-@app.route('/top_proxies')
 def top_proxies():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -557,58 +423,45 @@ def top_proxies():
 
     query = "SELECT voting_as FROM holders WHERE voting_as<>'1.2.5' group by voting_as"
     cur.execute(query)
-    results = cur.fetchall()
-    #con.close()
+    proxy_id_rows = cur.fetchall()
 
     proxies = []
 
-    for p in range(0, len(results)):
-
-        proxy_line = [0] * 5
-
-        proxy_id = results[p][0]
-        proxy_line[0] = proxy_id
+    for proxy_id_row in proxy_id_rows:
+        proxy_id = proxy_id_row[0]
 
         query = "SELECT account_name, amount FROM holders WHERE account_id=%s LIMIT 1"
         cur.execute(query, (proxy_id,))
-        proxy = cur.fetchone()
+        proxy_row = cur.fetchone()
 
         try:
-            proxy_name = proxy[0]
-            proxy_amount = proxy[1]
+            proxy_name = proxy_row[0]
+            proxy_amount = int(proxy_row[1])
         except:
             proxy_name = "unknown"
             proxy_amount = 0
 
-
-        proxy_line[1] = proxy_name
-
-        query = "SELECT amount, account_id FROM holders WHERE voting_as=%s"
+        query = "SELECT amount FROM holders WHERE voting_as=%s"
         cur.execute(query, (proxy_id,))
-        results2 = cur.fetchall()
+        follower_rows = cur.fetchall()
 
-        proxy_line[2] = int(proxy_amount)
+        proxy_followers = 0
+        for follower_row in follower_rows:
+            folower_amount = follower_row[0]
+            proxy_amount += int(folower_amount)  # total proxy votes
+            proxy_followers += 1
 
-        for p2 in range(0, len(results2)):
-            amount = results2[p2][0]
-            account_id = results2[p2][1]
-            proxy_line[2] = proxy_line[2] + int(amount)  # total proxy votes
-            proxy_line[3] = proxy_line[3] + 1       # followers
-
-        if proxy_line[3] > 2:
-            percentage = float(float(proxy_line[2]) * 100.0/ float(total_votes))
-            proxy_line[4] = percentage
-            proxies.append(proxy_line)
+        if proxy_followers > 2:
+            proxy_total_percentage = float(float(proxy_amount) * 100.0/ float(total_votes))
+            proxies.append([proxy_id, proxy_name, proxy_amount, proxy_followers, proxy_total_percentage])
 
     con.close()
 
-    proxies = sorted(proxies, key=lambda k: int(k[2]))
-    r_proxies = proxies[::-1]
+    proxies = sorted(proxies, key=lambda k: -k[2]) # Reverse amount order
 
-    return jsonify(filter(None, r_proxies))
+    return proxies
 
 
-@app.route('/top_holders')
 def top_holders():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -617,21 +470,14 @@ def top_holders():
     cur.execute(query)
     results = cur.fetchall()
     con.close()
-    return jsonify(results)
+    return results
 
 
-@app.route('/witnesses_votes')
 def witnesses_votes():
     proxies = top_proxies()
-    proxies = proxies.response
-    proxies = ''.join(proxies)
-    proxies = json.loads(proxies)
     proxies = proxies[:10]
 
     witnesses = get_witnesses()
-    witnesses = witnesses.response
-    witnesses = ''.join(witnesses)
-    witnesses = json.loads(witnesses)
     witnesses = witnesses[:25]
 
     w, h = len(proxies) + 2, len(witnesses)
@@ -649,7 +495,7 @@ def witnesses_votes():
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.request('database', 'get_objects', [[id_proxy]])[0]
+            proxy = bitshares_ws_client.get_object(id_proxy)
             votes = proxy["options"]["votes"]
             #print votes
             p_vote = "-"
@@ -663,21 +509,14 @@ def witnesses_votes():
             c = c + 1
 
     #print witnesses_votes
-    return jsonify(witnesses_votes)
+    return witnesses_votes
 
 
-@app.route('/workers_votes')
 def workers_votes():
     proxies = top_proxies()
-    proxies = proxies.response
-    proxies = ''.join(proxies)
-    proxies = json.loads(proxies)
     proxies = proxies[:10]
 
     workers = get_workers()
-    workers = workers.response
-    workers = ''.join(workers)
-    workers = json.loads(workers)
     workers = workers[:30]
     #print workers
 
@@ -698,7 +537,7 @@ def workers_votes():
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.request('database', 'get_objects', [[id_proxy]])[0]
+            proxy = bitshares_ws_client.get_object(id_proxy)
             votes = proxy["options"]["votes"]
             #print votes
             p_vote = "-"
@@ -712,21 +551,14 @@ def workers_votes():
             c = c + 1
 
     #print witnesses_votes
-    return jsonify(workers_votes)
+    return workers_votes
 
 
-@app.route('/committee_votes')
 def committee_votes():
     proxies = top_proxies()
-    proxies = proxies.response
-    proxies = ''.join(proxies)
-    proxies = json.loads(proxies)
     proxies = proxies[:10]
 
     committee = get_committee_members()
-    committee = committee.response
-    committee = ''.join(committee)
-    committee = json.loads(committee)
     committee = committee[:11]
     #print workers
 
@@ -745,7 +577,7 @@ def committee_votes():
 
         for p in range(0, len(proxies)):
             id_proxy = proxies[p][0]
-            proxy = bitshares_ws_client.request('database', 'get_objects', [[id_proxy]])[0]
+            proxy = bitshares_ws_client.get_object(id_proxy)
             votes = proxy["options"]["votes"]
 
             #print votes
@@ -766,10 +598,9 @@ def committee_votes():
 		committee_votes[w][c] = id_proxy + ":-"
 
     #print witnesses_votes
-    return jsonify(committee_votes)
+    return committee_votes
 
 
-@app.route('/top_markets')
 def top_markets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -778,8 +609,8 @@ def top_markets():
     cur.execute(query)
     results = cur.fetchall()
     total = 0
-    for v in range(0, len(results)):
-        total = total + results[v][0]
+    for v in results:
+        total = total + v[0]
 
     query = "SELECT pair, volume FROM markets ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
@@ -796,10 +627,9 @@ def top_markets():
         top_markets[tp][1] = results[tp][1]
 
     con.close()
-    return jsonify(top_markets)
+    return top_markets
 
 
-@app.route('/top_smartcoins')
 def top_smartcoins():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -808,8 +638,8 @@ def top_smartcoins():
     cur.execute(query)
     results = cur.fetchall()
     total = 0
-    for v in range(0, len(results)):
-        total = total + results[v][0]
+    for v in results:
+        total = total + v[0]
 
     query = "SELECT aname, volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
@@ -826,10 +656,9 @@ def top_smartcoins():
         top_smartcoins[tp][1] = results[tp][1]
 
     con.close()
-    return jsonify(top_smartcoins)
+    return top_smartcoins
 
 
-@app.route('/top_uias')
 def top_uias():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -838,8 +667,8 @@ def top_uias():
     cur.execute(query)
     results = cur.fetchall()
     total = 0
-    for v in range(0, len(results)):
-        total = total + results[v][0]
+    for v in results:
+        total = total + v[0]
 
     query = "SELECT aname, volume FROM assets WHERE TYPE='User Issued' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
@@ -856,10 +685,9 @@ def top_uias():
         top_uias[tp][1] = results[tp][1]
 
     con.close()
-    return jsonify(top_uias)
+    return top_uias
 
 
-@app.route('/top_operations')
 def top_operations():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -885,10 +713,9 @@ def top_operations():
         top_operations[tp][1] = results[tp][1]
 
     con.close()
-    return jsonify(top_operations)
+    return top_operations
 
 
-@app.route('/last_network_transactions')
 def last_network_transactions():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -898,20 +725,15 @@ def last_network_transactions():
     results = cur.fetchall()
     con.close()
     #print results
-    return jsonify(results)
+    return results
 
 
-@app.route('/lookup_accounts')
-def lookup_accounts():
-    start = request.args.get('start')
+def lookup_accounts(start):
     accounts = bitshares_ws_client.request('database', 'lookup_accounts', [start, 1000])
-    return jsonify(accounts)
+    return accounts
 
 
-@app.route('/lookup_assets')
-def lookup_assets():
-    start = request.args.get('start')
-
+def lookup_assets(start):
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
@@ -919,29 +741,23 @@ def lookup_assets():
     cur.execute(query, (start+'%',))
     results = cur.fetchall()
     con.close()
-    return jsonify(results)
+    return results
 
 
-@app.route('/getlastblocknumbher')
 def getlastblocknumber():
     dynamic_global_properties = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
-    return jsonify(dynamic_global_properties["head_block_number"])
+    return dynamic_global_properties["head_block_number"]
 
 
-@app.route('/account_history_pager')
-def account_history_pager():
-    page = request.args.get('page')
-    account_id = request.args.get('account_id')
-
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+def account_history_pager(account_id, page):
+    account_id =_ensure_account_id(account_id)
 
     # connecting into a full node.
     bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
 
     # need to get total ops for account
     account = bitshares_ws_full_client.request('database', 'get_accounts', [[account_id]])[0]
-    statistics = bitshares_ws_full_client.request('database', 'get_objects', [[account["statistics"]]])[0]
+    statistics = bitshares_ws_full_client.get_object(account["statistics"])
 
     total_ops = statistics["total_ops"]
     #print total_ops
@@ -953,23 +769,18 @@ def account_history_pager():
 
     if start > 0:
         account_history = bitshares_ws_full_client.request('history', 'get_relative_account_history', [account_id, stop, 20, start])
-        for c in range(0, len(account_history)):
-            block_header = bitshares_ws_full_client.request('database', 'get_block_header', [account_history[c]["block_num"], 0])
-            account_history[c]["timestamp"] = block_header["timestamp"]
-            account_history[c]["witness"] = block_header["witness"]
+        for transaction in account_history:
+            block_header = bitshares_ws_full_client.request('database', 'get_block_header', [transaction["block_num"], 0])
+            transaction["timestamp"] = block_header["timestamp"]
+            transaction["witness"] = block_header["witness"]
 
-        return jsonify(account_history)
+        return account_history
     else:
         return ""
 
 
-@app.route('/account_history_pager_elastic')
-def account_history_pager_elastic():
-    page = request.args.get('page')
-    account_id = request.args.get('account_id')
-
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+def account_history_pager_elastic(account_id, page):
+    account_id = _ensure_account_id(account_id)
 
     from_ = int(page) * 20
     contents = urllib2.urlopen(config.ES_WRAPPER + "/get_account_history?account_id="+account_id+"&from_="+str(from_)+"&size=20&sort_by=-block_data.block_time").read()
@@ -988,41 +799,29 @@ def account_history_pager_elastic():
                       "virtual_op": j[n]["operation_history"]["virtual_op"]
                       }
 
-    return jsonify(list(results))
+    return list(results)
 
 
-@app.route('/get_limit_orders')
-def get_limit_orders():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
+def get_limit_orders(base, quote):
     limit_orders = bitshares_ws_client.request('database', 'get_limit_orders', [base, quote, 100])
-    return jsonify(limit_orders)
+    return limit_orders
 
 
-@app.route('/get_call_orders')
-def get_call_orders():
-    asset_id = request.args.get('asset_id')
+def get_call_orders(asset_id):
     call_orders = bitshares_ws_client.request('database', 'get_call_orders', [asset_id, 100])
-    return jsonify(call_orders)
+    return call_orders
 
 
-@app.route('/get_settle_orders')
-def get_settle_orders():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
+def get_settle_orders(base, quote):
     settle_orders = bitshares_ws_client.request('database', 'get_settle_orders', [base, quote, 100])
-    return jsonify(settle_orders)
+    return settle_orders
 
 
-@app.route('/get_fill_order_history')
-def get_fill_order_history():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
+def get_fill_order_history(base, quote):
     fill_order_history = bitshares_ws_client.request('history', 'get_fill_order_history', [base, quote, 100])
-    return jsonify(fill_order_history)
+    return fill_order_history
 
 
-@app.route('/get_dex_total_volume')
 def get_dex_total_volume():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -1051,19 +850,17 @@ def get_dex_total_volume():
     res = {"volume_bts": round(volume), "volume_usd": round(volume/usd_price), "volume_cny": round(volume/cny_price),
            "market_cap_bts": round(market_cap), "market_cap_usd": round(market_cap/usd_price), "market_cap_cny": round(market_cap/cny_price)}
 
-    return jsonify(res)
+    return res
 
 
-@app.route('/daily_volume_dex_dates')
 def daily_volume_dex_dates():
     base = datetime.date.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, 60)]
     date_list = [d.strftime("%Y-%m-%d") for d in date_list]
     #print len(list(reversed(date_list)))
-    return jsonify(list(reversed(date_list)))
+    return list(reversed(date_list))
 
  
-@app.route('/daily_volume_dex_data')
 def daily_volume_dex_data():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -1076,13 +873,10 @@ def daily_volume_dex_data():
     for r in range(0, len(results)):
         mod[r] = results[r][0]
 
-    return jsonify(list(reversed(mod)))
+    return list(reversed(mod))
 
 
-@app.route('/get_all_asset_holders')
-def get_all_asset_holders():
-    asset_id = request.args.get('asset_id')
-
+def get_all_asset_holders(asset_id):
     if not isObject(asset_id):
         asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
         asset_id = asset['id']
@@ -1091,8 +885,7 @@ def get_all_asset_holders():
 
     asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, 0, 100])
 
-    for r in range(0, len(asset_holders)):
-        all.append(asset_holders[r])
+    all.extend(asset_holders)
 
     len_result = len(asset_holders)
     start = 100
@@ -1100,19 +893,13 @@ def get_all_asset_holders():
         start = start + 100
         asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, start, 100])
         len_result = len(asset_holders)
-        for r in range(0, len(asset_holders)):
-            all.append(asset_holders[r])
+        all.extend(asset_holders)
+
+    return all
 
 
-    return jsonify(all)
-
-
-@app.route('/referrer_count')
-def referrer_count():
-    account_id = request.args.get('account_id')
-
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+def referrer_count(account_id):
+    account_id = _ensure_account_id(account_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -1121,16 +908,11 @@ def referrer_count():
     cur.execute(query, (account_id,))
     results = cur.fetchone()
 
-    return jsonify(results)
+    return results
 
 
-@app.route('/get_all_referrers')
-def get_all_referrers():
-    account_id = request.args.get('account_id')
-    page = request.args.get('page', 0)
-
-    if not isObject(account_id):
-        account_id = _account_id(account_id)
+def get_all_referrers(account_id, page=0):
+    account_id = _ensure_account_id(account_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -1141,15 +923,9 @@ def get_all_referrers():
     cur.execute(query, (account_id,str(offset), ))
     results = cur.fetchall()
 
-    return jsonify(results)
+    return results
 
-@app.route('/get_grouped_limit_orders')
-def get_grouped_limit_orders():
-    base = request.args.get('base')
-    quote = request.args.get('quote')
-    group = request.args.get('group', 10)
-    limit = request.args.get('limit', False)
-
+def get_grouped_limit_orders(quote, base, group=10, limit=False):
     if not limit:
         limit = 10
     elif int(limit) > 50:
@@ -1164,5 +940,4 @@ def get_grouped_limit_orders():
 
     grouped_limit_orders = bitshares_ws_client.request('orders', 'get_grouped_limit_orders', [base, quote, group, None, limit])
 
-    return jsonify(grouped_limit_orders)
-
+    return grouped_limit_orders

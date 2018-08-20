@@ -37,7 +37,7 @@ WORKDIR /explorer
 # Always make the project virtualenv active
 ENV VIRTUAL_ENV=/home/explorer/env \
 	PATH=/home/explorer/env/bin:$PATH \
-	FLASK_APP=api.py
+	FLASK_APP=app.py
 
 EXPOSE 5000
 
