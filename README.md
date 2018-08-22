@@ -1,18 +1,18 @@
-# Bitshares Explorer REST API
+# BitShares Explorer REST API
 
-Explorer's REST for the bitshares blockchain.
+BitShares Explorer REST API is the backend service of the BitShares explorer that retrieve the infotmation from the blockchain.  
 
 http://185.208.208.184:5000/apidocs/
 
 Index:
 
-- [Bitshares Explorer REST API](#bitshares-explorer-rest-api)
+- [BitShares Explorer REST API](#bitshares-explorer-rest-api)
     - [Installation](#installation)
         - [Manual](#manual)
             - [Install ElasticSearch](#install-elasticsearch)
-            - [Install a bitshares node with requirements.](#install-a-bitshares-node-with-requirements)
+            - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
             - [Install and setup postgres.](#install-and-setup-postgres)
-            - [Install Explorer API and dependencies.](#install-explorer-api-and-dependencies)
+            - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
             - [Real Time ops grabber](#real-time-ops-grabber)
             - [Cronjobs](#cronjobs)
             - [Simple running](#simple-running)
@@ -30,7 +30,7 @@ The following procedure will work in Debian based Linux, more specifically the c
 
 ### Manual
 
-Step by step on everything needed to have your own Explorer API up and running for a production environment.
+Step by step on everything needed to have your own BitShares Explorer API up and running for a production environment.
 
 #### Install ElasticSearch
 
@@ -88,9 +88,9 @@ Stop the program with ctrl-c, daemonize and forget:
     tcp6       0      0 ::1:9200                :::*                    LISTEN     
     elastic@oxarbitrage:~$ 
 
-#### Install a bitshares node with requirements.
+#### Install a BitShares node with requirements.
 
-This API backend connects to a bitshares `witness_node` to get data. This witness node must be configured with the following plugins:
+This API backend connects to a BitShares `witness_node` to get data. This witness node must be configured with the following plugins:
 
 - `market_history`   
 - `grouped_orders` 
@@ -201,7 +201,7 @@ Check your database tables were created:
     
     explorer=# 
 
-#### Install Explorer API and dependencies.
+#### Install BitShares Explorer API and dependencies.
 
 Install python and pip:
 
@@ -209,8 +209,8 @@ Install python and pip:
 
 Clone the app:
 
-    git clone https://github.com/oxarbitrage/explorer-api
-    cd explorer-api/
+    git clone https://github.com/oxarbitrage/bitshares-explorer-api
+    cd bitshares-explorer-api/
     
 Install virtual environment and setup:
 
@@ -235,7 +235,7 @@ Install dependencies in virtual env activated:
 
 To run the api, always need to have the full path to program in `PYTHONPATH` environment variable exported:
 
-`export PYTHONPATH=/root/bitshares/explorer-api` 
+`export PYTHONPATH=/root/bitshares/bitshares-explorer-api` 
 
 If you have errors in the output about websocket or psycopg you may need to also do:
 ```
@@ -270,10 +270,10 @@ Similar as postgres, it is expected that the cronjobs will not be needed in the 
 
 Add the following taks to cron file with `crontab -e`:
 
-    0 1 * * *  export PYTHONPATH=/root/bitshares/explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/explorer-api/postgres/import_holders.py > /tmp/cronlog_holders.txt 2>&1 
-    0 2 * * *  export PYTHONPATH=/root/bitshares/explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/explorer-api/postgres/import_assets.py > /tmp/cronlog_assets.txt 2>&1
-    15 2 * * * export PYTHONPATH=/root/bitshares/explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/explorer-api/postgres/import_markets.py > /tmp/cronlog_markets.txt 2>&1
-    30 2 * * * export PYTHONPATH=/root/bitshares/explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/explorer-api/postgres/import_referrers.py > /tmp/cronlog_refs.txt 2>&1
+    0 1 * * *  export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_holders.py > /tmp/cronlog_holders.txt 2>&1 
+    0 2 * * *  export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_assets.py > /tmp/cronlog_assets.txt 2>&1
+    15 2 * * * export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_markets.py > /tmp/cronlog_markets.txt 2>&1
+    30 2 * * * export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_referrers.py > /tmp/cronlog_refs.txt 2>&1
                                                   
     
 #### Simple running
@@ -317,7 +317,7 @@ Create symbolic link to sites-enabled and restart nginx:
 
 Now api can be started with:
 
-    (wrappers) root@oxarbitrage ~/bitshares/explorer-api # uwsgi --ini app.ini
+    (wrappers) root@oxarbitrage ~/bitshares/bitshares-explorer-api # uwsgi --ini app.ini
 
 #### Domain setup and SSL
 

@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  title: Bitshares Python API Backend
-  description: Exposes bitshares calls needed to explore the blockchain
+  title: BitShares Excplorer API
+  description: Exposes BitShares calls needed to explore the blockchain
   version: '1'
 schemes:
   - http
