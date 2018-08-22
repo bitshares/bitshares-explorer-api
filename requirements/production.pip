@@ -1,5 +1,7 @@
 flask
 flask-cors
+Flask-Caching
+flask_profiler
 connexion
 websocket-client
 psycopg2

@@ -15,5 +15,5 @@ def test_request(path):
     json_diff = diff(actual.json(), ref.json(), array_align=False, verbose=False)
     if (path == '/get_witnesses'):
         # Filter fields not stable between calls.
-        json_diff = [d for d in json_diff if d[0][2] not in ['last_confirmed_block_num', 'last_aslot']]
+        json_diff = [d for d in json_diff if len(d[0]) != 3 or d[0][2] not in ['last_confirmed_block_num', 'last_aslot']]
     assert not json_diff, '\n'.join(udiff(actual.json(), ref.json(), json_diff))
