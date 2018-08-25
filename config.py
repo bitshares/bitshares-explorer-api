@@ -10,6 +10,15 @@ FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:999
 ES_WRAPPER = os.environ.get('ES_WRAPPER', "http://95.216.32.252:5000") # clockwork
 #ES_WRAPPER = os.environ.get('ES_WRAPPER', "https://eswrapper.bitshares.eu") # Infrastructure worker
 
+# a connection to Elastic Search.
+# oxarbitrage
+ELASTICSEARCH = {
+    'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://148.251.10.231:5005/').split(','),
+    'user': os.environ.get('ELASTICSEARCH_USER', None),
+    'password': os.environ.get('ELASTICSEARCH_USER', None)
+}
+
+
 # Database connection: see https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 POSTGRES = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
             'port': os.environ.get('POSTGRES_PORT', '5432'),
