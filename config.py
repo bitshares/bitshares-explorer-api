@@ -5,11 +5,6 @@ WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://localhost:8090/ws")
 # a connection to a bitshares full node
 FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:9999/ws")
 
-# a connection to an ElasticSearch wrapper
-#ES_WRAPPER = os.environ.get('ES_WRAPPER', "http://185.208.208.184:5000") # oxarbitrage
-ES_WRAPPER = os.environ.get('ES_WRAPPER', "http://95.216.32.252:5000") # clockwork
-#ES_WRAPPER = os.environ.get('ES_WRAPPER', "https://eswrapper.bitshares.eu") # Infrastructure worker
-
 # a connection to Elastic Search.
 # oxarbitrage
 ELASTICSEARCH = {

@@ -1,9 +1,9 @@
 import datetime
 import json
-import urllib2
 import psycopg2
 from services.bitshares_websocket_client import BitsharesWebsocketClient, client as bitshares_ws_client
 from services.cache import cache
+import es_wrapper
 import config
 
 
@@ -72,8 +72,7 @@ def get_operation_full(operation_id):
     return [ operation ]
 
 def get_operation_full_elastic(operation_id):
-    contents = urllib2.urlopen(config.ES_WRAPPER + "/get_single_operation?operation_id=" + operation_id).read()
-    res = json.loads(contents)
+    res = es_wrapper.get_single_operation(operation_id)
     operation = { 
         "op": json.loads(res[0]["operation_history"]["op"]),
         "block_num": res[0]["block_data"]["block_num"], 
@@ -603,23 +602,22 @@ def get_account_history_pager_elastic(account_id, page):
     account_id = get_account_id(account_id)
 
     from_ = int(page) * 20
-    contents = urllib2.urlopen(config.ES_WRAPPER + "/get_account_history?account_id="+account_id+"&from_="+str(from_)+"&size=20&sort_by=-block_data.block_time").read()
+    operations = es_wrapper.get_account_history(account_id=account_id, from_=from_, size=20, sort_by='-block_data.block_time')
 
-    j = json.loads(contents)
+    results = []
+    for op in operations:
+        results.append({
+            "op": json.loads(op["operation_history"]["op"]),
+            "block_num": op["block_data"]["block_num"],
+            "id": op["account_history"]["operation_id"],
+            "op_in_trx": op["operation_history"]["op_in_trx"],
+            "result": op["operation_history"]["operation_result"],
+            "timestamp": op["block_data"]["block_time"],
+            "trx_in_block": op["operation_history"]["trx_in_block"],
+            "virtual_op": op["operation_history"]["virtual_op"]
+        })
 
-    results = [0 for x in range(len(j))]
-    for n in range(0, len(j)):
-        results[n] = {"op": json.loads(j[n]["operation_history"]["op"]),
-                      "block_num": j[n]["block_data"]["block_num"],
-                      "id": j[n]["account_history"]["operation_id"],
-                      "op_in_trx": j[n]["operation_history"]["op_in_trx"],
-                      "result": j[n]["operation_history"]["operation_result"],
-                      "timestamp": j[n]["block_data"]["block_time"],
-                      "trx_in_block": j[n]["operation_history"]["trx_in_block"],
-                      "virtual_op": j[n]["operation_history"]["virtual_op"]
-                      }
-
-    return list(results)
+    return results
 
 
 def get_limit_orders(base, quote):

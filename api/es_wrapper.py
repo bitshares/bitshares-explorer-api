@@ -1,14 +1,5 @@
-from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
-import config
-
-if      'user' in config.ELASTICSEARCH and config.ELASTICSEARCH['user'] \
-    and 'password' in config.ELASTICSEARCH and config.ELASTICSEARCH['password']:
-    es = Elasticsearch(config.ELASTICSEARCH['hosts'], \
-                        http_auth=(config.ELASTICSEARCH['user'], config.ELASTICSEARCH['password']),\
-                        timeout=60)
-else:
-    es = Elasticsearch(config.ELASTICSEARCH['hosts'], timeout=60)
+from services.elasticsearch_client import es
 
 
 def get_account_history(account_id=None, operation_type=None, from_=0, size=10, 
@@ -33,7 +24,6 @@ def get_account_history(account_id=None, operation_type=None, from_=0, size=10,
         s.aggs.bucket('per_field', 'terms', field=agg_field, size=size)
 
     s = s.sort(sort_by)
-    print(s.to_dict())
     response = s.execute()
 
     if type == "data":
