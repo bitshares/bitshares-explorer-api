@@ -13,6 +13,8 @@ def _identify_service_from_tag(tags):
         return 'explorer-api'
     if 'wrapper' in tags:
         return 'es-wrapper'
+    if 'udf' in tags:
+        return 'udf'
     return None
 
 def pytest_generate_tests(metafunc):

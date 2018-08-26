@@ -1,0 +1,113 @@
+paths:
+  "/config":
+    get:
+      description: Get bitshares chart data configuration
+      operationId: api.udf.get_config
+      responses:
+        '200':
+          description: Configuration array
+        '500':
+          description: Error processing parameters
+      tags:
+        - udf
+  "/symbols":
+    get:
+      description: Get information about an asset(symbol)
+      operationId: api.udf.get_symbols
+      parameters:
+        - in: query
+          name: symbol
+          default: USD_CNY
+          type: string
+          required: true
+          description: Market in the form BASE_QUOTE
+      responses:
+        '200':
+          description: Information about a market
+        '500':
+          description: Error processing parameters
+      tags:
+        - udf
+  "/search":
+    get:
+      description: Search for an asset(symbol)
+      operationId: api.udf.search
+      parameters:
+        - in: query
+          name: query
+          default: USD
+          type: string
+          required: true
+          description: String to search
+        - in: query
+          name: type
+          default: ''
+          type: string
+          required: false
+          description: UDF needs it, Bitshares done have it so not used
+        - in: query
+          name: exchange
+          default: ''
+          type: string
+          required: false
+          description: UDF needs it, Bitshares done have it so not used
+        - in: query
+          name: limit
+          default: ''
+          type: string
+          required: false
+          description: UDF needs it, Bitshares done have it so not used
+      responses:
+        '200':
+          description: Found assets
+        '500':
+          description: Error processing parameters
+      tags:
+        - udf
+  "/history":
+    get:
+      description: Get OHLC data for symbol
+      operationId: api.udf.get_history
+      parameters:
+        - in: query
+          name: symbol
+          default: USD_CNY
+          type: string
+          required: true
+          description: Symbol
+        - in: query
+          name: from
+          default: 1513092731
+          type: integer
+          required: true
+          description: Datatime start
+        - in: query
+          name: to
+          default: 1513956731
+          type: integer
+          required: true
+          description: Datetime end
+        - in: query
+          name: resolution
+          default: D
+          type: string
+          required: true
+          description: AKA Tiemframe, candles(15 mins, 1D, etc)
+      responses:
+        '200':
+          description: History in selected period.
+        '500':
+          description: Error processing parameters
+      tags:
+        - udf
+  "/time":
+    get:
+      description: Get last server time
+      operationId: api.udf.get_time
+      responses:
+        '200':
+          description: Current server time
+        '500':
+          description: Error processing parameters
+      tags:
+        - udf
