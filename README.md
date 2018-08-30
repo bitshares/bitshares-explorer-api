@@ -23,6 +23,7 @@ Index:
         - [Swagger](#swagger)
         - [Profiler](#profiler)
         - [Open Explorer](#open-explorer)
+        - [Development](#development)
 
 ## Installation
 
@@ -356,3 +357,13 @@ By default the profiler is not protected, to add basic authentification add user
 - http://bitshares-testnet.xyz
 
 All versions of open-explorer uses this backend to get data.
+
+### Development
+
+Run tests:
+
+```
+PYTHONPATH=. pytest
+```
+
+And for non regression see `non_reg/README.md`
