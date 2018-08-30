@@ -6,6 +6,11 @@ from services.cache import cache
 import es_wrapper
 import config
 
+def _get_core_asset_name():
+    if config.TESTNET == 1:
+        return config.CORE_ASSET_SYMBOL_TESTNET
+    else:
+        return config.CORE_ASSET_SYMBOL
 
 def get_header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
@@ -100,11 +105,13 @@ def get_assets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: Search for filled orders, grouped by volume
     query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"
     cur.execute(query)
     results = cur.fetchall()
     con.close()
 
+    # [ [db_id, asset_name, asset_id, price_in_bts, 24h_volume, market_cap, type, supply, holders,  wallettype (=''), precision]]
     return results
 
 
@@ -153,20 +160,14 @@ def _get_asset(asset_id_or_name):
 
 def get_asset_and_volume(asset_id):
     asset = _get_asset(asset_id)
+    
+    core_symbol = _get_core_asset_name()
 
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    volume = get_volume(asset['symbol'], core_symbol)
+    asset['volume'] = volume['base_volume']
 
-    query = "SELECT volume, mcap FROM assets WHERE aid=%s"
-    cur.execute(query, (asset_id,))
-    results = cur.fetchall()
-    con.close()
-    try:
-        asset["volume"] = results[0][0]
-        asset["mcap"] = results[0][1]
-    except:
-        asset[0]["volume"] = 0
-        asset[0]["mcap"] = 0
+    ticker = get_ticker(asset['symbol'], core_symbol)
+    asset['mcap'] = int(asset['current_supply']) * float(ticker['latest'])
 
     return [asset]
 
@@ -193,6 +194,7 @@ def get_last_network_ops():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # # TODO for DB2ES: Get ops from bitshares-*
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 10"
     cur.execute(query)
     results = cur.fetchall()
@@ -258,6 +260,7 @@ def get_markets(asset_id):
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # # TODO for DB2ES: Use core get_ticker, or query of filled orders on bitshares-*.
     query = "SELECT * FROM markets WHERE aid=%s"
     cur.execute(query, (asset_id,))
     results = cur.fetchall()
@@ -269,6 +272,8 @@ def get_most_active_markets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # # TODO for DB2ES: use core get_top_markets, or query filled orders on bitshares-*
+    # Need this PR: https://github.com/bitshares/bitshares-core/pull/1273
     query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 100"
     cur.execute(query)
     results = cur.fetchall()
@@ -380,6 +385,11 @@ def get_top_proxies():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # # TODO for DB2ES:
+    # 1. Query object_balance for BTS then sum amount
+    # 2. query object_account for accounts voting_as <> 1.2.5
+    # 3. query their BTS balance
+    # 4. query the balance of proxies
     query = "SELECT sum(amount) FROM holders"
     cur.execute(query)
     total = cur.fetchone()
@@ -417,6 +427,9 @@ def get_top_holders():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES:
+    # query object_account that do not vote for self
+    # query their ammount of bts
     query = "SELECT * FROM holders WHERE voting_as='1.2.5' ORDER BY amount DESC LIMIT 10"
     cur.execute(query)
     results = cur.fetchall()
@@ -492,6 +505,9 @@ def get_top_markets():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES:
+    # use core get_top_markets, or query filled orders on bitshares-*
+    # Need this PR: https://github.com/bitshares/bitshares-core/pull/1273
     query = "SELECT pair, volume FROM markets ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
     results = cur.fetchall()
@@ -505,6 +521,7 @@ def get_top_smartcoins():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    #TODO for DB2ES: query filled orders on bitshares-*
     query = "SELECT aname, volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
     results = cur.fetchall()
@@ -517,6 +534,7 @@ def get_top_uias():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: query filled orders on bitshares-*
     query = "SELECT aname, volume FROM assets WHERE TYPE='User Issued' ORDER BY volume DESC LIMIT 7"
     cur.execute(query)
     results = cur.fetchall()
@@ -529,6 +547,7 @@ def get_top_operations():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: query bitshares-*
     query = "SELECT op_type, count(op_type) AS counter FROM ops GROUP BY op_type ORDER BY counter DESC"
     cur.execute(query)
     results = cur.fetchall()
@@ -540,6 +559,7 @@ def get_last_network_transactions():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: Get ops from bitshares-*
     query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 20"
     cur.execute(query)
     results = cur.fetchall()
@@ -557,6 +577,7 @@ def lookup_assets(start):
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: query object_bitasset, then get volume and market cap from core
     query = "SELECT aname FROM assets WHERE aname LIKE %s"
     cur.execute(query, (start+'%',))
     results = cur.fetchall()
@@ -644,21 +665,25 @@ def get_dex_total_volume():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: Use get ticker from core
     query = "select price from assets where aname='USD'"
     cur.execute(query)
     results = cur.fetchone()
     usd_price = results[0]
 
+    # TODO for DB2ES: Use get ticker from core
     query = "select price from assets where aname='CNY'"
     cur.execute(query)
     results = cur.fetchone()
     cny_price = results[0]
 
+    # TODO for DB2ES: Use query on filled orders on bitshares-es
     query = "select sum(volume) from assets WHERE aname!='BTS'"
     cur.execute(query)
     results = cur.fetchone()
     volume = results[0]
 
+    # TODO for DB2ES: ???
     query = "select sum(mcap) from assets"
     cur.execute(query)
     results = cur.fetchone()
@@ -682,6 +707,7 @@ def get_daily_volume_dex_data():
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # Use bitshares-* to get this information.
     query = "select value from stats where type='volume_bts' order by date desc limit 60"
     cur.execute(query)
     results = cur.fetchall()
@@ -717,6 +743,7 @@ def get_referrer_count(account_id):
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
 
+    # TODO for DB2ES: Use information on object_account
     query = "select count(*) from referrers where referrer=%s"
     cur.execute(query, (account_id,))
     results = cur.fetchone()
@@ -732,6 +759,7 @@ def get_all_referrers(account_id, page=0):
 
     offset = int(page) * 20;
 
+    # TODO for DB2ES: Use information on object_account
     query = "select * from referrers where referrer=%s ORDER BY rid DESC LIMIT 20 OFFSET %s"
     cur.execute(query, (account_id,str(offset), ))
     results = cur.fetchall()

@@ -57,6 +57,7 @@ def get_symbols(symbol):
 
 def search(query, type, exchange, limit):
 
+    # TODO for DB2ES: Use get_ticker instead, or nothing? as no data other than base and quote are needed.
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
     cur.execute("SELECT * FROM markets WHERE pair LIKE %s", ('%{}%'.format(query),))
