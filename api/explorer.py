@@ -92,7 +92,7 @@ def get_operation_full_elastic(operation_id):
     return [ operation ]
 
 def get_accounts():
-    core_asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', ['1.3.0', 0, 100])
+    core_asset_holders = get_asset_holders('1.3.0', start=0, limit=100)
     return core_asset_holders
 
 
@@ -166,9 +166,12 @@ def get_asset_and_volume(asset_id):
     volume = get_volume(asset['symbol'], core_symbol)
     asset['volume'] = volume['base_volume']
 
-    ticker = get_ticker(asset['symbol'], core_symbol)
-    asset['mcap'] = int(asset['current_supply']) * float(ticker['latest'])
-
+    if asset['symbol'] != core_symbol:
+        ticker = get_ticker(asset['symbol'], core_symbol)
+        asset['mcap'] = int(asset['current_supply']) * float(ticker['latest'])
+    else:
+        asset['mcap'] = int(asset['current_supply'])
+        
     return [asset]
 
 
@@ -722,15 +725,14 @@ def get_all_asset_holders(asset_id):
 
     all = []
 
-    asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, 0, 100])
-
+    asset_holders = get_asset_holders(asset_id, start=0, limit=100)
     all.extend(asset_holders)
 
     len_result = len(asset_holders)
     start = 100
     while  len_result == 100:
         start = start + 100
-        asset_holders = bitshares_ws_client.request('asset', 'get_asset_holders', [asset_id, start, 100])
+        asset_holders = get_asset_holders(asset_id, start=start, limit=100)
         len_result = len(asset_holders)
         all.extend(asset_holders)
 
