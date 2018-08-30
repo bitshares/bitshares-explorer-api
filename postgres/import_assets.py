@@ -18,17 +18,6 @@ cur.execute(query)
 query = "ALTER SEQUENCE assets_id_seq RESTART WITH 1;"
 cur.execute(query)
 
-# alter sequence of the ops once a day here
-query = "DELETE FROM ops WHERE oid NOT IN (SELECT oid FROM ops ORDER BY oid DESC LIMIT 10);"
-cur.execute(query)
-
-for x in range(0, 10):
-    query = "UPDATE ops set oid=%s WHERE oid IN (SELECT oid FROM ops ORDER BY oid LIMIT 1 OFFSET %s);"
-    cur.execute(query, (x+1, x))
-
-query = "ALTER SEQUENCE ops_oid_seq RESTART WITH 11;"
-cur.execute(query)
-
 con.commit()
 
 if config.TESTNET == 1:
@@ -88,7 +77,7 @@ for x in range(0, len(all_assets)):
         #print all_assets[x]["result"][i]
 
         try:
-            data = api.explorer.get_volume(core_symbol, symbol)
+            data = api.explorer._get_volume(core_symbol, symbol)
         except:
             continue
 

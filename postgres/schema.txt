@@ -154,49 +154,6 @@ ALTER SEQUENCE markets_id_seq OWNED BY markets.id;
 
 
 --
--- Name: ops; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE ops (
-    oid integer NOT NULL,
-    oh character varying(40) NOT NULL,
-    ath character varying(40) NOT NULL,
-    block_num integer NOT NULL,
-    trx_in_block integer NOT NULL,
-    op_in_trx integer NOT NULL,
-    datetime timestamp without time zone,
-    account_id character varying(40),
-    account_name character varying(40),
-    op_type integer,
-    CONSTRAINT ops_ath_check CHECK (((ath)::text <> ''::text)),
-    CONSTRAINT ops_oh_check CHECK (((oh)::text <> ''::text))
-);
-
-
-ALTER TABLE ops OWNER TO postgres;
-
---
--- Name: ops_oid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE ops_oid_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE ops_oid_seq OWNER TO postgres;
-
---
--- Name: ops_oid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE ops_oid_seq OWNED BY ops.oid;
-
-
---
 -- Name: proxies; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -331,13 +288,6 @@ ALTER TABLE ONLY markets ALTER COLUMN id SET DEFAULT nextval('markets_id_seq'::r
 
 
 --
--- Name: oid; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY ops ALTER COLUMN oid SET DEFAULT nextval('ops_oid_seq'::regclass);
-
-
---
 -- Name: pid; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -380,14 +330,6 @@ ALTER TABLE ONLY holders
 
 ALTER TABLE ONLY markets
     ADD CONSTRAINT markets_pkey PRIMARY KEY (id);
-
-
---
--- Name: ops_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY ops
-    ADD CONSTRAINT ops_pkey PRIMARY KEY (oid);
 
 
 --

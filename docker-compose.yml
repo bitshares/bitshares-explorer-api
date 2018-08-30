@@ -51,16 +51,3 @@ services:
     networks:
       - private
       - internet
-      
-  realtime-importer:
-    hostname: realtime_importer
-    image: bitshares-explorer
-    build: .
-    command: /usr/bin/env python /explorer/postgres/import_realtime_ops.py
-    depends_on:
-      - db
-    env_file:
-      - explorer_config.env
-    networks:
-      - private
-      - internet

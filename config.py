@@ -2,15 +2,13 @@ import os
 
 
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://localhost:8090/ws")
-# a connection to a bitshares full node
-FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:9999/ws")
 
 # a connection to Elastic Search.
 # oxarbitrage
 ELASTICSEARCH = {
-    'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://148.251.10.231:5005/').split(','),
-    'user': os.environ.get('ELASTICSEARCH_USER', None),
-    'password': os.environ.get('ELASTICSEARCH_USER', None)
+     'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://148.251.10.231:5005/').split(','),
+     'user': os.environ.get('ELASTICSEARCH_USER', None),
+     'password': os.environ.get('ELASTICSEARCH_USER', None)
 }
 
 

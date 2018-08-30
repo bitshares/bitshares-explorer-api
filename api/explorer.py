@@ -23,7 +23,7 @@ def get_account_name(account_id):
     account = get_account(account_id)
     return account[0]['name']
 
-def get_account_id(account_name):
+def _get_account_id(account_name):
     if not _is_object(account_name):
         account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_name], 0])
         return account[0]['id']
@@ -55,26 +55,6 @@ def _enrich_operation(operation, ws_client):
     operation["accounts_registered_this_interval"] = dynamic_global_properties["accounts_registered_this_interval"]
 
     return _add_global_informations(operation, ws_client)
-
-def get_operation(operation_id):
-    operation = bitshares_ws_client.get_object(operation_id)
-    if not operation:
-        operation = {} 
-
-    operation = _enrich_operation(operation, bitshares_ws_client)
-    return [ operation ]
-
-
-def get_operation_full(operation_id):
-    # lets connect the operations to a full node
-    bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
-
-    operation = bitshares_ws_full_client.get_object(operation_id)
-    if not operation:
-        operation = {} 
-
-    operation = _enrich_operation(operation, bitshares_ws_full_client)
-    return [ operation ]
 
 def get_operation_full_elastic(operation_id):
     res = es_wrapper.get_single_operation(operation_id)
@@ -118,23 +98,6 @@ def get_assets():
 def get_fees():
     return bitshares_ws_client.get_global_properties()
 
-
-def get_account_history(account_id):
-    account_id = get_account_id(account_id)
-
-    account_history = bitshares_ws_client.request('history', 'get_account_history', [account_id, "1.11.1", 20, "1.11.9999999999"])
-
-    if(len(account_history) > 0):
-        for transaction in account_history:
-            creation_block = bitshares_ws_client.request('database', 'get_block_header', [str(transaction["block_num"]), 0])
-            transaction["timestamp"] = creation_block["timestamp"]
-            transaction["witness"] = creation_block["witness"]
-    try:
-        return account_history
-    except:
-        return {}
-
-
 def get_asset(asset_id):
     return [ _get_asset(asset_id) ]
 
@@ -163,7 +126,7 @@ def get_asset_and_volume(asset_id):
     
     core_symbol = _get_core_asset_name()
 
-    volume = get_volume(asset['symbol'], core_symbol)
+    volume = _get_volume(asset['symbol'], core_symbol)
     asset['volume'] = volume['base_volume']
 
     if asset['symbol'] != core_symbol:
@@ -171,13 +134,8 @@ def get_asset_and_volume(asset_id):
         asset['mcap'] = int(asset['current_supply']) * float(ticker['latest'])
     else:
         asset['mcap'] = int(asset['current_supply'])
-        
+
     return [asset]
-
-
-def get_block_header(block_num):
-    block_header = bitshares_ws_client.request('database', 'get_block_header', [block_num, 0])
-    return block_header
 
 
 def get_block(block_num):
@@ -189,27 +147,8 @@ def get_ticker(base, quote):
     return bitshares_ws_client.request('database', 'get_ticker', [base, quote])
 
 
-def get_volume(base, quote):
+def _get_volume(base, quote):
     return bitshares_ws_client.request('database', 'get_24_volume', [base, quote])
-
-
-def get_last_network_ops():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    # # TODO for DB2ES: Get ops from bitshares-*
-    query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 10"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
-
-    # add operation data
-    for o in range(0, len(results)):
-        operation_id = results[o][2]
-        object = bitshares_ws_client.get_object(operation_id)
-        results[o] = results[o] + tuple(object["op"])
-
-    return results
 
 
 def get_object(object):
@@ -545,32 +484,6 @@ def get_top_uias():
     return results
 
 
-@cache.memoize()
-def get_top_operations():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    # TODO for DB2ES: query bitshares-*
-    query = "SELECT op_type, count(op_type) AS counter FROM ops GROUP BY op_type ORDER BY counter DESC"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
-    return results
-
-
-def get_last_network_transactions():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    # TODO for DB2ES: Get ops from bitshares-*
-    query = "SELECT * FROM ops ORDER BY block_num DESC LIMIT 20"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
-
-    return results
-
-
 def lookup_accounts(start):
     accounts = bitshares_ws_client.request('database', 'lookup_accounts', [start, 1000])
     return accounts
@@ -593,37 +506,8 @@ def get_last_block_number():
     return dynamic_global_properties["head_block_number"]
 
 
-def get_account_history_pager(account_id, page):
-    account_id = get_account_id(account_id)
-
-    # connecting into a full node.
-    bitshares_ws_full_client = BitsharesWebsocketClient(config.FULL_WEBSOCKET_URL)
-
-    # need to get total ops for account
-    account = bitshares_ws_full_client.request('database', 'get_accounts', [[account_id]])[0]
-    statistics = bitshares_ws_full_client.get_object(account["statistics"])
-
-    total_ops = statistics["total_ops"]
-    start = total_ops - (20 * int(page))
-    stop = total_ops - (40 * int(page))
-
-    if stop < 0:
-        stop = 0
-
-    if start > 0:
-        account_history = bitshares_ws_full_client.request('history', 'get_relative_account_history', [account_id, stop, 20, start])
-        for transaction in account_history:
-            block_header = bitshares_ws_full_client.request('database', 'get_block_header', [transaction["block_num"], 0])
-            transaction["timestamp"] = block_header["timestamp"]
-            transaction["witness"] = block_header["witness"]
-
-        return account_history
-    else:
-        return ""
-
-
 def get_account_history_pager_elastic(account_id, page):
-    account_id = get_account_id(account_id)
+    account_id = _get_account_id(account_id)
 
     from_ = int(page) * 20
     operations = es_wrapper.get_account_history(account_id=account_id, from_=from_, size=20, sort_by='-block_data.block_time')
@@ -642,21 +526,6 @@ def get_account_history_pager_elastic(account_id, page):
         })
 
     return results
-
-
-def get_limit_orders(base, quote):
-    limit_orders = bitshares_ws_client.request('database', 'get_limit_orders', [base, quote, 100])
-    return limit_orders
-
-
-def get_call_orders(asset_id):
-    call_orders = bitshares_ws_client.request('database', 'get_call_orders', [asset_id, 100])
-    return call_orders
-
-
-def get_settle_orders(base, quote):
-    settle_orders = bitshares_ws_client.request('database', 'get_settle_orders', [base, quote, 100])
-    return settle_orders
 
 
 def get_fill_order_history(base, quote):
@@ -740,7 +609,7 @@ def get_all_asset_holders(asset_id):
 
 
 def get_referrer_count(account_id):
-    account_id = get_account_id(account_id)
+    account_id = _get_account_id(account_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
@@ -754,7 +623,7 @@ def get_referrer_count(account_id):
 
 
 def get_all_referrers(account_id, page=0):
-    account_id = get_account_id(account_id)
+    account_id = _get_account_id(account_id)
 
     con = psycopg2.connect(**config.POSTGRES)
     cur = con.cursor()
