@@ -1,0 +1,116 @@
+paths:
+  "/get_account_history":
+    get:
+      description: Get all operations in history with pager, similar to bitshares node call but with fullter features like search by date, filter by operation and others.
+      operationId: api.es_wrapper.get_account_history
+      parameters:
+        - in: query
+          name: account_id
+          default: "1.2.0"
+          type: string
+          required: false
+          description: Account id to get ops from
+        - in: query
+          name: operation_type
+          default: "0"
+          type: string
+          required: false
+          description: 1-44 Operation type
+        - in: query
+          name: from_
+          default: 0
+          type: integer
+          required: false
+          description: Record to start getting results
+        - in: query
+          name: size
+          default: 10
+          type: integer
+          required: false
+          description: Amount of records to get
+        - in: query
+          name: from_date
+          default: "2015-10-10"
+          type: string
+          required: false
+          description: Start date range
+        - in: query
+          name: to_date
+          default: "now"
+          type: string
+          required: false
+          description: End date range
+        - in: query
+          name: sort_by
+          default: "-block_data.block_time"
+          type: string
+          required: false
+          description: Order by an output field
+        - in: query
+          name: type
+          default: "data"
+          type: string
+          required: false
+          description: data or count
+        - in: query
+          name: agg_field
+          default: "operation_type"
+          type: string
+          required: false
+          description: For type data
+      responses:
+        '200':
+          description: Array of operation data
+        '500': 
+          description: Error processing parameters
+      tags:
+        - wrapper
+
+  "/get_single_operation":
+    get:
+      description: Get a single operation by the operation ID.
+      operationId: api.es_wrapper.get_single_operation
+      parameters:
+        - in: query
+          name: operation_id
+          default: "1.11.0"
+          type: string
+          required: true
+          description: Operation ID (1.11.X)
+      responses:
+        '200':
+          description: 1 record of operation data
+        '500':
+          description: Error processing parameters
+      tags:
+        - wrapper
+  "/get_trx":
+    get:
+      description: Get the operations inside a transaction hash.
+      operationId: api.es_wrapper.get_trx
+      parameters:
+        - in: query
+          name: trx
+          default: 738be2bd22e2da31d587d281ea7ee9bd02b9dbf0
+          type: string
+          required: true
+          description: Transaction hash
+        - in: query
+          name: from_
+          default: 0
+          type: integer
+          required: false
+          description: Record to start getting results
+        - in: query
+          name: size
+          default: 10
+          type: integer
+          required: false
+          description: Amount of records to get
+      responses:
+        '200':
+          description: Array of operations data
+        '500':
+          description: Error processing parameters
+      tags:
+        - wrapper
