@@ -229,30 +229,66 @@ def get_workers():
 def _is_object(string):
     return len(string.split(".")) == 3
 
-def get_markets(asset_id):
-    asset_id = _ensure_asset_id(asset_id)
 
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+@cache.memoize()
+def _get_markets(asset_id):
+    markets = bitshares_es_client.get_markets('now-1d', 'now', quote=asset_id)
 
-    # # TODO for DB2ES: Use core get_ticker, or query of filled orders on bitshares-*.
-    query = "SELECT * FROM markets WHERE aid=%s"
-    cur.execute(query, (asset_id,))
-    results = cur.fetchall()
-    con.close()
+    results = []
+    for (base_id, quotes) in markets.items():
+        base_asset = _get_asset(base_id)
+        for (quote_id, data) in quotes.items():
+            quote_asset = _get_asset(quote_id)
+            ticker = get_ticker(base_id, quote_id)
+            latest_price = float(ticker['latest'])
+            results.append([
+                0, # db_id
+                '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']), # pair
+                0, # quote_asset_db_id
+                latest_price, # price
+                data['volume'] / 10**quote_asset['precision'], # volume
+                quote_id # quote_id
+            ])
+
     return results
 
+def get_markets(asset_id):
+    asset_id = _ensure_asset_id(asset_id)
+    return _get_markets(asset_id)
 
+
+@cache.memoize()
 def get_most_active_markets():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    markets = bitshares_es_client.get_markets('now-1d', 'now')
 
-    # # TODO for DB2ES: use core get_top_markets, or query filled orders on bitshares-*
-    # Need this PR: https://github.com/bitshares/bitshares-core/pull/1273
-    query = "SELECT * FROM markets WHERE volume>0 ORDER BY volume DESC LIMIT 100"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
+    flatten_markets = []
+    for (base, quotes) in markets.items():
+        for (quote, data) in quotes.items():
+            flatten_markets.append({
+                'base': base,
+                'quote': quote,
+                'volume': data['volume'],
+                'nb_operations': data['nb_operations']
+            })
+    flatten_markets.sort(key=lambda m: -m['nb_operations'])
+
+    top_markets = flatten_markets[:100]
+
+    results = []
+    for m in top_markets:
+        base_asset = _get_asset(m['base'])
+        quote_asset = _get_asset(m['quote'])
+        ticker = get_ticker(m['base'], m['quote'])
+        latest_price = float(ticker['latest'])
+        results.append([
+            0, # db_id
+            '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']), # pair
+            0, # quote_asset_db_id
+            latest_price, # price
+            m['volume'] / 10**quote_asset['precision'], # volume
+            m['quote'] # quote_id
+        ])   
+    
     return results
 
 
@@ -477,18 +513,9 @@ def get_committee_votes():
 
 
 def get_top_markets():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    # TODO for DB2ES:
-    # use core get_top_markets, or query filled orders on bitshares-*
-    # Need this PR: https://github.com/bitshares/bitshares-core/pull/1273
-    query = "SELECT pair, volume FROM markets ORDER BY volume DESC LIMIT 7"
-    cur.execute(query)
-    results = cur.fetchall()
-
-    con.close()
-    return results
+    markets = get_most_active_markets()
+    top = markets[:7]
+    return [ [m[1], m[4]] for m in top ]
 
 
 def get_top_smartcoins():
