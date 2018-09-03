@@ -1,7 +1,9 @@
+import itertools
 import datetime
 import json
 import psycopg2
-from services.bitshares_websocket_client import BitsharesWebsocketClient, client as bitshares_ws_client
+from services.bitshares_websocket_client import client as bitshares_ws_client
+from services.bitshares_elasticsearch_client import client as bitshares_es_client
 from services.cache import cache
 import es_wrapper
 import config
@@ -16,6 +18,8 @@ def get_header():
     response = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
     return _add_global_informations(response, bitshares_ws_client)
 
+
+@cache.memoize()
 def get_account(account_id):
     return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
 
@@ -23,6 +27,7 @@ def get_account_name(account_id):
     account = get_account(account_id)
     return account[0]['name']
 
+@cache.memoize()
 def _get_account_id(account_name):
     if not _is_object(account_name):
         account = bitshares_ws_client.request('database', 'lookup_account_names', [[account_name], 0])
@@ -81,17 +86,38 @@ def get_full_account(account_id):
     return account
 
 
+@cache.memoize()
 def get_assets():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    results = []
+    
+    # Get all assets active the last 7 days.
 
-    # TODO for DB2ES: Search for filled orders, grouped by volume
-    query = "SELECT * FROM assets WHERE volume > 0 ORDER BY volume DESC"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
+    # FIXME: Use objects-assets instead? 
+    # asset_ids = bitshares_es_client.get_asset_ids()
+    # for asset_id in asset_ids:
 
-    # [ [db_id, asset_name, asset_id, price_in_bts, 24h_volume, market_cap, type, supply, holders,  wallettype (=''), precision]]
+    markets = bitshares_es_client.get_markets('now-1d', 'now', quote=config.CORE_ASSET_ID)
+    bts_volume = 0.0 # BTS volume is the sum of all the others.
+    for asset_id in itertools.chain(markets.keys(), [config.CORE_ASSET_ID]):
+        asset = get_asset_and_volume(asset_id)[0]
+        holders_count = get_asset_holders_count(asset_id)
+        bts_volume += float(asset['volume'])
+        results.append([
+            None, # db id (legacy, no purpose)
+            asset['symbol'], # asset name
+            asset_id, # asset id
+            asset['latest_price'], # price in bts
+            float(asset['volume']) if asset_id != config.CORE_ASSET_ID else bts_volume, # 24h volume
+            #float(markets[asset_id][config.CORE_ASSET_ID]['volume']), # 24h volume (from ES) / should be divided by core asset precision
+            asset['mcap'], # market cap
+            _get_asset_type(asset), # type: Core Asset / Smart Asset / User Issued Asset
+            int(asset['current_supply']), # Supply
+            holders_count, #Number of holders
+            '', # Wallet Type (useless value)
+            asset['precision'] # Asset precision
+        ])
+
+    results.sort(key=lambda a : -a[4]) # sort by volume
     return results
 
 
@@ -102,13 +128,14 @@ def get_asset(asset_id):
     return [ _get_asset(asset_id) ]
 
 
+@cache.memoize()
 def _get_asset(asset_id_or_name):
     asset = None
     if not _is_object(asset_id_or_name):
         asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id_or_name], 0])[0]
     else:
         asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id_or_name], 0])[0]
-
+    
     dynamic_asset_data = bitshares_ws_client.get_object(asset["dynamic_asset_data_id"])
     asset["current_supply"] = dynamic_asset_data["current_supply"]
     asset["confidential_supply"] = dynamic_asset_data["confidential_supply"]
@@ -121,19 +148,25 @@ def _get_asset(asset_id_or_name):
     return asset
 
 
+@cache.memoize()
 def get_asset_and_volume(asset_id):
     asset = _get_asset(asset_id)
     
     core_symbol = _get_core_asset_name()
 
-    volume = _get_volume(asset['symbol'], core_symbol)
-    asset['volume'] = volume['base_volume']
-
     if asset['symbol'] != core_symbol:
-        ticker = get_ticker(asset['symbol'], core_symbol)
-        asset['mcap'] = int(asset['current_supply']) * float(ticker['latest'])
+        volume = _get_volume(core_symbol, asset['symbol'])
+        asset['volume'] = volume['base_volume']
+
+        ticker = get_ticker(core_symbol, asset['symbol'])
+        latest_price = float(ticker['latest'])
+        asset['latest_price'] = latest_price
+
+        asset['mcap'] = int(asset['current_supply']) * latest_price
     else:
+        asset['volume'] = 0
         asset['mcap'] = int(asset['current_supply'])
+        asset['latest_price'] = 1
 
     return [asset]
 
@@ -458,30 +491,15 @@ def get_top_markets():
     return results
 
 
-@cache.memoize()
 def get_top_smartcoins():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    #TODO for DB2ES: query filled orders on bitshares-*
-    query = "SELECT aname, volume FROM assets WHERE type='SmartCoin' ORDER BY volume DESC LIMIT 7"
-    cur.execute(query)
-    results = cur.fetchall()
-
-    return results
+    smartcoins = [[a[1], a[4]] for a in get_assets() if a[6] == 'SmartCoin']
+    return smartcoins[:7]
 
 
 @cache.memoize()
 def get_top_uias():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    # TODO for DB2ES: query filled orders on bitshares-*
-    query = "SELECT aname, volume FROM assets WHERE TYPE='User Issued' ORDER BY volume DESC LIMIT 7"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
-    return results
+    uias = [[a[1], a[4]] for a in get_assets() if a[6] == 'User Issued']
+    return uias[:7]
 
 
 def lookup_accounts(start):
@@ -490,15 +508,11 @@ def lookup_accounts(start):
 
 
 def lookup_assets(start):
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    matched_assets = [ [a[1]] for a in get_assets() if a[1].startswith(start) ]
+    return matched_assets
 
-    # TODO for DB2ES: query object_bitasset, then get volume and market cap from core
-    query = "SELECT aname FROM assets WHERE aname LIKE %s"
-    cur.execute(query, (start+'%',))
-    results = cur.fetchall()
-    con.close()
-    return results
+    # FIXME: use objects-asset:
+    #return bitshares_es_client.get_asset_names(start)
 
 
 def get_last_block_number():
@@ -534,36 +548,27 @@ def get_fill_order_history(base, quote):
 
 
 def get_dex_total_volume():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    volume = 0.0
+    market_cap = 0.0
+    usd_price = 0
+    cny_price = 0
+    for a in get_assets():
+        if a[2] != config.CORE_ASSET_ID:
+            volume += a[4]
+        if a[1] == 'USD':
+            usd_price = a[3]
+        if a[1] == 'CNY':
+            cny_price = a[3]
+        market_cap += a[5]
 
-    # TODO for DB2ES: Use get ticker from core
-    query = "select price from assets where aname='USD'"
-    cur.execute(query)
-    results = cur.fetchone()
-    usd_price = results[0]
-
-    # TODO for DB2ES: Use get ticker from core
-    query = "select price from assets where aname='CNY'"
-    cur.execute(query)
-    results = cur.fetchone()
-    cny_price = results[0]
-
-    # TODO for DB2ES: Use query on filled orders on bitshares-es
-    query = "select sum(volume) from assets WHERE aname!='BTS'"
-    cur.execute(query)
-    results = cur.fetchone()
-    volume = results[0]
-
-    # TODO for DB2ES: ???
-    query = "select sum(mcap) from assets"
-    cur.execute(query)
-    results = cur.fetchone()
-    market_cap = results[0]
-    con.close()
-
-    res = {"volume_bts": round(volume), "volume_usd": round(volume/usd_price), "volume_cny": round(volume/cny_price),
-           "market_cap_bts": round(market_cap), "market_cap_usd": round(market_cap/usd_price), "market_cap_cny": round(market_cap/cny_price)}
+    res = {
+        "volume_bts": round(volume), 
+        "volume_usd": round(volume/usd_price) if usd_price != 0 else 'nan', 
+        "volume_cny": round(volume/cny_price) if cny_price != 0 else 'nan',
+        "market_cap_bts": round(market_cap), 
+        "market_cap_usd": round(market_cap/usd_price) if usd_price != 0 else 'nan', 
+        "market_cap_cny": round(market_cap/cny_price) if cny_price != 0 else 'nan'
+    }
 
     return res
 
@@ -646,3 +651,11 @@ def get_grouped_limit_orders(quote, base, group=10, limit=False):
     grouped_limit_orders = bitshares_ws_client.request('orders', 'get_grouped_limit_orders', [base, quote, group, None, limit])
 
     return grouped_limit_orders
+
+def _get_asset_type(asset):
+    if asset['id'] == config.CORE_ASSET_ID:
+        return 'Core Token'
+    elif asset['issuer'] == '1.2.0':
+        return 'SmartCoin'
+    else:
+        return 'User Issued'
