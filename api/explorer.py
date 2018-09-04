@@ -90,7 +90,7 @@ def get_full_account(account_id):
 def get_assets():
     results = []
     
-    # Get all assets active the last 7 days.
+    # Get all assets active the last 24h.
 
     # FIXME: Use objects-assets instead? 
     # asset_ids = bitshares_es_client.get_asset_ids()
@@ -607,19 +607,13 @@ def get_daily_volume_dex_dates():
     return list(reversed(date_list))
 
  
+@cache.memoize(86400) # 1d TTL
 def get_daily_volume_dex_data():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    daily_volumes = bitshares_es_client.get_daily_volume('now-60d', 'now')
+    core_asset_precision = 10 ** _get_asset(config.CORE_ASSET_ID)['precision']
 
-    # Use bitshares-* to get this information.
-    query = "select value from stats where type='volume_bts' order by date desc limit 60"
-    cur.execute(query)
-    results = cur.fetchall()
-
-    mod = [ r[0] for r in results ]
-
-    return list(reversed(mod))
-
+    results = [ int(daily_volume['volume'] / core_asset_precision) for daily_volume in daily_volumes]
+    return results
 
 def get_all_asset_holders(asset_id):
     asset_id = _ensure_asset_id(asset_id)

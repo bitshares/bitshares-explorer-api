@@ -107,13 +107,31 @@ class BitsharesElasticSearchClient():
             .query('prefix', symbol__keyword=start)              \
             .source(['symbol'])
 
-        print(s.to_dict())
-
         response = s.execute()
 
         asset_names = [ hit.symbol for hit in response]
         return asset_names
 
+    def get_daily_volume(self, from_date, to_date):
+        s = Search(index="bitshares-*")
+        s = s.extra(size=0)
+        s = s.query('bool', filter = [
+            Q('term', operation_type=4),
+            Q('range', block_data__block_time={'gte': from_date, 'lte': to_date}),
+            Q('term', additional_data__fill_data__receives_asset_id=config.CORE_ASSET_ID)
+        ])
+
+        a = A('date_histogram', field='block_data.block_time', interval='1d', format='yyyy-MM-dd') \
+                .metric('volume', 'sum', field='additional_data.fill_data.receives_amount')
+        s.aggs.bucket('volume_over_time', a)
+
+        response = s.execute()
+
+        daily_volumes = []
+        for daily_volume in response.aggregations.volume_over_time.buckets:
+            daily_volumes.append({ 'date': daily_volume.key_as_string, 'volume': daily_volume.volume.value })
+        
+        return daily_volumes
 
 
 client = BitsharesElasticSearchClient(config.ELASTICSEARCH)
@@ -121,5 +139,5 @@ es = connections.get_connection()
 
 if __name__ == "__main__":
     import pprint
-    asset_names = client.get_asset_names('T')
-    pprint.pprint(asset_names)
+    dex_volume = client.get_daily_volume('now-60d', 'now')
+    pprint.pprint(dex_volume)
