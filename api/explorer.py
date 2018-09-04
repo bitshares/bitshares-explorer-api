@@ -127,6 +127,11 @@ def get_fees():
 def get_asset(asset_id):
     return [ _get_asset(asset_id) ]
 
+@cache.memoize()
+def _get_asset_id_and_precision(asset_name):
+    asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_name], 0])[0]
+    return (asset["id"], 10 ** asset["precision"])
+
 
 @cache.memoize()
 def _get_asset(asset_id_or_name):
@@ -189,8 +194,8 @@ def get_object(object):
 
 def _ensure_asset_id(asset_id):
     if not _is_object(asset_id):
-        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
-        return asset['id']
+        id, _ = _get_asset_id_and_precision(asset_id)
+        return id
     else:
         return asset_id
 
@@ -349,13 +354,8 @@ def get_market_chart_dates():
 
 
 def get_market_chart_data(base, quote):
-    base_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[base], 0])[0]
-    base_id = base_asset["id"]
-    base_precision = 10**base_asset["precision"]
-
-    quote_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[quote], 0])[0]
-    quote_id = quote_asset["id"]
-    quote_precision = 10**quote_asset["precision"]
+    base_id, base_precision = _get_asset_id_and_precision(base)
+    quote_id, quote_precision = _get_asset_id_and_precision(quote)
 
     now = datetime.date.today()
     ago = now - datetime.timedelta(days=100)

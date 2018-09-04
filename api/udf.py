@@ -21,8 +21,7 @@ def get_config():
 def get_symbols(symbol):
     base, quote = symbol.split('_')
 
-    asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [ [ base ], 0])[0]
-    base_precision = 10**asset["precision"]
+    _, base_precision = api.explorer_get_asset_id_and_precision(base)
 
     return {
         "name": symbol,
@@ -147,15 +146,9 @@ def get_history(symbol, to, resolution):
 
     results = {}
 
-    base_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [ [ base ], 0])[0]
-    base_id = base_asset["id"]
-    base_precision = 10**base_asset["precision"]
+    base_id, base_precision = api.explorer._get_asset_id_and_precision(base)
+    quote_id, quote_precision = api.explorer._get_asset_id_and_precision(quote)
 
-    quote_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [ [ quote ], 0])[0]
-    quote_id = quote_asset["id"]
-    quote_precision = 10**quote_asset["precision"]
-
-    
     base_1, base_2, base_3 = base_id.split('.')
     quote_1, quote_2, quote_3 = quote_id.split('.')
     invert = bool(int(base_3) > int(quote_3))
