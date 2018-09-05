@@ -637,31 +637,32 @@ def get_all_asset_holders(asset_id):
 def get_referrer_count(account_id):
     account_id = _get_account_id(account_id)
 
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    count, _ = bitshares_es_client.get_accounts_with_referrer(account_id, size=0)
 
-    # TODO for DB2ES: Use information on object_account
-    query = "select count(*) from referrers where referrer=%s"
-    cur.execute(query, (account_id,))
-    results = cur.fetchone()
-
-    return results
+    return [count]
 
 
 def get_all_referrers(account_id, page=0):
     account_id = _get_account_id(account_id)
-
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-
-    offset = int(page) * 20;
-
-    # TODO for DB2ES: Use information on object_account
-    query = "select * from referrers where referrer=%s ORDER BY rid DESC LIMIT 20 OFFSET %s"
-    cur.execute(query, (account_id,str(offset), ))
-    results = cur.fetchall()
+    
+    page_size = 20
+    offset = int(page) * page_size
+    _, accounts = bitshares_es_client.get_accounts_with_referrer(account_id, size=page_size, from_=offset)
+    
+    results = []
+    for account in accounts:
+        results.append([
+            0, # db_id
+            account['object_id'],                           # account_id
+            account['name'],                                # account name
+            account['referrer'],                            # referrer id
+            account['referrer_rewards_percentage'],         # % of reward that goes to referrer
+            account['lifetime_referrer'],                   # lifetime referrer id
+            account['lifetime_referrer_fee_percentage']     #  % of reward that goes to lifetime referrer
+        ])
 
     return results
+
 
 def get_grouped_limit_orders(quote, base, group=10, limit=False):
     limit = _ensure_safe_limit(limit)    

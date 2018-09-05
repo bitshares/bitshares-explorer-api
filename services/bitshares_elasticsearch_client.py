@@ -2,15 +2,25 @@ from elasticsearch_dsl import connections, Search, Q, A
 import config
 
 class BitsharesElasticSearchClient():
-    def __init__(self, elasticsearch_config):
+    def __init__(self, default_cluster_config, additional_clusters_config):
+        self._create_connection('operations', default_cluster_config, additional_clusters_config)
+        self._create_connection('objects', default_cluster_config, additional_clusters_config)
+
+    def _create_connection(self, name, default_cluster_config, additional_clusters_config):
+        config = default_cluster_config
+        if additional_clusters_config and name in additional_clusters_config and additional_clusters_config[name]:
+            config = additional_clusters_config[name]
+    
+        connection_config = {
+            'hosts': config['hosts'],
+            'timeout': 60
+        }
+        if 'user' in config and config['user']  \
+            and 'password' in config and config['password']:
+            connection_config['http_auth'] = (config['user'], config['password'])
         
-        if      'user' in elasticsearch_config and elasticsearch_config['user'] \
-            and 'password' in elasticsearch_config and elasticsearch_config['password']:
-            connections.create_connection(hosts=elasticsearch_config['hosts'],
-                                          http_auth=(elasticsearch_config['user'], elasticsearch_config['password']),
-                                          timeout=60)
-        else:
-            connections.create_connection(hosts=elasticsearch_config['hosts'], timeout=60)
+        connections.create_connection(name, **connection_config)
+        
 
     def get_markets(self, from_date, to_date, base=None, quote=None):
         query = {
@@ -51,7 +61,7 @@ class BitsharesElasticSearchClient():
         if quote:
             query['query']['bool']['filter'].append({ "term": { "additional_data.fill_data.receives_asset_id": quote } })
 
-        client = connections.get_connection()
+        client = connections.get_connection('operations')
         response = client.search(index="bitshares-*", body=query)
 
         markets = {}
@@ -72,7 +82,7 @@ class BitsharesElasticSearchClient():
         # Could not use DSL due to a bug on multi sources composite aggregation:
         # https://github.com/elastic/elasticsearch-dsl-py/issues/963
 
-        s = Search(index="bitshares-*")
+        s = Search(using='operations', index="bitshares-*")
         s = s.extra(size=0)
         s = s.query('bool', filter = [
             Q('term', operation_type=4),
@@ -92,7 +102,7 @@ class BitsharesElasticSearchClient():
         # TODO...
 
     def get_asset_ids(self):
-        s = Search(index="objects-asset") \
+        s = Search(using='objects', index="objects-asset") \
             .extra(size=10000)               \
             .query('match_all')              \
             .source(['object_id'])
@@ -103,7 +113,7 @@ class BitsharesElasticSearchClient():
         return asset_ids
 
     def get_asset_names(self, start):
-        s = Search(index="objects-asset") \
+        s = Search(using='objects', index="objects-asset") \
             .query('prefix', symbol__keyword=start)              \
             .source(['symbol'])
 
@@ -113,7 +123,7 @@ class BitsharesElasticSearchClient():
         return asset_names
 
     def get_daily_volume(self, from_date, to_date):
-        s = Search(index="bitshares-*")
+        s = Search(using='operations', index="bitshares-*")
         s = s.extra(size=0)
         s = s.query('bool', filter = [
             Q('term', operation_type=4),
@@ -133,11 +143,26 @@ class BitsharesElasticSearchClient():
         
         return daily_volumes
 
+    def get_accounts_with_referrer(self, account_id, size=20, from_=0):
+        s = Search(using='objects', index="objects-account", extra={'size': size, 'from': from_})    \
+                .query('bool', filter=Q('term', referrer__keyword=account_id))               \
+                .source([
+                    "object_id", "name", "referrer", 
+                    "referrer_rewards_percentage", "lifetime_referrer", 
+                    "lifetime_referrer_fee_percentage"])                            \
+                .sort("name.keyword")
 
-client = BitsharesElasticSearchClient(config.ELASTICSEARCH)
-es = connections.get_connection()
+        response = s.execute()
+
+        referrers = [hit.to_dict() for hit in response.hits]
+        return (response.hits.total, referrers)
+
+
+client = BitsharesElasticSearchClient(config.ELASTICSEARCH, config.ELASTICSEARCH_ADDITIONAL)
+es = connections.get_connection(alias='operations')
 
 if __name__ == "__main__":
     import pprint
-    dex_volume = client.get_daily_volume('now-60d', 'now')
-    pprint.pprint(dex_volume)
+    count, referrers = client.get_accounts_with_referrer('1.2.282')
+    pprint.pprint(count)
+    pprint.pprint(referrers)
