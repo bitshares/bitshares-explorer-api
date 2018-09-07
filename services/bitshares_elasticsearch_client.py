@@ -102,13 +102,13 @@ class BitsharesElasticSearchClient():
         # TODO...
 
     def get_asset_ids(self):
+        # FIXME: should use scan() or iterate over results.
         s = Search(using='objects', index="objects-asset") \
-            .extra(size=10000)               \
-            .query('match_all')              \
+            .extra(size=10000)                             \
+            .query('match_all')                            \
             .source(['object_id'])
 
         response = s.execute()
-
         asset_ids = [ hit.object_id for hit in response]
         return asset_ids
 
@@ -145,7 +145,7 @@ class BitsharesElasticSearchClient():
 
     def get_accounts_with_referrer(self, account_id, size=20, from_=0):
         s = Search(using='objects', index="objects-account", extra={'size': size, 'from': from_})    \
-                .query('bool', filter=Q('term', referrer__keyword=account_id))               \
+                .filter('term', referrer__keyword=account_id)                                        \
                 .source([
                     "object_id", "name", "referrer", 
                     "referrer_rewards_percentage", "lifetime_referrer", 
@@ -157,12 +157,45 @@ class BitsharesElasticSearchClient():
         referrers = [hit.to_dict() for hit in response.hits]
         return (response.hits.total, referrers)
 
+    def get_balances(self, account_id=None, asset_id=None):
+        s = Search(using='objects', index="objects-balance")
+        s = s.extra(size=10000) # FIXME: should use scan() or iterate over results.
+        if account_id:
+            s = s.filter('term', owner=account_id)
+        if asset_id:
+            s = s.filter('term', asset_type=asset_id)
+        s = s.source([ 'owner', 'balance', 'asset_type'])
+        s = s.sort({ 'balance': { 'order': 'desc' } })
+
+        response = s.execute()
+
+        balances = [hit.to_dict() for hit in response.hits]
+        return balances
+
+    def get_accounts(self, account_ids):
+        s = Search(using='objects', index="objects-account")
+        s = s.extra(size=10000) # FIXME: should use scan() or iterate over results.
+        s = s.filter('terms', object_id=account_ids)
+        s = s.source([ 'object_id', 'name', 'voting_account'])
+
+        response = s.execute()
+
+        accounts = [hit.to_dict() for hit in response.hits]
+        return accounts
+
+
 
 client = BitsharesElasticSearchClient(config.ELASTICSEARCH, config.ELASTICSEARCH_ADDITIONAL)
 es = connections.get_connection(alias='operations')
 
 if __name__ == "__main__":
     import pprint
-    count, referrers = client.get_accounts_with_referrer('1.2.282')
-    pprint.pprint(count)
-    pprint.pprint(referrers)
+    balances = client.get_balances(asset_id='1.3.0')
+    account_ids = [ balance['owner'] for balance in balances ]
+    accounts = client.get_accounts(account_ids)
+    result = {}
+    for balance in balances:
+        result[balance['owner']] = balance
+    for account in accounts:
+        result[account['object_id']]['owner'] = account
+    pprint.pprint(result.values())

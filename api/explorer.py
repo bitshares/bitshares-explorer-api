@@ -391,61 +391,70 @@ def get_market_chart_data(base, quote):
 
     return data
 
-@cache.memoize()
 def get_top_proxies():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+    holders = _get_holders()
 
-    # # TODO for DB2ES:
-    # 1. Query object_balance for BTS then sum amount
-    # 2. query object_account for accounts voting_as <> 1.2.5
-    # 3. query their BTS balance
-    # 4. query the balance of proxies
-    query = "SELECT sum(amount) FROM holders"
-    cur.execute(query)
-    total = cur.fetchone()
-    total_votes = total[0]
-
-    query = """
-        SELECT follower.voting_as, proxy.account_name, proxy.amount, sum(follower.amount), count(1)
-        FROM holders AS follower 
-        LEFT OUTER JOIN holders AS proxy ON proxy.account_id = follower.voting_as 
-        WHERE follower.voting_as<>'1.2.5' 
-        GROUP BY follower.voting_as, proxy.account_name, proxy.amount
-        HAVING count(1) > 2
-        """
-    cur.execute(query)
-    proxy_rows = cur.fetchall()
+    total_votes = reduce(lambda acc, h: acc + int(h['balance']), holders, 0)
 
     proxies = []
-    for proxy_row in proxy_rows:
-        proxy_id = proxy_row[0]
-        proxy_name = proxy_row[1] if proxy_row[1] else "unknown"
-        proxy_amount = proxy_row[2] + proxy_row[3] if proxy_row[2] else proxy_row[3]
-        proxy_followers = proxy_row[4]
-        proxy_total_percentage = float(float(proxy_amount) * 100.0/ float(total_votes))
-        
-        proxies.append([proxy_id, proxy_name, proxy_amount, proxy_followers, proxy_total_percentage])
-
-    con.close()
+    for holder in holders:
+        total_votes += int(holder['balance'])
+        if 'follower_count' in holder:
+            proxy_amount =  int(holder['balance']) + int(holder['follower_amount'])
+            proxy_total_percentage = float(int(proxy_amount) * 100.0/ int(total_votes))
+            proxies.append([
+                holder['owner']['object_id'],
+                holder['owner']['name'],
+                proxy_amount,
+                holder['follower_count'],
+                proxy_total_percentage
+            ])
 
     proxies = sorted(proxies, key=lambda k: -k[2]) # Reverse amount order
 
     return proxies
 
 
-def get_top_holders():
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
+@cache.memoize()
+def _get_holders():
+    balances = bitshares_es_client.get_balances(asset_id=config.CORE_ASSET_ID)
+    account_ids = [ balance['owner'] for balance in balances ]
+    accounts = bitshares_es_client.get_accounts(account_ids)
+    holders_by_account_id = {}
+    for balance in balances:
+        holders_by_account_id[balance['owner']] = balance
+    for account in accounts:
+        holders_by_account_id[account['object_id']]['owner'] = account
+    for holder in holders_by_account_id.values():
+        proxy_id = holder['owner']['voting_account']
+        if proxy_id != '1.2.5':
+            if proxy_id not in holders_by_account_id:
+                print(proxy_id)
+            else:
+                proxy = holders_by_account_id[proxy_id] 
+                if 'follower_amount' not in proxy:
+                    proxy['follower_amount'] = 0
+                    proxy['follower_count'] = 0
+                proxy['follower_amount'] += int(holder['balance']) 
+                proxy['follower_count'] += 1 
 
-    # TODO for DB2ES:
-    # query object_account that do not vote for self
-    # query their ammount of bts
-    query = "SELECT * FROM holders WHERE voting_as='1.2.5' ORDER BY amount DESC LIMIT 10"
-    cur.execute(query)
-    results = cur.fetchall()
-    con.close()
-    return results
+    return holders_by_account_id.values()    
+
+
+def get_top_holders():
+    holders = _get_holders()
+    holders_without_vote_delegation = [ holder for holder in holders if holder['owner']['voting_account'] == '1.2.5' ]
+    holders_without_vote_delegation.sort(key=lambda h : -int(h['balance']))
+    top_holders = []
+    for holder in holders_without_vote_delegation[:10]:
+        top_holders.append([
+            0,                                  # (legacy) database id
+            holder['owner']['object_id'],       # account id
+            holder['owner']['name'],            # account name
+            int(holder['balance']),           # BTS amount
+            holder['owner']['voting_account']   # voting account
+        ]) 
+    return top_holders
 
 
 def _get_formatted_proxy_votes(proxies, vote_id):
