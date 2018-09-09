@@ -102,24 +102,21 @@ class BitsharesElasticSearchClient():
         # TODO...
 
     def get_asset_ids(self):
-        # FIXME: should use scan() or iterate over results.
         s = Search(using='objects', index="objects-asset") \
-            .extra(size=10000)                             \
             .query('match_all')                            \
             .source(['object_id'])
+        s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
-        response = s.execute()
-        asset_ids = [ hit.object_id for hit in response]
+        asset_ids = [ hit.object_id for hit in s.scan()]
         return asset_ids
 
     def get_asset_names(self, start):
         s = Search(using='objects', index="objects-asset") \
             .query('prefix', symbol__keyword=start)              \
             .source(['symbol'])
+        s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
-        response = s.execute()
-
-        asset_names = [ hit.symbol for hit in response]
+        asset_names = [ hit.symbol for hit in s.scan()]
         return asset_names
 
     def get_daily_volume(self, from_date, to_date):
@@ -159,28 +156,24 @@ class BitsharesElasticSearchClient():
 
     def get_balances(self, account_id=None, asset_id=None):
         s = Search(using='objects', index="objects-balance")
-        s = s.extra(size=10000) # FIXME: should use scan() or iterate over results.
         if account_id:
             s = s.filter('term', owner=account_id)
         if asset_id:
             s = s.filter('term', asset_type=asset_id)
         s = s.source([ 'owner', 'balance', 'asset_type'])
         s = s.sort({ 'balance': { 'order': 'desc' } })
+        s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
-        response = s.execute()
-
-        balances = [hit.to_dict() for hit in response.hits]
+        balances = [hit.to_dict() for hit in s.scan()]
         return balances
 
     def get_accounts(self, account_ids):
         s = Search(using='objects', index="objects-account")
-        s = s.extra(size=10000) # FIXME: should use scan() or iterate over results.
         s = s.filter('terms', object_id=account_ids)
         s = s.source([ 'object_id', 'name', 'voting_account'])
+        s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
-        response = s.execute()
-
-        accounts = [hit.to_dict() for hit in response.hits]
+        accounts = [hit.to_dict() for hit in s.scan()]
         return accounts
 
 

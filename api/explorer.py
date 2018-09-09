@@ -426,17 +426,21 @@ def _get_holders():
     for account in accounts:
         holders_by_account_id[account['object_id']]['owner'] = account
     for holder in holders_by_account_id.values():
-        proxy_id = holder['owner']['voting_account']
-        if proxy_id != '1.2.5':
-            if proxy_id not in holders_by_account_id:
-                print(proxy_id)
-            else:
-                proxy = holders_by_account_id[proxy_id] 
-                if 'follower_amount' not in proxy:
-                    proxy['follower_amount'] = 0
-                    proxy['follower_count'] = 0
-                proxy['follower_amount'] += int(holder['balance']) 
-                proxy['follower_count'] += 1 
+        if 'voting_account' not in holder['owner']:
+            print('Account {} details not found for balance {}.'.format(holder['owner'], holder['balance']))
+        else:
+            proxy_id = holder['owner']['voting_account']
+            if proxy_id != '1.2.5':
+                if proxy_id not in holders_by_account_id:
+                    print('User {} ({}) has delegated to a user without core asset balance: {} .' \
+                        .format(holder['owner']['name'], holder['owner']['object_id'], proxy_id))
+                else:
+                    proxy = holders_by_account_id[proxy_id] 
+                    if 'follower_amount' not in proxy:
+                        proxy['follower_amount'] = 0
+                        proxy['follower_count'] = 0
+                    proxy['follower_amount'] += int(holder['balance']) 
+                    proxy['follower_count'] += 1 
 
     return holders_by_account_id.values()    
 
