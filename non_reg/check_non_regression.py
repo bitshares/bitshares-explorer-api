@@ -6,13 +6,15 @@ from swagger_parser import SwaggerParser
 
 TESTED = {
     'explorer-api': 'http://localhost:5000',
-    'es-wrapper': 'http://localhost:5000'
+    'es-wrapper': 'http://localhost:5000',
+    'udf': 'http://localhost:5000'
 }
 
 REF = {
-  'explorer-api': 'http://localhost:5005',
-  'es-wrapper': 'http://localhost:5006',
-} 
+    'explorer-api': 'http://localhost:5005',
+    'es-wrapper': 'http://localhost:5006',
+    'udf': 'http://localhost:5007'
+}
 
 def test_request(service, path):
     ref = requests.get(REF[service] + path)
