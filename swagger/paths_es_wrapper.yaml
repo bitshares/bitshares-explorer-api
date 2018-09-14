@@ -6,13 +6,11 @@ paths:
       parameters:
         - in: query
           name: account_id
-          default: "1.2.0"
           type: string
           required: false
           description: Account id to get ops from
         - in: query
           name: operation_type
-          default: "0"
           type: string
           required: false
           description: 1-44 Operation type
