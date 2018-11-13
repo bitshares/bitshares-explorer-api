@@ -80,7 +80,8 @@ def get_operation_full_elastic(operation_id):
         "result": json.loads(res[0]["operation_history"]["operation_result"]), 
         "trx_in_block": res[0]["operation_history"]["trx_in_block"],
         "virtual_op": res[0]["operation_history"]["virtual_op"], 
-        "block_time": res[0]["block_data"]["block_time"]
+        "block_time": res[0]["block_data"]["block_time"],
+        "trx_id": res[0]["block_data"]["trx_id"],
     }
 
     operation = _enrich_operation(operation, bitshares_ws_client)
