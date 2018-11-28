@@ -6,9 +6,9 @@ WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://localhost:8090/ws")
 FULL_WEBSOCKET_URL = os.environ.get('FULL_WEBSOCKET_URL', "ws://88.99.145.10:9999/ws")
 
 # a connection to Elastic Search.
-# oxarbitrage
 ELASTICSEARCH = {
-    'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://148.251.10.231:5005/').split(','),
+    #'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://148.251.10.231:5005/').split(','), # oxarbitrage
+    'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://bts-es.clockwork.gr:5000').split(','), # clockwork
     'user': os.environ.get('ELASTICSEARCH_USER', None),
     'password': os.environ.get('ELASTICSEARCH_USER', None)
 }
