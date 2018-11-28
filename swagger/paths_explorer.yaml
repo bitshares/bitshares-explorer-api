@@ -244,7 +244,7 @@ paths:
       parameters:
         - in: query
           name: block_num
-          default: 1
+          default: '1'
           type: string
           required: true
           description: Block number to get the header info
@@ -263,7 +263,7 @@ paths:
       parameters:
         - in: query
           name: block_num
-          default: 1
+          default: '1'
           type: string
           required: true
           description: Block number to get the block info
@@ -847,7 +847,7 @@ paths:
           description: base asset
         - in: query
           name: quote
-          default: 0
+          default: '0'
           type: string
           required: true
           description: quote asset
