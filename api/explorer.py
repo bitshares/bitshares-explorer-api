@@ -64,13 +64,15 @@ def _enrich_operation(operation, ws_client):
 def get_operation_full_elastic(operation_id):
     res = es_wrapper.get_single_operation(operation_id)
     operation = { 
-        "op": json.loads(res[0]["operation_history"]["op"]),
+        "op": res[0]["operation_history"]["op_object"],
+        "op_type": res[0]["operation_type"],
         "block_num": res[0]["block_data"]["block_num"], 
         "op_in_trx": res[0]["operation_history"]["op_in_trx"],
         "result": json.loads(res[0]["operation_history"]["operation_result"]), 
         "trx_in_block": res[0]["operation_history"]["trx_in_block"],
         "virtual_op": res[0]["operation_history"]["virtual_op"], 
-        "block_time": res[0]["block_data"]["block_time"]
+        "block_time": res[0]["block_data"]["block_time"],
+        "trx_id": res[0]["block_data"]["trx_id"]
     }
 
     operation = _enrich_operation(operation, bitshares_ws_client)
@@ -569,7 +571,8 @@ def get_account_history_pager_elastic(account_id, page):
     results = []
     for op in operations:
         results.append({
-            "op": json.loads(op["operation_history"]["op"]),
+            "op": j[n]["operation_history"]["op_object"],
+            "op_type": j[n]["operation_type"],
             "block_num": op["block_data"]["block_num"],
             "id": op["account_history"]["operation_id"],
             "op_in_trx": op["operation_history"]["op_in_trx"],

@@ -2,7 +2,8 @@ flask
 flask-cors
 Flask-Caching
 flask_profiler
-connexion
+connexion>=2.0.0
+connexion[swagger-ui]
 websocket-client
 psycopg2
 schedule
