@@ -82,6 +82,19 @@ paths:
           description: Error processing parameters
       tags:
         - wrapper
+
+  "/is_alive":
+    get:
+      description: Queries the latest head block and gives synchronization status of the elastic search database
+      operationId: api.es_wrapper.is_alive
+      responses:
+        '200':
+          description: json data with status, server_time and head_block_time and statistics
+        '500':
+          description: Error processing parameters
+      tags:
+        - wrapper
+
   "/get_trx":
     get:
       description: Get the operations inside a transaction hash.
