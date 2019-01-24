@@ -59,13 +59,25 @@ def is_alive():
 
     try:
         response = s.execute()
-        json_response["head_block_time"] = str(response.aggregations.max_block_time.value_as_string)
-        json_response["head_block_timestamp"] = response.aggregations.max_block_time.value
-        json_response["deltatime"] = abs((datetime.utcfromtimestamp(json_response["head_block_timestamp"] / 1000) - json_response["server_time"]).total_seconds())
-        json_response["status"] = "ok" if json_response["deltatime"] < 30 else "out_of_sync"
+        if response.aggregations.max_block_time.value is not None:
+            json_response["head_block_time"] = str(response.aggregations.max_block_time.value_as_string)
+            json_response["head_block_timestamp"] = response.aggregations.max_block_time.value
+            json_response["deltatime"] = abs((datetime.utcfromtimestamp(json_response["head_block_timestamp"] / 1000) - json_response["server_time"]).total_seconds())
+            if json_response["deltatime"] < 30:
+                json_response["status"] = "ok"
+            else:
+                json_response["status"] = "out_of_sync"
+                json_response["error"] = "last_block_too_old"
+        else:
+            json_response["status"] = "out_of_sync"
+            json_response["deltatime"] = "Infinite"
+            json_response["query_index"] = find_string
+            json_response["query_from_date"] = from_date
+            json_response["error"] = "no_blocks_last_24_hours"
     except NotFoundError:
-        json_response["status"] = "out_of_sync_index_not_found"
-        json_response["deltatime"] = "Infinite",
+        json_response["status"] = "out_of_sync"
+        json_response["deltatime"] = "Infinite"
+        json_response["error"] = "index_not_found"
         json_response["query_index"] = find_string
 
     return json_response
