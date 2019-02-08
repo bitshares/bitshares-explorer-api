@@ -1,4 +1,7 @@
 import connexion
+import logging
+
+logging.basicConfig()
 
 options = {'swagger_url': '/apidocs'}
 # strict_validation=True: requests that include parameters not defined return a 400 error
