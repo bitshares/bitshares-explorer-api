@@ -237,6 +237,17 @@ apt-get install python-websocket
 apt-get install python-psycopg2
 ```
 
+If you see a problem similar to:
+ 
+ ```
+ WARNING:connexion.options:The swagger_ui directory could not be found.
+    Please install connexion with extra install: pip install connexion[swagger-ui]
+    or provide the path to your local installation by passing swagger_path=<your path>
+```
+
+You need to execute:
+`pip install connexion[swagger-ui]`
+
 #### Cronjobs
 
 Similar as postgres, it is expected that the cronjobs will not be needed in the future but by now, they are.
@@ -291,6 +302,13 @@ Create symbolic link to sites-enabled and restart nginx:
 Now api can be started with:
 
     (wrappers) root@oxarbitrage ~/bitshares/bitshares-explorer-api # uwsgi --ini app.ini
+
+Another common error is currently:
+
+    WARNING:connexion.options:The swagger_ui directory could not be found.
+    Please install connexion with extra install: pip install connexion[swagger-ui]
+    or provide the path to your local installation by passing swagger_path=<your path>
+
 
 #### Domain setup and SSL
 
