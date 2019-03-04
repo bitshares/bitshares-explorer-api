@@ -7,6 +7,7 @@ class RPCError(Exception):
 
 class BitsharesWebsocketClient():
     def __init__(self, websocket_url):
+        self.url = websocket_url
         self.ws = create_connection(websocket_url)
         self.request_id = 1
         self.api_ids = {
@@ -14,7 +15,12 @@ class BitsharesWebsocketClient():
             'login': 1
         }
     
+    def ensure_connection(self):
+        if not self.ws.connected:
+            self.ws = create_connection(self.url)
+
     def request(self, api, method_name, params):
+        self.ensure_connection()
         api_id = self.load_api_id(api)
         payload = {
             'id': self.request_id,
