@@ -45,41 +45,40 @@ class BitsharesElasticSearchClient():
                     "composite" : {
                         "size": 10000, # TODO use a generator function instead of a big size, see https://github.com/elastic/elasticsearch-dsl-py/blob/master/examples/composite_agg.py#L21
                         "sources" : [
-                            { "pays_asset": { "terms" : { "field": "additional_data.fill_data.pays_asset_id.keyword" } } },
-                            { "recieves_asset": { "terms" : { "field": "additional_data.fill_data.receives_asset_id.keyword" } } }
+                            { "base": { "terms" : { "field": "operation_history.op_object.fill_price.base.asset_id.keyword" } } },
+                            { "quote": { "terms" : { "field": "operation_history.op_object.fill_price.quote.asset_id.keyword" } } }
                         ]
                     },
                     "aggs": {
-                        "volume": { "sum" : { "field" : "additional_data.fill_data.receives_amount" } }
+                        "volume": { "sum" : { "field" : "operation_history.op_object.fill_price.quote.amount" } }
                     }
                 }
             }
         }
 
         if base:
-            query['query']['bool']['filter'].append({ "term": { "additional_data.fill_data.pays_asset_id": base } })
+            query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.fill_price.base.asset_id.keyword": base } })
         if quote:
-            query['query']['bool']['filter'].append({ "term": { "additional_data.fill_data.receives_asset_id": quote } })
+            query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.fill_price.quote.asset_id.keyword": quote } })
 
         client = connections.get_connection('operations')
         response = client.search(index="bitshares-*", body=query)
 
         markets = {}
         for bucket in response['aggregations']['pairs']['buckets']:
-            pays_asset = bucket['key']['pays_asset']
-            recieves_asset = bucket['key']['recieves_asset']
+            base_asset = bucket['key']['base']
+            quote_asset = bucket['key']['quote']
             volume = bucket['volume']['value']
             nb_operations = bucket['doc_count']
 
-            if pays_asset not in markets:
-                markets[pays_asset] = {}
-            markets[pays_asset][recieves_asset] = { 'volume': volume, 'nb_operations': nb_operations }
-
+            if base_asset not in markets:
+                markets[base_asset] = {}
+            markets[base_asset][quote_asset] = { 'volume': volume, 'nb_operations': nb_operations }
         return markets
 
     # This is only to keep a trace of the code somewhere as it does not work due to a bug in elasticsearch-dsl.
     def _get_markets_with_dsl(self, from_date, to_date):
-        # Could not use DSL due to a bug on multi sources composite aggregation:
+        # TODO: This could be fixed now as ES has closed the issue:
         # https://github.com/elastic/elasticsearch-dsl-py/issues/963
 
         s = Search(using='operations', index="bitshares-*")
@@ -90,12 +89,12 @@ class BitsharesElasticSearchClient():
         ])
 
         sources = [ 
-            { 'pays_asset': A('terms', field='additional_data.fill_data.pays_asset_id.keyword') },
-            { 'recieves_asset': A('terms', field='additional_data.fill_data.receives_asset_id.keyword') }
+            { 'base': A('terms', field='operation_history.op_object.fill_price.base.asset_id.keyword') },
+            { 'quote': A('terms', field='operation_history.op_object.fill_price.quote.asset_id.keyword') }
         ]
 
         # Bug here as 'sources' does not support a list.
-        a = A('composite', sources=sources, size=10000).metric('volume', 'sum', field='additional_data.fill_data.receives_amount')
+        a = A('composite', sources=sources, size=10000).metric('volume', 'sum', field='operation_history.op_object.fill_price.quote.amount')
         s.aggs.bucket('pairs', a)
         response = s.execute()
 
@@ -125,11 +124,11 @@ class BitsharesElasticSearchClient():
         s = s.query('bool', filter = [
             Q('term', operation_type=4),
             Q('range', block_data__block_time={'gte': from_date, 'lte': to_date}),
-            Q('term', additional_data__fill_data__receives_asset_id=config.CORE_ASSET_ID)
+            Q('term', operation_history__op_object__fill_price__quote__asset_id__keyword=config.CORE_ASSET_ID)
         ])
 
         a = A('date_histogram', field='block_data.block_time', interval='1d', format='yyyy-MM-dd') \
-                .metric('volume', 'sum', field='additional_data.fill_data.receives_amount')
+                .metric('volume', 'sum', field='operation_history.op_object.fill_price.quote.amount')
         s.aggs.bucket('volume_over_time', a)
 
         response = s.execute()

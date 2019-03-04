@@ -21,7 +21,7 @@ def get_config():
 def get_symbols(symbol):
     base, quote = symbol.split('_')
 
-    _, base_precision = api.explorer_get_asset_id_and_precision(base)
+    _, base_precision = api.explorer._get_asset_id_and_precision(base)
 
     return {
         "name": symbol,
@@ -61,7 +61,7 @@ def _get_market_pairs():
     result = []
     for base_id, quotes in markets.items():
         base = api.explorer._get_asset(base_id)['symbol']
-        for quote_id, data in quotes.items():
+        for quote_id, _ in quotes.items():
             quote = api.explorer._get_asset(quote_id)['symbol']
             result.append((base, quote))
     return result
