@@ -93,11 +93,6 @@ def get_assets():
     results = []
     
     # Get all assets active the last 24h.
-
-    # FIXME: Use objects-assets instead? 
-    # asset_ids = bitshares_es_client.get_asset_ids()
-    # for asset_id in asset_ids:
-
     markets = bitshares_es_client.get_markets('now-1d', 'now', quote=config.CORE_ASSET_ID)
     bts_volume = 0.0 # BTS volume is the sum of all the others.
     for asset_id in itertools.chain(markets.keys(), [config.CORE_ASSET_ID]):
@@ -395,17 +390,16 @@ def get_market_chart_data(base, quote):
 
 def get_top_proxies():
     holders = _get_holders()
-
+    
     total_votes = reduce(lambda acc, h: acc + int(h['balance']), holders, 0)
 
     proxies = []
     for holder in holders:
-        total_votes += int(holder['balance'])
         if 'follower_count' in holder:
             proxy_amount =  int(holder['balance']) + int(holder['follower_amount'])
             proxy_total_percentage = float(int(proxy_amount) * 100.0/ int(total_votes))
             proxies.append([
-                holder['owner']['object_id'],
+                holder['owner']['id'],
                 holder['owner']['name'],
                 proxy_amount,
                 holder['follower_count'],
@@ -416,49 +410,79 @@ def get_top_proxies():
 
     return proxies
 
+def _get_accounts_by_chunks_via_es(account_ids, chunk_size=1000):
+    all_accounts = []
+    for i in xrange(0, len(account_ids), chunk_size):
+        accounts = bitshares_es_client.get_accounts(account_ids[i:i+chunk_size], size=chunk_size)
+        all_accounts.extend(accounts)
+    return all_accounts
+
+def _get_accounts_by_chunks_via_ws(account_ids, chunk_size=1000):
+    all_accounts = []
+    for i in xrange(0, len(account_ids), chunk_size):
+        accounts = bitshares_ws_client.request('database', 'get_accounts', [ account_ids[i:i+chunk_size] ])
+        all_accounts.extend(accounts)
+    return all_accounts
+
+# FIXME: Should not be needed anymore when https://github.com/bitshares/bitshares-core/issues/1652 will be resolved. 
+def _load_missing_accounts_via_ws(account_ids, accounts_already_loaded):
+    accounts_ids_already_loaded = [ account['id'] for account in accounts_already_loaded ]
+    accounts_ids_to_load = list(set(account_ids) - set(accounts_ids_already_loaded))
+    print("{} accounts to load via websocket".format(len(accounts_ids_to_load)))
+    missing_accounts = _get_accounts_by_chunks_via_ws(accounts_ids_to_load)
+    return accounts_already_loaded + missing_accounts
+
+def _get_voting_account(holder):
+    if 'options' in holder['owner'] and 'voting_account' in holder['owner']['options']:
+        return holder['owner']['options']['voting_account']
+    else:
+        return None
 
 @cache.memoize()
 def _get_holders():
     balances = bitshares_es_client.get_balances(asset_id=config.CORE_ASSET_ID)
     account_ids = [ balance['owner'] for balance in balances ]
-    accounts = bitshares_es_client.get_accounts(account_ids)
+    accounts = _get_accounts_by_chunks_via_es(account_ids)
+    accounts = _load_missing_accounts_via_ws(account_ids, accounts)
     holders_by_account_id = {}
     for balance in balances:
         holders_by_account_id[balance['owner']] = balance
     for account in accounts:
-        holders_by_account_id[account['object_id']]['owner'] = account
+        holders_by_account_id[account['id']]['owner'] = account
     for holder in holders_by_account_id.values():
-        if 'voting_account' not in holder['owner']:
-            print('Account {} details not found for balance {}.'.format(holder['owner'], holder['balance']))
-        else:
-            proxy_id = holder['owner']['voting_account']
+        if 'options' in holder['owner'] and 'voting_account' in holder['owner']['options']:
+            proxy_id = holder['owner']['options']['voting_account']
             if proxy_id != '1.2.5':
                 if proxy_id not in holders_by_account_id:
-                    print('User {} ({}) has delegated to a user without core asset balance: {} .' \
-                        .format(holder['owner']['name'], holder['owner']['object_id'], proxy_id))
-                else:
-                    proxy = holders_by_account_id[proxy_id] 
-                    if 'follower_amount' not in proxy:
-                        proxy['follower_amount'] = 0
-                        proxy['follower_count'] = 0
-                    proxy['follower_amount'] += int(holder['balance']) 
-                    proxy['follower_count'] += 1 
+                    proxy_without_balance = {
+                        'owner': get_account(proxy_id)[0],
+                        'balance': 0,
+                        'asset_type': config.CORE_ASSET_ID
+                    }
+                    holders_by_account_id[proxy_id] = proxy_without_balance
+                proxy = holders_by_account_id[proxy_id] 
+                if 'follower_amount' not in proxy:
+                    proxy['follower_amount'] = 0
+                    proxy['follower_count'] = 0
+                proxy['follower_amount'] += int(holder['balance']) 
+                proxy['follower_count'] += 1 
 
     return holders_by_account_id.values()    
 
 
 def get_top_holders():
     holders = _get_holders()
-    holders_without_vote_delegation = [ holder for holder in holders if holder['owner']['voting_account'] == '1.2.5' ]
+    # FIXME: Why without delegation???
+    holders_without_vote_delegation = [ holder for holder in holders if _get_voting_account(holder) == '1.2.5' ]
     holders_without_vote_delegation.sort(key=lambda h : -int(h['balance']))
     top_holders = []
     for holder in holders_without_vote_delegation[:10]:
         top_holders.append([
-            0,                                  # (legacy) database id
-            holder['owner']['object_id'],       # account id
-            holder['owner']['name'],            # account name
-            int(holder['balance']),           # BTS amount
-            holder['owner']['voting_account']   # voting account
+            0,                            # (legacy) database id
+            holder['owner']['id'],        # account id
+            holder['owner']['name'],      # account name
+            int(holder['balance']),       # BTS amount
+            _get_voting_account(holder)   # voting account
         ]) 
     return top_holders
 
@@ -529,6 +553,7 @@ def get_committee_votes():
 
 def get_top_markets():
     markets = get_most_active_markets()
+    markets.sort(key=lambda a : -a[4]) # sort by volume
     top = markets[:7]
     return [ [m[1], m[4]] for m in top ]
 
@@ -550,11 +575,7 @@ def lookup_accounts(start):
 
 
 def lookup_assets(start):
-    matched_assets = [ [a[1]] for a in get_assets() if a[1].startswith(start) ]
-    return matched_assets
-
-    # FIXME: use objects-asset:
-    #return bitshares_es_client.get_asset_names(start)
+    return bitshares_es_client.get_asset_names(start)
 
 
 def get_last_block_number():
@@ -669,7 +690,7 @@ def get_all_referrers(account_id, page=0):
     for account in accounts:
         results.append([
             0, # db_id
-            account['object_id'],                           # account_id
+            account['id'],                                  # account_id
             account['name'],                                # account name
             account['referrer'],                            # referrer id
             account['referrer_rewards_percentage'],         # % of reward that goes to referrer

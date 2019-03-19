@@ -103,10 +103,10 @@ class BitsharesElasticSearchClient():
     def get_asset_ids(self):
         s = Search(using='objects', index="objects-asset") \
             .query('match_all')                            \
-            .source(['object_id'])
+            .source(['id'])
         s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
-        asset_ids = [ hit.object_id for hit in s.scan()]
+        asset_ids = [ hit.id for hit in s.scan()]
         return asset_ids
 
     def get_asset_names(self, start):
@@ -143,7 +143,7 @@ class BitsharesElasticSearchClient():
         s = Search(using='objects', index="objects-account", extra={'size': size, 'from': from_})    \
                 .filter('term', referrer__keyword=account_id)                                        \
                 .source([
-                    "object_id", "name", "referrer", 
+                    "id", "name", "referrer", 
                     "referrer_rewards_percentage", "lifetime_referrer", 
                     "lifetime_referrer_fee_percentage"])                            \
                 .sort("name.keyword")
@@ -159,17 +159,19 @@ class BitsharesElasticSearchClient():
             s = s.filter('term', owner=account_id)
         if asset_id:
             s = s.filter('term', asset_type=asset_id)
-        s = s.source([ 'owner', 'balance', 'asset_type'])
+        s = s.source([ 'owner_', 'balance', 'asset_type'])
         s = s.sort({ 'balance': { 'order': 'desc' } })
         s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
         balances = [hit.to_dict() for hit in s.scan()]
+        for balance in balances:
+            balance["owner"] = balance.pop("owner_")
         return balances
 
-    def get_accounts(self, account_ids):
-        s = Search(using='objects', index="objects-account")
-        s = s.filter('terms', object_id=account_ids)
-        s = s.source([ 'object_id', 'name', 'voting_account'])
+    def get_accounts(self, account_ids, size=1000):
+        s = Search(using='objects', index="objects-account", extra={'size': size })
+        s = s.filter('terms', id=account_ids)
+        s = s.source([ 'id', 'name', 'options.voting_account'])
         s = s.params(clear_scroll=False) # Avoid calling DELETE on ReadOnly apis.
 
         accounts = [hit.to_dict() for hit in s.scan()]
@@ -189,5 +191,5 @@ if __name__ == "__main__":
     for balance in balances:
         result[balance['owner']] = balance
     for account in accounts:
-        result[account['object_id']]['owner'] = account
+        result[account['id']]['owner'] = account
     pprint.pprint(result.values())
