@@ -1,4 +1,4 @@
-from websocket import create_connection
+from websocket import create_connection, WebSocketConnectionClosedException
 import json
 from services.cache import cache
 
@@ -15,12 +15,15 @@ class BitsharesWebsocketClient():
             'login': 1
         }
     
-    def ensure_connection(self):
-        if not self.ws.connected:
-            self.ws = create_connection(self.url)
-
     def request(self, api, method_name, params):
-        self.ensure_connection()
+        try:
+            return self._safe_request(api, method_name, params)
+        except WebSocketConnectionClosedException:
+            self.ws.close()
+            self.ws = create_connection(self.url)
+            return self._safe_request(api, method_name, params)
+
+    def _safe_request(self, api, method_name, params):
         api_id = self.load_api_id(api)
         payload = {
             'id': self.request_id,
