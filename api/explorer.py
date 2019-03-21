@@ -592,8 +592,8 @@ def get_account_history_pager_elastic(account_id, page):
     results = []
     for op in operations:
         results.append({
-            "op": j[n]["operation_history"]["op_object"],
-            "op_type": j[n]["operation_type"],
+            "op": op["operation_history"]["op_object"],
+            "op_type": op["operation_type"],
             "block_num": op["block_data"]["block_num"],
             "id": op["account_history"]["operation_id"],
             "op_in_trx": op["operation_history"]["op_in_trx"],
