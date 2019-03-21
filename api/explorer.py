@@ -575,8 +575,8 @@ def lookup_accounts(start):
 
 
 def lookup_assets(start):
-    return bitshares_es_client.get_asset_names(start)
-
+    asset_names = bitshares_es_client.get_asset_names(start)
+    return [ [ asset_name ] for asset_name in asset_names ]
 
 def get_last_block_number():
     dynamic_global_properties = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
