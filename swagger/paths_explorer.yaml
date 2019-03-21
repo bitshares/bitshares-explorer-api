@@ -157,7 +157,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Asset ID
@@ -176,7 +176,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Asset ID
@@ -258,7 +258,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Asset ID
@@ -277,7 +277,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Asset ID
@@ -320,7 +320,7 @@ paths:
       parameters:
         - in: query
           name: asset_id
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Asset ID or name
@@ -351,13 +351,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Base asset id
         - in: query
           name: quote
-          default: 1.3.1
+          default: 'CNY'
           type: string
           required: true
           description: Quote asset id
@@ -440,13 +440,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: Base asset id
         - in: query
           name: quote
-          default: 1.3.1
+          default: 'CNY'
           type: string
           required: true
           description: Quote asset id
@@ -718,13 +718,13 @@ paths:
       parameters:
         - in: query
           name: base
-          default: 1.3.0
+          default: 'BTS'
           type: string
           required: true
           description: base
         - in: query
           name: quote
-          default: 1.3.1
+          default: 'CNY'
           type: string
           required: true
           description: page
