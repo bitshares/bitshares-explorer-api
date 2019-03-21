@@ -1,7 +1,6 @@
 import itertools
 import datetime
 import json
-import psycopg2
 from services.bitshares_websocket_client import client as bitshares_ws_client
 from services.bitshares_elasticsearch_client import client as bitshares_es_client
 from services.cache import cache

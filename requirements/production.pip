@@ -5,8 +5,6 @@ flask_profiler
 connexion>=2.0.0
 connexion[swagger-ui]
 websocket-client
-psycopg2
-schedule
 simplejson
 uwsgi==2.0.15
 elasticsearch>=6.0.0,<7.0.0

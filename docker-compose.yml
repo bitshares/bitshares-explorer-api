@@ -10,18 +10,6 @@ volumes:
   db-data:
 
 services:
-  db:
-    build: ./postgres
-    hostname: postgres
-    environment:
-      - POSTGRES_DB=explorer
-      - POSTGRES_USER=explorer
-      - POSTGRES_PASSWORD=posta
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - private
-
   web:
     hostname: api
     image: bitshares-explorer
@@ -35,19 +23,6 @@ services:
       - "5000"
     ports:
       - "5000:5000"
-    networks:
-      - private
-      - internet
-
-  scheduler:
-    hostname: scheduler
-    image: bitshares-explorer
-    build: .
-    command: /explorer/postgres/scheduler.py
-    depends_on:
-      - db
-    env_file:
-      - explorer_config.env
     networks:
       - private
       - internet

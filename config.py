@@ -3,6 +3,7 @@ import os
 
 WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://localhost:8090/ws")
 
+
 # Default connection to Elastic Search.
 ELASTICSEARCH = {
      'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://es.bitshares.eu/').split(','),
@@ -13,7 +14,7 @@ ELASTICSEARCH = {
 # Optional ElasticSearch cluster to access other data.
 # Currently expect:
 #   - 'operations': for bitshares-* indexes where operations are stored
-#   - 'objects': for object-* indexes where Chain data is stored.
+#   - 'objects': for objects-* indexes where Chain data is stored.
 #
 # Sample:
 #
@@ -32,15 +33,6 @@ ELASTICSEARCH_ADDITIONAL = {
     'objects': {
         'hosts': ['http://148.251.10.231:5005/'] # oxarbitrage (no credentials)
     }
-}
-
-
-# Database connection: see https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS
-POSTGRES = {'host': os.environ.get('POSTGRES_HOST', 'localhost'),
-            'port': os.environ.get('POSTGRES_PORT', '5432'),
-            'database': os.environ.get('POSTGRES_DATABASE', 'explorer'),
-            'user': os.environ.get('POSTGRES_USER', 'postgres'),
-            'password': os.environ.get('POSTGRES_PASSWORD', 'posta'),
 }
 
 # Cache: see https://flask-caching.readthedocs.io/en/latest/#configuring-flask-caching

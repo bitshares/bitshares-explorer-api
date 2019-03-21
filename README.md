@@ -7,22 +7,11 @@ http://185.208.208.184:5000/apidocs/
 Index:
 
 - [BitShares Explorer REST API](#bitshares-explorer-rest-api)
-    - [Installation](#installation)
-        - [Manual](#manual)
-            - [Install ElasticSearch](#install-elasticsearch)
-            - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
-            - [Install and setup postgres.](#install-and-setup-postgres)
-            - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
-            - [Cronjobs](#cronjobs)
-            - [Simple running](#simple-running)
-            - [Nginx and uwsgi](#nginx-and-uwsgi)
-            - [Domain setup and SSL](#domain-setup-and-ssl)
-        - [Docker](#docker)
-    - [Usage](#usage)
-        - [Swagger](#swagger)
-        - [Profiler](#profiler)
-        - [Open Explorer](#open-explorer)
-        - [Development](#development)
+  - [Installation](#installation)
+    - [Manual](#manual)
+      - [Install ElasticSearch](#install-elasticsearch)
+      - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
+      - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
 
 ## Installation
 
@@ -144,57 +133,6 @@ Check if it is working with:
 
 note: ask @clockwork about performance increment suggested for mainnet and elasticsearch.
 
-#### Install and setup postgres.
-
-Postgres is needed as a helper to store some data as stats we want to have and takes too much time to do client side so they are made once a day with cronjobs. Data is saved to postgres and available all the time to serve REST calls.
-
-It is expected that the use of postgres gets deprecated in future versions of this program, most likely with the introduction of `es_objects` plugin.
-
-By now, you need postgres, install by:
-
-`apt-get install postgresql`
-
-Make sure postgres is up and running. Start with `/etc/init.d/postgresql start`.
-If you get a warning of no cluster solve with:
-
-`pg_createcluster 9.4 main --start`
-
-where `9.4` is your postgres version.
-
-Create username and database:
-
-    su postgres
-    createuser postgres
-    createdb explorer
-    psql
-    psql=# alter user postgres with encrypted password 'posta';
-    psql=# grant all privileges on database explorer to postgres ;
-
-Import schema:
-
-    cd 
-    wget https://raw.githubusercontent.com/oxarbitrage/explorer-api/master/postgres/schema.txt
-    psql explorer < schema.txt
-
-Check your database tables were created:
-
-    postgres@oxarbitrage:~$ psql -d explorer
-    psql (9.5.12)
-    Type "help" for help.
-    explorer=# \dt
-               List of relations
-     Schema |   Name    | Type  |  Owner   
-    --------+-----------+-------+----------
-     public | assets    | table | postgres
-     public | holders   | table | postgres
-     public | markets   | table | postgres
-     public | proxies   | table | postgres
-     public | referrers | table | postgres
-     public | stats     | table | postgres
-    (7 rows)
-        
-    explorer=# 
-
 #### Install BitShares Explorer API and dependencies.
 
 Install python and pip:
@@ -231,10 +169,9 @@ To run the api, always need to have the full path to program in `PYTHONPATH` env
 
 `export PYTHONPATH=/root/bitshares/bitshares-explorer-api` 
 
-If you have errors in the output about websocket or psycopg you may need to also do:
+If you have errors in the output about websocket you may need to also do:
 ```
 apt-get install python-websocket
-apt-get install python-psycopg2
 ```
 
 If you see a problem similar to:
@@ -246,19 +183,7 @@ If you see a problem similar to:
 ```
 
 You need to execute:
-`pip install connexion[swagger-ui]`
-
-#### Cronjobs
-
-Similar as postgres, it is expected that the cronjobs will not be needed in the future but by now, they are.
-
-Add the following taks to cron file with `crontab -e`:
-
-    0 1 * * *  export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_holders.py > /tmp/cronlog_holders.txt 2>&1 
-    0 2 * * *  export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_assets.py > /tmp/cronlog_assets.txt 2>&1
-    15 2 * * * export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_markets.py > /tmp/cronlog_markets.txt 2>&1
-    30 2 * * * export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_referrers.py > /tmp/cronlog_refs.txt 2>&1
-                                                  
+`pip install connexion[swagger-ui]`                        
     
 #### Simple running
 
