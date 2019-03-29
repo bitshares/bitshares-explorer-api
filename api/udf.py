@@ -1,9 +1,11 @@
 from datetime import datetime
 import calendar
-import psycopg2
 import connexion
 
 from services.bitshares_websocket_client import client as bitshares_ws_client
+from services.bitshares_elasticsearch_client import client as bitshares_es_client
+from services.cache import cache
+import api.explorer
 import config
 
 
@@ -19,8 +21,7 @@ def get_config():
 def get_symbols(symbol):
     base, quote = symbol.split('_')
 
-    asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [ [ base ], 0])[0]
-    base_precision = 10**asset["precision"]
+    _, base_precision = api.explorer._get_asset_id_and_precision(base)
 
     return {
         "name": symbol,
@@ -54,24 +55,30 @@ def get_symbols(symbol):
         "currency_code": ""
     }
 
+@cache.memoize(86400) # 1d TTL
+def _get_market_pairs():
+    markets = bitshares_es_client.get_markets('now-1d', 'now')
+    result = []
+    for base_id, quotes in markets.items():
+        base = api.explorer._get_asset(base_id)['symbol']
+        for quote_id, _ in quotes.items():
+            quote = api.explorer._get_asset(quote_id)['symbol']
+            result.append((base, quote))
+    return result
 
 def search(query, type, exchange, limit):
 
-    con = psycopg2.connect(**config.POSTGRES)
-    cur = con.cursor()
-    cur.execute("SELECT * FROM markets WHERE pair LIKE %s", ('%{}%'.format(query),))
-    rows = cur.fetchall()
-    con.close()
-
+    pairs = [ (base, quote) for (base, quote) in _get_market_pairs() if query in base or query in quote ] 
     final = []
-    for row in rows:
-        base, quote = row[1].split('/')
+    for (base, quote) in pairs:
+        slashed = '{}/{}'.format(base, quote)
+        underscored = '{}_{}'.format(base, quote)
         final.append({
-            "symbol": base + "_" + quote,
-            "full_name": row[1],
-            "description": row[1],
+            "symbol": underscored,
+            "full_name": slashed,
+            "description": slashed,
             "exchange": "",
-            "ticker": base + "_" + quote,
+            "ticker": underscored,
             "type": "",
         })
 
@@ -139,14 +146,8 @@ def get_history(symbol, to, resolution):
 
     results = {}
 
-    base_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [ [ base ], 0])[0]
-    base_id = base_asset["id"]
-    base_precision = 10**base_asset["precision"]
-
-    quote_asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [ [ quote ], 0])[0]
-    quote_id = quote_asset["id"]
-    quote_precision = 10**quote_asset["precision"]
-
+    base_id, base_precision = api.explorer._get_asset_id_and_precision(base)
+    quote_id, quote_precision = api.explorer._get_asset_id_and_precision(quote)
 
     base_1, base_2, base_3 = base_id.split('.')
     quote_1, quote_2, quote_3 = quote_id.split('.')

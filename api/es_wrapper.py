@@ -1,8 +1,7 @@
 from elasticsearch_dsl import Search, Q
-from services.elasticsearch_client import es
+from services.bitshares_elasticsearch_client import es
 from elasticsearch.exceptions import NotFoundError
 from datetime import datetime, timedelta
-
 
 def get_account_history(account_id=None, operation_type=None, from_=0, size=10, 
                         from_date='2015-10-10', to_date='now', sort_by='-block_data.block_time',

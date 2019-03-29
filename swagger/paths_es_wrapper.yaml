@@ -8,11 +8,13 @@ paths:
           name: account_id
           type: string
           required: false
+          default: "1.2.0"
           description: Account id to get ops from
         - in: query
           name: operation_type
           type: string
           required: false
+          default: "0"
           description: 1-44 Operation type
         - in: query
           name: from_

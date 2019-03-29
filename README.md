@@ -7,22 +7,11 @@ http://185.208.208.184:5000/apidocs/
 Index:
 
 - [BitShares Explorer REST API](#bitshares-explorer-rest-api)
-    - [Installation](#installation)
-        - [Manual](#manual)
-            - [Install ElasticSearch](#install-elasticsearch)
-            - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
-            - [Install and setup postgres.](#install-and-setup-postgres)
-            - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
-            - [Real Time ops grabber](#real-time-ops-grabber)
-            - [Cronjobs](#cronjobs)
-            - [Simple running](#simple-running)
-            - [Nginx and uwsgi](#nginx-and-uwsgi)
-            - [Domain setup and SSL](#domain-setup-and-ssl)
-        - [Docker](#docker)
-    - [Usage](#usage)
-        - [Swagger](#swagger)
-        - [Profiler](#profiler)
-        - [Open Explorer](#open-explorer)
+  - [Installation](#installation)
+    - [Manual](#manual)
+      - [Install ElasticSearch](#install-elasticsearch)
+      - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
+      - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
 
 ## Installation
 
@@ -144,63 +133,6 @@ Check if it is working with:
 
 note: ask @clockwork about performance increment suggested for mainnet and elasticsearch.
 
-#### Install and setup postgres.
-
-Postgres is needed as a helper to store some data as stats we want to have and takes too much time to do client side so they are made once a day with cronjobs. Data is saved to postgres and available all the time to serve REST calls.
-
-It is expected that the use of postgres gets deprecated in future versions of this program, most likely with the introduction of `es_objects` plugin.
-
-By now, you need postgres, install by:
-
-`apt-get install postgresql`
-
-Make sure postgres is up and running. Start with `/etc/init.d/postgresql start`.
-If you get a warning of no cluster solve with:
-
-`pg_createcluster 9.4 main --start`
-
-where `9.4` is your postgres version.
-
-Create username and database:
-
-    su postgres
-    createuser postgres
-    createdb explorer
-    psql
-    psql=# alter user postgres with encrypted password 'posta';
-    psql=# grant all privileges on database explorer to postgres ;
-
-Import schema:
-
-    cd 
-    wget https://raw.githubusercontent.com/oxarbitrage/explorer-api/master/postgres/schema.txt
-    psql explorer < schema.txt
-
-Check your database tables were created:
-
-    postgres@oxarbitrage:~$ psql -d explorer
-    psql (9.5.12)
-    Type "help" for help.
-    explorer=# \dt
-               List of relations
-     Schema |   Name    | Type  |  Owner   
-    --------+-----------+-------+----------
-     public | assets    | table | postgres
-     public | holders   | table | postgres
-     public | markets   | table | postgres
-     public | ops       | table | postgres
-     public | proxies   | table | postgres
-     public | referrers | table | postgres
-     public | stats     | table | postgres
-    (7 rows)
-    
-    explorer=# select * from ops;
-     oid | oh | ath | block_num | trx_in_block | op_in_trx | datetime | account_id | account_name | op_type 
-    -----+----+-----+-----------+--------------+-----------+----------+------------+--------------+---------
-    (0 rows)
-    
-    explorer=# 
-
 #### Install BitShares Explorer API and dependencies.
 
 Install python and pip:
@@ -237,10 +169,9 @@ To run the api, always need to have the full path to program in `PYTHONPATH` env
 
 `export PYTHONPATH=/root/bitshares/bitshares-explorer-api` 
 
-If you have errors in the output about websocket or psycopg you may need to also do:
+If you have errors in the output about websocket you may need to also do:
 ```
 apt-get install python-websocket
-apt-get install python-psycopg2
 ```
 
 If you see a problem similar to:
@@ -252,40 +183,7 @@ If you see a problem similar to:
 ```
 
 You need to execute:
-`pip install connexion[swagger-ui]`
-
-#### Real Time ops grabber
-
-<strike>
-First step to check if everything is correctly installed is by installing the real time operation grabber. This will subscribe by websocket to the bitshares-core backend and add every operation broadcasted by the node into the postgres database. This data is cleaned at the end of the day by one of the cronjobs, during that time data stored is used for daily calculations of network state.
-</strike>
-
-
-<strike>
-  
-Make sure you have `PYTHONPATH` set up and run the following command(can be in a `screen` session as the script will have to run permanently, can run in the background, can be added to init, etc:
-</strike>
-
-`python postgres/import_realtime_ops.py`
-
-
-<strike>
-You should see some output of sql queries being sent to postgres, make sure data is inserted by `select * from ops;` inside postgres `explorer` database.
-</strike>
-
-The realtime ops grabber had been deprecated by elasticsearch.
-
-#### Cronjobs
-
-Similar as postgres, it is expected that the cronjobs will not be needed in the future but by now, they are.
-
-Add the following taks to cron file with `crontab -e`:
-
-    0 1 * * *  export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_holders.py > /tmp/cronlog_holders.txt 2>&1 
-    0 2 * * *  export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_assets.py > /tmp/cronlog_assets.txt 2>&1
-    15 2 * * * export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_markets.py > /tmp/cronlog_markets.txt 2>&1
-    30 2 * * * export PYTHONPATH=/root/bitshares/bitshares-explorer-api; /root/bitshares/wrappers/bin/python /root/bitshares/bitshares-explorer-api/postgres/import_referrers.py > /tmp/cronlog_refs.txt 2>&1
-                                                  
+`pip install connexion[swagger-ui]`                        
     
 #### Simple running
 
@@ -374,3 +272,13 @@ By default the profiler is not protected, to add basic authentification add user
 - http://bitshares-testnet.xyz
 
 All versions of open-explorer uses this backend to get data.
+
+### Development
+
+Run tests:
+
+```
+PYTHONPATH=. pytest
+```
+
+And for non regression see `non_reg/README.md`
