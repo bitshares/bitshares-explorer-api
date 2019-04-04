@@ -1,0 +1,854 @@
+---
+test_name: Retrieve /header
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/header"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        accounts_registered_this_interval: !anyint
+        bts_market_cap: !anyint
+        commitee_count: !anyint
+        current_aslot: !anyint
+        current_witness: !anystr
+        dynamic_flags: !anyint
+        head_block_id: !anystr
+        head_block_number: !anyint
+        id: !anystr
+        last_budget_time: !anystr
+        last_irreversible_block_num: !anyint
+        next_maintenance_time: !anystr
+        quote_volume: !anystr
+        recent_slots_filled: !anystr
+        recently_missed_count: !anyint
+        time: !anystr
+        witness_budget: !anyint
+        witness_count: !anyint
+---
+test_name: Retrieve /account
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/account"
+      method: GET
+      params:
+        account_id: 1.2.0
+    response:
+      status_code: 200
+      body:
+      - id: !anystr
+        name: !anystr
+        referrer: !anystr
+---
+test_name: Retrieve /account_name
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/account_name"
+      method: GET
+      params:
+        account_id: 1.2.0
+    response:
+      status_code: 200
+      body: 
+        $ext:
+          function: tests.util:validate_unique_value
+          extra_kwargs:
+            unique_value: committee-account
+---
+test_name: Retrieve /operation
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/operation_full_elastic"
+      method: GET
+      params:
+        operation_id: 1.11.0
+    response:
+      status_code: 200
+      body:
+      - accounts_registered_this_interval: !anyint
+        block_num: !anyint
+        block_time: !anystr
+        bts_market_cap: !anyint
+        commitee_count: !anyint
+        op:
+          balance_owner_key: !anystr
+          balance_to_claim: !anystr
+          deposit_to_account: !anystr
+          fee:
+            amount: !anyint
+            asset_id: !anystr
+          total_claimed:
+            amount: !anyint
+            asset_id: !anystr
+        op_in_trx: !anyint
+        op_type: !anyint
+        quote_volume: !anystr
+        result: !anything
+        trx_id: !anystr
+        trx_in_block: !anyint
+        virtual_op: !anyint
+        witness_count: !anyint
+---
+test_name: Retrieve /accounts
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/accounts"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              account_id: !anystr
+              amount: !anystr
+              name: !anystr
+---
+test_name: Retrieve /full_account
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/full_account"
+      method: GET
+      params:
+        account_id: 1.2.0
+    response:
+      status_code: 200
+      body:
+        - 
+          - 1.2.0
+          - account:
+              active: !anything
+              id: !anystr
+              name: !anystr
+            assets: !anything
+            balances: !anything
+            statistics: !anything
+---
+test_name: Retrieve /assets
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/assets"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              - null
+              - !anystr
+              - !anystr
+              - !anything
+              - !anyfloat
+              - !anything
+              - !anystr
+              - !anyint
+              - !anyint
+              - !anystr
+              - !anyint
+---
+test_name: Retrieve /fees
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/fees"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        id: !anystr
+        active_committee_members: !anything
+        active_witnesses: !anything
+        parameters: !anything
+---
+test_name: Retrieve /account_history_pager_elastic
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/account_history_pager_elastic"
+      method: GET
+      params:
+        account_id: 1.2.0
+        page: 0
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              block_num: !anyint
+              id: !anystr
+              op: !anything
+              op_in_trx: !anyint
+              op_type: !anyint
+              result: !anything
+              timestamp: !anystr
+              trx_in_block: !anyint
+              virtual_op: !anyint            
+---
+test_name: Retrieve /get_asset
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_asset"
+      method: GET
+      params:
+        asset_id: BTS
+    response:
+      status_code: 200
+      body:
+        - id: !anystr
+          issuer: !anystr
+          issuer_name: !anystr
+          precision: !anyint
+          symbol: !anystr
+          options: !anything
+---
+test_name: Retrieve /get_asset_and_volume
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_asset_and_volume"
+      method: GET
+      params:
+        asset_id: BTS
+    response:
+      status_code: 200
+      body:
+        - id: !anystr
+          issuer: !anystr
+          issuer_name: !anystr
+          precision: !anyint
+          symbol: !anystr
+          options: !anything
+          latest_price: !anyint
+          mcap: !anyint
+          volume: !anyint
+---
+test_name: Retrieve /get_block
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_block"
+      method: GET
+      params:
+        block_num: 1
+    response:
+      status_code: 200
+      body:
+        extensions: !anything
+        previous: !anystr
+        timestamp: !anystr
+        transaction_merkle_root: !anystr
+        transactions: !anything
+        witness: !anystr
+        witness_signature: !anystr
+---
+test_name: Retrieve /get_ticker
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_ticker"
+      method: GET
+      params:
+        base: USD
+        quote: CNY
+    response:
+      status_code: 200
+      body:
+        base: "USD"
+        base_volume: !anystr
+        highest_bid: !anystr
+        latest: !anystr
+        lowest_ask: !anystr
+        percent_change: !anystr
+        quote: "CNY"
+        quote_volume: !anystr
+        time: !anystr
+---
+test_name: Retrieve /get_object
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_object"
+      method: GET
+      params:
+        object: 1.3.0
+    response:
+      status_code: 200
+      body:
+        - id: !anystr
+          issuer: !anystr
+          precision: !anyint
+          symbol: !anystr
+          options: !anything
+---
+test_name: Retrieve /get_asset_holders_count
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_asset_holders_count"
+      method: GET
+      params:
+        asset_id: BTS
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_unique_value
+          extra_kwargs:
+            unique_value: !anyint
+---
+test_name: Retrieve /get_asset_holders
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_asset_holders"
+      method: GET
+      params:
+        asset_id: BTS
+        start: 0
+        limit: 20
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              account_id: !anystr
+              amount: !anystr
+              name: !anystr
+---
+test_name: Retrieve /get_workers
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_workers"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              - id: !anystr
+                name: !anystr
+                worker_account: !anystr
+                worker_account_name: !anystr
+                url: !anystr
+                vote_against: !anystr
+                vote_for: !anystr
+                perc: !anyint
+                total_votes_against: !anyint
+                total_votes_for: !anything
+                work_begin_date: !anystr
+                work_end_date: !anystr
+                worker: !anything
+---
+test_name: Retrieve /get_markets
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_markets"
+      method: GET
+      params:
+        asset_id: BTS
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              - 0
+              - !anystr
+              - 0
+              - !anyfloat
+              - !anyfloat
+              - !anystr
+---
+test_name: Retrieve /get_order_book
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_order_book"
+      method: GET
+      params:
+        base: BTS
+        quote: CNY
+        limit: 1
+    response:
+      status_code: 200
+      body:
+        asks: 
+          - base: !anystr
+            price: !anystr
+            quote: !anystr
+        bids:
+          - base: !anystr
+            price: !anystr
+            quote: !anystr
+        base: BTS
+        quote: CNY
+---
+test_name: Retrieve /get_margin_positions
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_margin_positions"
+      method: GET
+      params:
+        account_id: 1.2.0
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              borrower: !anystr
+              call_price:
+                base:
+                  amount: !anyint
+                  asset_id: !anystr
+                quote:
+                  amount: !anyint
+                  asset_id: !anystr
+              collateral: !anyint
+              debt: !anyint
+              id: !anystr
+---
+test_name: Retrieve /get_witnesses
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_witnesses"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              - id: !anystr
+                last_aslot: !anyint
+                last_confirmed_block_num: !anyint
+                signing_key: !anystr
+                total_missed: !anyint
+                total_votes: !anything
+                url: !anystr
+                vote_id: !anystr
+                witness_account: !anystr
+                witness_account_name: !anystr
+---
+test_name: Retrieve /get_committee_members
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_committee_members"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              - id: !anystr
+                vote_id: !anystr
+                url: !anystr
+                total_votes: !anything
+                committee_member_account: !anystr
+                committee_member_account_name: !anystr
+---
+test_name: Retrieve /market_chart_dates
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/market_chart_dates"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: !anystr
+---
+test_name: Retrieve /market_chart_data
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/market_chart_data"
+      method: GET
+      params:
+        base: BTS
+        quote: CNY
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anyfloat
+              - !anyfloat
+              - !anyfloat
+              - !anyfloat
+---
+test_name: Retrieve /top_proxies
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/top_proxies"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anystr
+              - !anyint
+              - !anyint
+              - !anyfloat
+---
+test_name: Retrieve /top_holders
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/top_holders"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - 0
+              - !anystr
+              - !anystr
+              - !anyint
+              - !anystr
+---
+test_name: Retrieve /witnesses_votes
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/witnesses_votes"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+---
+test_name: Retrieve /workers_votes
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/workers_votes"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+---
+test_name: Retrieve /committee_votes
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/committee_votes"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anystr
+---
+test_name: Retrieve /top_markets
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/top_markets"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anyfloat
+---
+test_name: Retrieve /top_smartcoins
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/top_smartcoins"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anyfloat
+---
+test_name: Retrieve /top_uias
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/top_uias"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anyfloat
+---
+test_name: Retrieve /lookup_accounts
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/lookup_accounts"
+      method: GET
+      params:
+        start: A
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+              - !anystr
+---
+test_name: Retrieve /lookup_assets
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/lookup_assets"
+      method: GET
+      params:
+        start: A
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: 
+              - !anystr
+---
+test_name: Retrieve /getlastblocknumbher
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/getlastblocknumbher"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_unique_value
+          extra_kwargs:
+            unique_value: !anyint
+---
+test_name: Retrieve /get_dex_total_volume
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_dex_total_volume"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        market_cap_bts: !anyfloat
+        market_cap_cny: !anyfloat
+        market_cap_usd: !anyfloat
+        volume_bts: !anyfloat
+        volume_usd: !anyfloat
+        volume_cny: !anyfloat
+---
+test_name: Retrieve /daily_volume_dex_dates
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/daily_volume_dex_dates"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: !anystr
+---
+test_name: Retrieve /daily_volume_dex_data
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/daily_volume_dex_data"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: !anyint
+---
+test_name: Retrieve /get_all_asset_holders
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_all_asset_holders"
+      method: GET
+      params:
+        asset_id: USD
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              account_id: !anystr
+              amount: !anything
+              name: !anystr
+---
+test_name: Retrieve /referrer_count
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/referrer_count"
+      method: GET
+      params:
+        account_id: 1.2.0
+    response:
+      status_code: 200
+      body:
+        - !anyint
+---
+test_name: Retrieve /get_all_referrers
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_all_referrers"
+      method: GET
+      params:
+        account_id: 2.2.0
+        page: 0
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              - 0
+              - !anystr
+              - !anystr
+              - !anystr
+              - !anyint
+              - !anystr
+              - !anyint
+---
+test_name: Retrieve /get_grouped_limit_orders
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_grouped_limit_orders"
+      method: GET
+      params:
+        base: BTS
+        quote: CNY
+        group: 10
+        limit: 1
+    response:
+      status_code: 200
+      body:
+        - max_price:
+            base:
+              amount: !anything
+              asset_id: !anystr
+            quote:
+              amount: !anything
+              asset_id: !anystr
+          min_price:
+            base:
+              amount: !anything
+              asset_id: !anystr
+            quote:
+              amount: !anything
+              asset_id: !anystr
+          total_for_sale: !anything              
