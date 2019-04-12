@@ -597,7 +597,7 @@ paths:
       tags:
         - api
         - asset
-  "/getlastblocknumbher":
+  "/last_block_number":
     get:
       description: Get current block number
       operationId: api.explorer.get_last_block_number

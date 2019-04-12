@@ -707,11 +707,11 @@ stages:
             element_desc: 
               - !anystr
 ---
-test_name: Retrieve /getlastblocknumbher
+test_name: Retrieve /last_block_number
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/getlastblocknumbher"
+      url: "{host}/last_block_number"
       method: GET
     response:
       status_code: 200
