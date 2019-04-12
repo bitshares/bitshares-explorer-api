@@ -60,7 +60,7 @@ def _enrich_operation(operation, ws_client):
 
     return _add_global_informations(operation, ws_client)
 
-def get_operation_full_elastic(operation_id):
+def get_operation(operation_id):
     res = es_wrapper.get_single_operation(operation_id)
     operation = { 
         "op": res[0]["operation_history"]["op_object"],

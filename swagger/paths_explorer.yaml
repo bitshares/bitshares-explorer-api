@@ -49,10 +49,10 @@ paths:
       tags:
         - api
         - account
-  "/operation_full_elastic":
+  "/operation":
     get:
       description: Get operation by ID
-      operationId: api.explorer.get_operation_full_elastic
+      operationId: api.explorer.get_operation
       parameters:
         - in: query
           name: operation_id

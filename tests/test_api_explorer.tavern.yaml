@@ -62,7 +62,7 @@ test_name: Retrieve /operation
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/operation_full_elastic"
+      url: "{host}/operation"
       method: GET
       params:
         operation_id: 1.11.0
