@@ -194,11 +194,11 @@ stages:
               trx_in_block: !anyint
               virtual_op: !anyint            
 ---
-test_name: Retrieve /get_asset
+test_name: Retrieve /asset
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset"
+      url: "{host}/asset"
       method: GET
       params:
         asset_id: BTS
@@ -212,11 +212,11 @@ stages:
           symbol: !anystr
           options: !anything
 ---
-test_name: Retrieve /get_asset_and_volume
+test_name: Retrieve /asset_and_volume
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset_and_volume"
+      url: "{host}/asset_and_volume"
       method: GET
       params:
         asset_id: BTS
@@ -233,11 +233,11 @@ stages:
           mcap: !anyint
           volume: !anyint
 ---
-test_name: Retrieve /get_block
+test_name: Retrieve /block
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_block"
+      url: "{host}/block"
       method: GET
       params:
         block_num: 1
@@ -252,11 +252,11 @@ stages:
         witness: !anystr
         witness_signature: !anystr
 ---
-test_name: Retrieve /get_ticker
+test_name: Retrieve /ticker
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_ticker"
+      url: "{host}/ticker"
       method: GET
       params:
         base: USD
@@ -274,11 +274,11 @@ stages:
         quote_volume: !anystr
         time: !anystr
 ---
-test_name: Retrieve /get_object
+test_name: Retrieve /object
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_object"
+      url: "{host}/object"
       method: GET
       params:
         object: 1.3.0
@@ -291,11 +291,11 @@ stages:
           symbol: !anystr
           options: !anything
 ---
-test_name: Retrieve /get_asset_holders_count
+test_name: Retrieve /asset_holders_count
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset_holders_count"
+      url: "{host}/asset_holders_count"
       method: GET
       params:
         asset_id: BTS
@@ -307,11 +307,11 @@ stages:
           extra_kwargs:
             unique_value: !anyint
 ---
-test_name: Retrieve /get_asset_holders
+test_name: Retrieve /asset_holders
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset_holders"
+      url: "{host}/asset_holders"
       method: GET
       params:
         asset_id: BTS
@@ -328,11 +328,11 @@ stages:
               amount: !anystr
               name: !anystr
 ---
-test_name: Retrieve /get_workers
+test_name: Retrieve /workers
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_workers"
+      url: "{host}/workers"
       method: GET
     response:
       status_code: 200
@@ -355,11 +355,11 @@ stages:
                 work_end_date: !anystr
                 worker: !anything
 ---
-test_name: Retrieve /get_markets
+test_name: Retrieve /markets
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_markets"
+      url: "{host}/markets"
       method: GET
       params:
         asset_id: BTS
@@ -377,11 +377,11 @@ stages:
               - !anyfloat
               - !anystr
 ---
-test_name: Retrieve /get_order_book
+test_name: Retrieve /order_book
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_order_book"
+      url: "{host}/order_book"
       method: GET
       params:
         base: BTS
@@ -401,11 +401,11 @@ stages:
         base: BTS
         quote: CNY
 ---
-test_name: Retrieve /get_margin_positions
+test_name: Retrieve /margin_positions
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_margin_positions"
+      url: "{host}/margin_positions"
       method: GET
       params:
         account_id: 1.2.0
@@ -428,11 +428,11 @@ stages:
               debt: !anyint
               id: !anystr
 ---
-test_name: Retrieve /get_witnesses
+test_name: Retrieve /witnesses
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_witnesses"
+      url: "{host}/witnesses"
       method: GET
     response:
       status_code: 200
@@ -452,11 +452,11 @@ stages:
                 witness_account: !anystr
                 witness_account_name: !anystr
 ---
-test_name: Retrieve /get_committee_members
+test_name: Retrieve /committee_members
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_committee_members"
+      url: "{host}/committee_members"
       method: GET
     response:
       status_code: 200
@@ -721,11 +721,11 @@ stages:
           extra_kwargs:
             unique_value: !anyint
 ---
-test_name: Retrieve /get_dex_total_volume
+test_name: Retrieve /dex_total_volume
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_dex_total_volume"
+      url: "{host}/dex_total_volume"
       method: GET
     response:
       status_code: 200
@@ -765,11 +765,11 @@ stages:
           extra_kwargs:
             element_desc: !anyint
 ---
-test_name: Retrieve /get_all_asset_holders
+test_name: Retrieve /all_asset_holders
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_all_asset_holders"
+      url: "{host}/all_asset_holders"
       method: GET
       params:
         asset_id: USD
@@ -797,11 +797,11 @@ stages:
       body:
         - !anyint
 ---
-test_name: Retrieve /get_all_referrers
+test_name: Retrieve /all_referrers
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_all_referrers"
+      url: "{host}/all_referrers"
       method: GET
       params:
         account_id: 2.2.0
@@ -821,11 +821,11 @@ stages:
               - !anystr
               - !anyint
 ---
-test_name: Retrieve /get_grouped_limit_orders
+test_name: Retrieve /grouped_limit_orders
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_grouped_limit_orders"
+      url: "{host}/grouped_limit_orders"
       method: GET
       params:
         base: BTS

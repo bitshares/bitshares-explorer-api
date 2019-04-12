@@ -150,7 +150,7 @@ paths:
         - api
         - account
         - operation
-  "/get_asset":
+  "/asset":
     get:
       description: Get all info about an asset
       operationId: api.explorer.get_asset
@@ -169,7 +169,7 @@ paths:
       tags:
         - api
         - asset
-  "/get_asset_and_volume":
+  "/asset_and_volume":
     get:
       description: Same as get_asset but with additional volume info.
       operationId: api.explorer.get_asset_and_volume
@@ -188,7 +188,7 @@ paths:
       tags:
         - api
         - asset
-  "/get_block":
+  "/block":
     get:
       description: Get full block data
       operationId: api.explorer.get_block
@@ -207,7 +207,7 @@ paths:
       tags:
         - api
         - block
-  "/get_ticker":
+  "/ticker":
     get:
       description: Get ticker data for a market
       operationId: api.explorer.get_ticker
@@ -232,7 +232,7 @@ paths:
       tags:
         - api
         - market
-  "/get_object":
+  "/object":
     get:
       description: Get object from ID
       operationId: api.explorer.get_object
@@ -251,7 +251,7 @@ paths:
       tags:
         - api
         - object
-  "/get_asset_holders_count":
+  "/asset_holders_count":
     get:
       description: Get a count of holders and asset haves.
       operationId: api.explorer.get_asset_holders_count
@@ -270,7 +270,7 @@ paths:
       tags:
         - api
         - asset
-  "/get_asset_holders":
+  "/asset_holders":
     get:
       description: Get asset holders for an asset.
       operationId: api.explorer.get_asset_holders
@@ -301,7 +301,7 @@ paths:
       tags:
         - api
         - asset
-  "/get_workers":
+  "/workers":
     get:
       description: Get all workers.
       operationId: api.explorer.get_workers
@@ -313,7 +313,7 @@ paths:
       tags:
         - api
         - worker
-  "/get_markets":
+  "/markets":
     get:
       description: Get all the active markets for an asset.
       operationId: api.explorer.get_markets
@@ -332,7 +332,7 @@ paths:
       tags:
         - api
         - market
-  "/get_most_active_markets":
+  "/most_active_markets":
     get:
       description: Get the most active 100 markets in the network.
       operationId: api.explorer.get_most_active_markets
@@ -344,7 +344,7 @@ paths:
       tags:
         - api
         - market
-  "/get_order_book":
+  "/order_book":
     get:
       description: Get the order book of a market.
       operationId: api.explorer.get_order_book
@@ -375,7 +375,7 @@ paths:
       tags:
         - api
         - market
-  "/get_margin_positions":
+  "/margin_positions":
     get:
       description: Get margin positions of an account.
       operationId: api.explorer.get_margin_positions
@@ -395,7 +395,7 @@ paths:
         - api
         - market
         - account
-  "/get_witnesses":
+  "/witnesses":
     get:
       description: Get all witnesses.
       operationId: api.explorer.get_witnesses
@@ -408,7 +408,7 @@ paths:
         - api
         - witness
         - governance
-  "/get_committee_members":
+  "/committee_members":
     get:
       description: Get all committee members.
       operationId: api.explorer.get_committee_members
@@ -609,7 +609,7 @@ paths:
       tags:
         - api
         - operation
-  "/get_dex_total_volume":
+  "/dex_total_volume":
     get:
       description: Get some total dex volume figures
       operationId: api.explorer.get_dex_total_volume
@@ -645,7 +645,7 @@ paths:
       tags:
         - api
         - utility
-  "/get_all_asset_holders":
+  "/all_asset_holders":
     get:
       description: Get all holders of an asset
       operationId: api.explorer.get_all_asset_holders
@@ -685,7 +685,7 @@ paths:
         - api
         - account
         - referrer
-  "/get_all_referrers":
+  "/all_referrers":
     get:
       description: Get referrers an account made
       operationId: api.explorer.get_all_referrers
@@ -711,7 +711,7 @@ paths:
         - api
         - account
         - referrer
-  "/get_grouped_limit_orders":
+  "/grouped_limit_orders":
     get:
       description: Get the grouped order for a market
       operationId: api.explorer.get_grouped_limit_orders
