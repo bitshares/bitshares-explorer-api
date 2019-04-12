@@ -582,7 +582,7 @@ def get_last_block_number():
     return dynamic_global_properties["head_block_number"]
 
 
-def get_account_history_pager_elastic(account_id, page):
+def get_account_history(account_id, page):
     account_id = _get_account_id(account_id)
 
     from_ = int(page) * 20

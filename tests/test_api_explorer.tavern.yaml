@@ -170,11 +170,11 @@ stages:
         active_witnesses: !anything
         parameters: !anything
 ---
-test_name: Retrieve /account_history_pager_elastic
+test_name: Retrieve /account_history
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/account_history_pager_elastic"
+      url: "{host}/account_history"
       method: GET
       params:
         account_id: 1.2.0

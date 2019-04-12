@@ -123,10 +123,10 @@ paths:
       tags:
         - api
         - blockchain
-  "/account_history_pager_elastic":
+  "/account_history":
     get:
-      description: Get history of account by pages (deprecated, use /account_history)
-      operationId: api.explorer.get_account_history_pager_elastic
+      description: Get history of account by pages
+      operationId: api.explorer.get_account_history
       deprecated: true
       parameters:
         - in: query
