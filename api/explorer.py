@@ -395,15 +395,15 @@ def get_top_proxies():
         if 'follower_count' in holder:
             proxy_amount =  int(holder['balance']) + int(holder['follower_amount'])
             proxy_total_percentage = float(int(proxy_amount) * 100.0/ int(total_votes))
-            proxies.append([
-                holder['owner']['id'],
-                holder['owner']['name'],
-                proxy_amount,
-                holder['follower_count'],
-                proxy_total_percentage
-            ])
+            proxies.append({
+                'id': holder['owner']['id'],
+                'name': holder['owner']['name'],
+                'bts_weight': proxy_amount,
+                'followers': holder['follower_count'],
+                'bts_weight_percentage': proxy_total_percentage
+            })
 
-    proxies = sorted(proxies, key=lambda k: -k[2]) # Reverse amount order
+    proxies = sorted(proxies, key=lambda k: -k['bts_weight']) # Reverse amount order
 
     return proxies
 
@@ -490,7 +490,7 @@ def _get_formatted_proxy_votes(proxies, vote_id):
 def get_witnesses_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
-    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     witnesses = get_witnesses()
     witnesses = witnesses[:25] # FIXME: Witness number is variable.
@@ -510,7 +510,7 @@ def get_witnesses_votes():
 def get_workers_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
-    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     workers = get_workers()
     workers = workers[:30]
@@ -531,7 +531,7 @@ def get_workers_votes():
 def get_committee_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
-    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     committee_members = get_committee_members()
     committee_members = committee_members[:11]

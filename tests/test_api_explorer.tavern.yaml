@@ -520,11 +520,11 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anyint
-              - !anyint
-              - !anyfloat
+              id: !anystr
+              name: !anystr
+              bts_weight: !anyint
+              followers: !anyint
+              bts_weight_percentage: !anyfloat
 ---
 test_name: Retrieve /top_holders
 stages:
