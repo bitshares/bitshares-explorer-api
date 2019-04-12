@@ -1,9 +1,9 @@
 ---
-test_name: Retrieve /config
+test_name: Retrieve /udf/config
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/config"
+      url: "{host}/udf/config"
       method: GET
     response:
       status_code: 200
@@ -21,11 +21,11 @@ stages:
         supports_search: true
         supports_time: true
 ---
-test_name: Retrieve /symbols
+test_name: Retrieve /udf/symbols
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/symbols"
+      url: "{host}/udf/symbols"
       method: GET
       params:
         symbol: USD_CNY
@@ -69,11 +69,11 @@ stages:
         type: ''
         volume_precision: ''
 ---
-test_name: Retrieve /search
+test_name: Retrieve /udf/search
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/search"
+      url: "{host}/udf/search"
       method: GET
       params:
         query: USD
@@ -91,11 +91,11 @@ stages:
               ticker: !anystr
               type: !anystr
 ---
-test_name: Retrieve /history
+test_name: Retrieve /udf/history
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/history"
+      url: "{host}/udf/history"
       method: GET
       params:
         symbol: USD_CNY
@@ -173,11 +173,11 @@ stages:
           - !anyint
           - !anyint
 ---
-test_name: Retrieve /time
+test_name: Retrieve /udf/time
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/time"
+      url: "{host}/udf/time"
       method: GET
     response:
       status_code: 200

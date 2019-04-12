@@ -1,5 +1,5 @@
 paths:
-  "/config":
+  "/udf/config":
     get:
       description: Get bitshares chart data configuration
       operationId: api.udf.get_config
@@ -10,7 +10,7 @@ paths:
           description: Error processing parameters
       tags:
         - udf
-  "/symbols":
+  "/udf/symbols":
     get:
       description: Get information about an asset(symbol)
       operationId: api.udf.get_symbols
@@ -28,7 +28,7 @@ paths:
           description: Error processing parameters
       tags:
         - udf
-  "/search":
+  "/udf/search":
     get:
       description: Search for an asset(symbol)
       operationId: api.udf.search
@@ -64,7 +64,7 @@ paths:
           description: Error processing parameters
       tags:
         - udf
-  "/history":
+  "/udf/history":
     get:
       description: Get OHLC data for symbol
       operationId: api.udf.get_history
@@ -100,7 +100,7 @@ paths:
           description: Error processing parameters
       tags:
         - udf
-  "/time":
+  "/udf/time":
     get:
       description: Get last server time
       operationId: api.udf.get_time
