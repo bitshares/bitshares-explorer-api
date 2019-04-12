@@ -38,7 +38,7 @@ stages:
     response:
       status_code: 200
       body:
-      - id: !anystr
+        id: !anystr
         name: !anystr
         referrer: !anystr
 ---
@@ -121,15 +121,13 @@ stages:
     response:
       status_code: 200
       body:
-        - 
-          - 1.2.0
-          - account:
-              active: !anything
-              id: !anystr
-              name: !anystr
-            assets: !anything
-            balances: !anything
-            statistics: !anything
+        account:
+          active: !anything
+          id: !anystr
+          name: !anystr
+        assets: !anything
+        balances: !anything
+        statistics: !anything
 ---
 test_name: Retrieve /assets
 stages:

@@ -20,11 +20,11 @@ def get_header():
 
 @cache.memoize()
 def get_account(account_id):
-    return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
+    return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])[0]
 
 def get_account_name(account_id):
     account = get_account(account_id)
-    return account[0]['name']
+    return account['name']
 
 @cache.memoize()
 def _get_account_id(account_name):
@@ -83,7 +83,7 @@ def get_accounts():
 
 
 def get_full_account(account_id):
-    account = bitshares_ws_client.request('database', 'get_full_accounts', [[account_id], 0])
+    account = bitshares_ws_client.request('database', 'get_full_accounts', [[account_id], 0])[0][1]
     return account
 
 
@@ -454,7 +454,7 @@ def _get_holders():
             if proxy_id != '1.2.5':
                 if proxy_id not in holders_by_account_id:
                     proxy_without_balance = {
-                        'owner': get_account(proxy_id)[0],
+                        'owner': get_account(proxy_id),
                         'balance': 0,
                         'asset_type': config.CORE_ASSET_ID
                     }
