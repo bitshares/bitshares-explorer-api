@@ -285,11 +285,11 @@ stages:
     response:
       status_code: 200
       body:
-        - id: !anystr
-          issuer: !anystr
-          precision: !anyint
-          symbol: !anystr
-          options: !anything
+        id: !anystr
+        issuer: !anystr
+        precision: !anyint
+        symbol: !anystr
+        options: !anything
 ---
 test_name: Retrieve /asset_holders_count
 stages:

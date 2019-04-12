@@ -184,7 +184,7 @@ def _get_volume(base, quote):
 
 
 def get_object(object):
-    return [ bitshares_ws_client.get_object(object) ]
+    return bitshares_ws_client.get_object(object)
 
 def _ensure_asset_id(asset_id):
     if not _is_object(asset_id):
