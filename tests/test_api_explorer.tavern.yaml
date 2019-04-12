@@ -69,7 +69,7 @@ stages:
     response:
       status_code: 200
       body:
-      - accounts_registered_this_interval: !anyint
+        accounts_registered_this_interval: !anyint
         block_num: !anyint
         block_time: !anystr
         bts_market_cap: !anyint
