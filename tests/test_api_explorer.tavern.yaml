@@ -205,12 +205,12 @@ stages:
     response:
       status_code: 200
       body:
-        - id: !anystr
-          issuer: !anystr
-          issuer_name: !anystr
-          precision: !anyint
-          symbol: !anystr
-          options: !anything
+        id: !anystr
+        issuer: !anystr
+        issuer_name: !anystr
+        precision: !anyint
+        symbol: !anystr
+        options: !anything
 ---
 test_name: Retrieve /asset_and_volume
 stages:
@@ -223,15 +223,15 @@ stages:
     response:
       status_code: 200
       body:
-        - id: !anystr
-          issuer: !anystr
-          issuer_name: !anystr
-          precision: !anyint
-          symbol: !anystr
-          options: !anything
-          latest_price: !anyint
-          mcap: !anyint
-          volume: !anyint
+        id: !anystr
+        issuer: !anystr
+        issuer_name: !anystr
+        precision: !anyint
+        symbol: !anystr
+        options: !anything
+        latest_price: !anyint
+        mcap: !anyint
+        volume: !anyint
 ---
 test_name: Retrieve /block
 stages:

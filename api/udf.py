@@ -60,9 +60,9 @@ def _get_market_pairs():
     markets = bitshares_es_client.get_markets('now-1d', 'now')
     result = []
     for base_id, quotes in markets.items():
-        base = api.explorer._get_asset(base_id)['symbol']
+        base = api.explorer.get_asset(base_id)['symbol']
         for quote_id, _ in quotes.items():
-            quote = api.explorer._get_asset(quote_id)['symbol']
+            quote = api.explorer.get_asset(quote_id)['symbol']
             result.append((base, quote))
     return result
 

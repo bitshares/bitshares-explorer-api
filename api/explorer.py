@@ -95,7 +95,7 @@ def get_assets():
     markets = bitshares_es_client.get_markets('now-1d', 'now', quote=config.CORE_ASSET_ID)
     bts_volume = 0.0 # BTS volume is the sum of all the others.
     for asset_id in itertools.chain(markets.keys(), [config.CORE_ASSET_ID]):
-        asset = get_asset_and_volume(asset_id)[0]
+        asset = get_asset_and_volume(asset_id)
         holders_count = get_asset_holders_count(asset_id)
         bts_volume += float(asset['volume'])
         results.append([
@@ -120,8 +120,6 @@ def get_assets():
 def get_fees():
     return bitshares_ws_client.get_global_properties()
 
-def get_asset(asset_id):
-    return [ _get_asset(asset_id) ]
 
 @cache.memoize()
 def _get_asset_id_and_precision(asset_name):
@@ -130,12 +128,12 @@ def _get_asset_id_and_precision(asset_name):
 
 
 @cache.memoize()
-def _get_asset(asset_id_or_name):
+def get_asset(asset_id):
     asset = None
-    if not _is_object(asset_id_or_name):
-        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id_or_name], 0])[0]
+    if not _is_object(asset_id):
+        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
     else:
-        asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id_or_name], 0])[0]
+        asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id], 0])[0]
     
     dynamic_asset_data = bitshares_ws_client.get_object(asset["dynamic_asset_data_id"])
     asset["current_supply"] = dynamic_asset_data["current_supply"]
@@ -151,7 +149,7 @@ def _get_asset(asset_id_or_name):
 
 @cache.memoize()
 def get_asset_and_volume(asset_id):
-    asset = _get_asset(asset_id)
+    asset = get_asset(asset_id)
     
     core_symbol = _get_core_asset_name()
 
@@ -169,7 +167,7 @@ def get_asset_and_volume(asset_id):
         asset['mcap'] = int(asset['current_supply'])
         asset['latest_price'] = 1
 
-    return [asset]
+    return asset
 
 
 def get_block(block_num):
@@ -237,9 +235,9 @@ def _get_markets(asset_id):
 
     results = []
     for (base_id, quotes) in markets.items():
-        base_asset = _get_asset(base_id)
+        base_asset = get_asset(base_id)
         for (quote_id, data) in quotes.items():
-            quote_asset = _get_asset(quote_id)
+            quote_asset = get_asset(quote_id)
             ticker = get_ticker(base_id, quote_id)
             latest_price = float(ticker['latest'])
             results.append([
@@ -277,8 +275,8 @@ def get_most_active_markets():
 
     results = []
     for m in top_markets:
-        base_asset = _get_asset(m['base'])
-        quote_asset = _get_asset(m['quote'])
+        base_asset = get_asset(m['base'])
+        quote_asset = get_asset(m['quote'])
         ticker = get_ticker(m['base'], m['quote'])
         latest_price = float(ticker['latest'])
         results.append([
@@ -646,7 +644,7 @@ def get_daily_volume_dex_dates():
 @cache.memoize(86400) # 1d TTL
 def get_daily_volume_dex_data():
     daily_volumes = bitshares_es_client.get_daily_volume('now-60d', 'now')
-    core_asset_precision = 10 ** _get_asset(config.CORE_ASSET_ID)['precision']
+    core_asset_precision = 10 ** get_asset(config.CORE_ASSET_ID)['precision']
 
     results = [ int(daily_volume['volume'] / core_asset_precision) for daily_volume in daily_volumes]
     return results
