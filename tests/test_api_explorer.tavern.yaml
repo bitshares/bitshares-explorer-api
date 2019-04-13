@@ -536,11 +536,10 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - 0
-              - !anystr
-              - !anystr
-              - !anyint
-              - !anystr
+              account_id: !anystr
+              account_name: !anystr
+              amount: !anyint
+              voting_account: !anystr
 ---
 test_name: Retrieve /witnesses_votes
 stages:

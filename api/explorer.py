@@ -470,13 +470,12 @@ def get_top_holders():
     holders_without_vote_delegation.sort(key=lambda h : -int(h['balance']))
     top_holders = []
     for holder in holders_without_vote_delegation[:10]:
-        top_holders.append([
-            0,                            # (legacy) database id
-            holder['owner']['id'],        # account id
-            holder['owner']['name'],      # account name
-            int(holder['balance']),       # BTS amount
-            _get_voting_account(holder)   # voting account
-        ]) 
+        top_holders.append({
+            'account_id': holder['owner']['id'],
+            'account_name': holder['owner']['name'],
+            'amount': int(holder['balance']),
+            'voting_account': _get_voting_account(holder)
+        }) 
     return top_holders
 
 
