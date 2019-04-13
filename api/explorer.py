@@ -602,7 +602,7 @@ def get_account_history(account_id, page):
             "block_num": op["block_data"]["block_num"],
             "id": op["account_history"]["operation_id"],
             "op_in_trx": op["operation_history"]["op_in_trx"],
-            "result": op["operation_history"]["operation_result"],
+            "result": json.loads(op["operation_history"]["operation_result"]),
             "timestamp": op["block_data"]["block_time"],
             "trx_in_block": op["operation_history"]["trx_in_block"],
             "virtual_op": op["operation_history"]["virtual_op"]
