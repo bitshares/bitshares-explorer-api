@@ -609,18 +609,19 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
+              committee_account_name: !anystr
+              committee_id: !anystr
+              top_proxy_votes:
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
 ---
 test_name: Retrieve /most_active_markets
 stages:

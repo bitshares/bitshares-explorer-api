@@ -547,7 +547,11 @@ def get_committee_votes():
         committee_account_name = committee_member[0]["committee_member_account_name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-        committee_votes.append([committee_account_name, id_committee] + proxy_votes)
+        committee_votes.append({ 
+            'committee_account_name': committee_account_name, 
+            'committee_id': id_committee,
+            'top_proxy_votes': proxy_votes
+        })
 
     return committee_votes
 
