@@ -564,13 +564,13 @@ def get_top_markets():
 
 
 def get_top_smartcoins():
-    smartcoins = [[a['asset_name'], a['24h_volume']] for a in get_assets() if a['asset_type'] == 'SmartCoin']
+    smartcoins = [a for a in get_assets() if a['asset_type'] == 'SmartCoin']
     return smartcoins[:7]
 
 
 @cache.memoize()
 def get_top_uias():
-    uias = [[a['asset_name'], a['24h_volume']] for a in get_assets() if a['asset_type'] == 'User Issued']
+    uias = [a for a in get_assets() if a['asset_type'] == 'User Issued']
     return uias[:7]
 
 

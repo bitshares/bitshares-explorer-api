@@ -141,7 +141,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc:
+            element_desc: &asset_description
               asset_name: !anystr
               asset_id: !anystr
               latest_price: !anything
@@ -663,9 +663,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
-              - !anystr
-              - !anyfloat
+            element_desc: *asset_description
 ---
 test_name: Retrieve /top_uias
 stages:
@@ -679,9 +677,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
-              - !anystr
-              - !anyfloat
+            element_desc: *asset_description
 ---
 test_name: Retrieve /lookup_accounts
 stages:
