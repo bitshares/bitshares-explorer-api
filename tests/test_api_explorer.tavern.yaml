@@ -820,13 +820,12 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc:
-              - 0
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anyint
-              - !anystr
-              - !anyint
+              account_id: !anystr
+              account_name: !anystr
+              referrer: !anystr
+              referrer_rewards_percentage: !anyint
+              lifetime_referrer: !anystr
+              lifetime_referrer_fee_percentage: !anyint
 ---
 test_name: Retrieve /grouped_limit_orders
 stages:

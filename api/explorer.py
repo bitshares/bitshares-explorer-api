@@ -693,15 +693,14 @@ def get_all_referrers(account_id, page=0):
     
     results = []
     for account in accounts:
-        results.append([
-            0, # db_id
-            account['id'],                                  # account_id
-            account['name'],                                # account name
-            account['referrer'],                            # referrer id
-            account['referrer_rewards_percentage'],         # % of reward that goes to referrer
-            account['lifetime_referrer'],                   # lifetime referrer id
-            account['lifetime_referrer_fee_percentage']     #  % of reward that goes to lifetime referrer
-        ])
+        results.append({
+            'account_id': account['id'],
+            'account_name': account['name'],
+            'referrer': account['referrer'],
+            'referrer_rewards_percentage': account['referrer_rewards_percentage'], # % of reward that goes to referrer
+            'lifetime_referrer': account['lifetime_referrer'],
+            'lifetime_referrer_fee_percentage': account['lifetime_referrer_fee_percentage'] #  % of reward that goes to lifetime referrer
+        })
 
     return results
 
