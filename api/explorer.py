@@ -522,7 +522,12 @@ def get_workers_votes():
         worker_name = worker[0]["name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-        workers_votes.append([worker_account_name, id_worker, worker_name] + proxy_votes)
+        workers_votes.append({
+            'worker_account_name': worker_account_name, 
+            'worker_id': id_worker, 
+            'worker_name': worker_name,
+            'top_proxy_votes': proxy_votes
+        })
 
     return workers_votes
 

@@ -581,19 +581,20 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
+              worker_account_name: !anystr
+              worker_id: !anystr
+              worker_name: !anystr
+              top_proxy_votes:
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
 ---
 test_name: Retrieve /committee_votes
 stages:
