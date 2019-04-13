@@ -438,16 +438,16 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc:
-              - id: !anystr
-                last_aslot: !anyint
-                last_confirmed_block_num: !anyint
-                signing_key: !anystr
-                total_missed: !anyint
-                total_votes: !anything
-                url: !anystr
-                vote_id: !anystr
-                witness_account: !anystr
-                witness_account_name: !anystr
+              id: !anystr
+              last_aslot: !anyint
+              last_confirmed_block_num: !anyint
+              signing_key: !anystr
+              total_missed: !anyint
+              total_votes: !anything
+              url: !anystr
+              vote_id: !anystr
+              witness_account: !anystr
+              witness_account_name: !anystr
 ---
 test_name: Retrieve /committee_members
 stages:

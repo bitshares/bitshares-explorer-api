@@ -312,9 +312,9 @@ def get_witnesses():
     for witness in witnesses:
         if witness:
             witness["witness_account_name"] = get_account_name(witness["witness_account"])
-            result.append([witness])
+            result.append(witness)
 
-    result = sorted(result, key=lambda k: int(k[0]['total_votes']))
+    result = sorted(result, key=lambda k: int(k['total_votes']))
     result = result[::-1] # Reverse list.
     return result
 
@@ -492,9 +492,9 @@ def get_witnesses_votes():
 
     witnesses_votes = []
     for witness in witnesses:
-        vote_id =  witness[0]["vote_id"]
-        id_witness = witness[0]["id"]
-        witness_account_name = witness[0]["witness_account_name"]
+        vote_id =  witness["vote_id"]
+        id_witness = witness["id"]
+        witness_account_name = witness["witness_account_name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
         witnesses_votes.append({
