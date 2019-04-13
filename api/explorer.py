@@ -279,14 +279,13 @@ def get_most_active_markets():
         quote_asset = get_asset(m['quote'])
         ticker = get_ticker(m['base'], m['quote'])
         latest_price = float(ticker['latest'])
-        results.append([
-            0, # db_id
-            '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']), # pair
-            0, # quote_asset_db_id
-            latest_price, # price
-            m['volume'] / 10**quote_asset['precision'], # volume
-            m['quote'] # quote_id
-        ])   
+        results.append({
+            'pair':  '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']),
+            'latest_price': latest_price,
+            '24h_volume': m['volume'] / 10**quote_asset['precision'],
+            'quote_id': m['quote'],
+            'base_id': m['base']
+        })   
     
     return results
 
@@ -550,9 +549,9 @@ def get_committee_votes():
 
 def get_top_markets():
     markets = get_most_active_markets()
-    markets.sort(key=lambda a : -a[4]) # sort by volume
+    markets.sort(key=lambda a : -a['24h_volume']) # sort by volume
     top = markets[:7]
-    return [ [m[1], m[4]] for m in top ]
+    return [ [m['pair'], m['24h_volume']] for m in top ]
 
 
 def get_top_smartcoins():
