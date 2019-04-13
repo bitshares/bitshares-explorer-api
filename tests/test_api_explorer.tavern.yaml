@@ -367,13 +367,12 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc:
-              - 0
-              - !anystr
-              - 0
-              - !anyfloat
-              - !anyfloat
-              - !anystr
+            element_desc: &market_description
+              24h_volume: !anyfloat
+              latest_price: !anyfloat
+              pair: !anystr
+              base_id: !anystr
+              quote_id: !anystr
 ---
 test_name: Retrieve /order_book
 stages:
@@ -634,12 +633,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: &market_description 
-              24h_volume: !anyfloat
-              latest_price: !anyfloat
-              pair: !anystr
-              base_id: !anystr
-              quote_id: !anystr
+            element_desc: *market_description 
 ---
 test_name: Retrieve /top_markets
 stages:

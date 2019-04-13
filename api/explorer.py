@@ -238,14 +238,13 @@ def _get_markets(asset_id):
             quote_asset = get_asset(quote_id)
             ticker = get_ticker(base_id, quote_id)
             latest_price = float(ticker['latest'])
-            results.append([
-                0, # db_id
-                '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']), # pair
-                0, # quote_asset_db_id
-                latest_price, # price
-                data['volume'] / 10**quote_asset['precision'], # volume
-                quote_id # quote_id
-            ])
+            results.append({
+                'pair': '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']),
+                'latest_price': latest_price,
+                '24h_volume': data['volume'] / 10**quote_asset['precision'],
+                'quote_id': quote_id,
+                'base_id': base_id
+            })
 
     return results
 
