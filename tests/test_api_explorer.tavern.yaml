@@ -554,18 +554,19 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
+              witness_account_name: !anystr
+              witness_id: !anystr
+              top_proxy_votes:
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
 ---
 test_name: Retrieve /workers_votes
 stages:

@@ -497,7 +497,11 @@ def get_witnesses_votes():
         witness_account_name = witness[0]["witness_account_name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-        witnesses_votes.append([witness_account_name, id_witness] + proxy_votes)
+        witnesses_votes.append({
+            'witness_account_name': witness_account_name, 
+            'witness_id': id_witness,
+            'top_proxy_votes': proxy_votes
+        })
 
     return witnesses_votes
 
