@@ -98,22 +98,20 @@ def get_assets():
         asset = get_asset_and_volume(asset_id)
         holders_count = get_asset_holders_count(asset_id)
         bts_volume += float(asset['volume'])
-        results.append([
-            None, # db id (legacy, no purpose)
-            asset['symbol'], # asset name
-            asset_id, # asset id
-            asset['latest_price'], # price in bts
-            float(asset['volume']) if asset_id != config.CORE_ASSET_ID else bts_volume, # 24h volume
+        results.append({
+            'asset_name': asset['symbol'], # asset name
+            'asset_id': asset_id, # asset id
+            'latest_price': asset['latest_price'], # price in bts
+            '24h_volume': float(asset['volume']) if asset_id != config.CORE_ASSET_ID else bts_volume, # 24h volume
             #float(markets[asset_id][config.CORE_ASSET_ID]['volume']), # 24h volume (from ES) / should be divided by core asset precision
-            asset['mcap'], # market cap
-            _get_asset_type(asset), # type: Core Asset / Smart Asset / User Issued Asset
-            int(asset['current_supply']), # Supply
-            holders_count, #Number of holders
-            '', # Wallet Type (useless value)
-            asset['precision'] # Asset precision
-        ])
+            'market_cap': asset['mcap'], # market cap
+            'asset_type': _get_asset_type(asset), # type: Core Asset / Smart Asset / User Issued Asset
+            'current_supply': int(asset['current_supply']), # Supply
+            'holders_count': holders_count, #Number of holders
+            'precision': asset['precision'] # Asset precision
+        })
 
-    results.sort(key=lambda a : -a[4]) # sort by volume
+    results.sort(key=lambda a : -a['24h_volume']) # sort by volume
     return results
 
 
@@ -555,13 +553,13 @@ def get_top_markets():
 
 
 def get_top_smartcoins():
-    smartcoins = [[a[1], a[4]] for a in get_assets() if a[6] == 'SmartCoin']
+    smartcoins = [[a['asset_name'], a['24h_volume']] for a in get_assets() if a['asset_type'] == 'SmartCoin']
     return smartcoins[:7]
 
 
 @cache.memoize()
 def get_top_uias():
-    uias = [[a[1], a[4]] for a in get_assets() if a[6] == 'User Issued']
+    uias = [[a['asset_name'], a['24h_volume']] for a in get_assets() if a['asset_type'] == 'User Issued']
     return uias[:7]
 
 
@@ -613,13 +611,13 @@ def get_dex_total_volume():
     usd_price = 0
     cny_price = 0
     for a in get_assets():
-        if a[2] != config.CORE_ASSET_ID:
-            volume += a[4]
-        if a[1] == 'USD':
-            usd_price = a[3]
-        if a[1] == 'CNY':
-            cny_price = a[3]
-        market_cap += a[5]
+        if a['asset_id'] != config.CORE_ASSET_ID:
+            volume += a['24h_volume']
+        if a['asset_name'] == 'USD':
+            usd_price = a['latest_price']
+        if a['asset_name'] == 'CNY':
+            cny_price = a['latest_price']
+        market_cap += a['market_cap']
 
     res = {
         "volume_bts": round(volume), 

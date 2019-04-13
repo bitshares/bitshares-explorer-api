@@ -142,17 +142,15 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc:
-              - null
-              - !anystr
-              - !anystr
-              - !anything
-              - !anyfloat
-              - !anything
-              - !anystr
-              - !anyint
-              - !anyint
-              - !anystr
-              - !anyint
+              asset_name: !anystr
+              asset_id: !anystr
+              latest_price: !anything
+              24h_volume: !anyfloat
+              market_cap: !anything
+              asset_type: !anystr
+              current_supply: !anyint
+              holders_count: !anyint
+              precision: !anyint
 ---
 test_name: Retrieve /fees
 stages:
