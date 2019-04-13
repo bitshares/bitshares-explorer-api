@@ -43,8 +43,7 @@ stages:
         operation_id: 1.11.0
     response:
       status_code: 200
-      body:
-        - *operation_description
+      body: *operation_description
 ---
 test_name: Retrieve /es/is_alive
 stages:

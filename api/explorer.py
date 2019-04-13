@@ -63,15 +63,15 @@ def _enrich_operation(operation, ws_client):
 def get_operation(operation_id):
     res = es_wrapper.get_single_operation(operation_id)
     operation = { 
-        "op": res[0]["operation_history"]["op_object"],
-        "op_type": res[0]["operation_type"],
-        "block_num": res[0]["block_data"]["block_num"], 
-        "op_in_trx": res[0]["operation_history"]["op_in_trx"],
-        "result": json.loads(res[0]["operation_history"]["operation_result"]), 
-        "trx_in_block": res[0]["operation_history"]["trx_in_block"],
-        "virtual_op": res[0]["operation_history"]["virtual_op"], 
-        "block_time": res[0]["block_data"]["block_time"],
-        "trx_id": res[0]["block_data"]["trx_id"]
+        "op": res["operation_history"]["op_object"],
+        "op_type": res["operation_type"],
+        "block_num": res["block_data"]["block_num"], 
+        "op_in_trx": res["operation_history"]["op_in_trx"],
+        "result": json.loads(res["operation_history"]["operation_result"]), 
+        "trx_in_block": res["operation_history"]["trx_in_block"],
+        "virtual_op": res["operation_history"]["virtual_op"], 
+        "block_time": res["block_data"]["block_time"],
+        "trx_id": res["block_data"]["trx_id"]
     }
 
     operation = _enrich_operation(operation, bitshares_ws_client)

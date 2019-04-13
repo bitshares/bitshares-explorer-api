@@ -39,7 +39,7 @@ def get_single_operation(operation_id):
 
     response = s.execute()
 
-    return [ hit.to_dict() for hit in response ]
+    return [ hit.to_dict() for hit in response ][0]
 
 
 def is_alive():
