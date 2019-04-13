@@ -681,7 +681,7 @@ def get_referrer_count(account_id):
 
     count, _ = bitshares_es_client.get_accounts_with_referrer(account_id, size=0)
 
-    return [count]
+    return count
 
 
 def get_all_referrers(account_id, page=0):
