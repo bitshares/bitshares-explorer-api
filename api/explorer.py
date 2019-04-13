@@ -551,7 +551,7 @@ def get_top_markets():
     markets = get_most_active_markets()
     markets.sort(key=lambda a : -a['24h_volume']) # sort by volume
     top = markets[:7]
-    return [ [m['pair'], m['24h_volume']] for m in top ]
+    return top
 
 
 def get_top_smartcoins():

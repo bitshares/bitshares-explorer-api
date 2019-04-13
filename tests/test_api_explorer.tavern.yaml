@@ -636,7 +636,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
+            element_desc: &market_description 
               24h_volume: !anyfloat
               latest_price: !anyfloat
               pair: !anystr
@@ -655,9 +655,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
-              - !anystr
-              - !anyfloat
+            element_desc: *market_description
 ---
 test_name: Retrieve /top_smartcoins
 stages:
