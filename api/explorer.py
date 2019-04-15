@@ -20,11 +20,11 @@ def get_header():
 
 @cache.memoize()
 def get_account(account_id):
-    return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])
+    return bitshares_ws_client.request('database', 'get_accounts', [[account_id]])[0]
 
 def get_account_name(account_id):
     account = get_account(account_id)
-    return account[0]['name']
+    return account['name']
 
 @cache.memoize()
 def _get_account_id(account_name):
@@ -60,22 +60,22 @@ def _enrich_operation(operation, ws_client):
 
     return _add_global_informations(operation, ws_client)
 
-def get_operation_full_elastic(operation_id):
+def get_operation(operation_id):
     res = es_wrapper.get_single_operation(operation_id)
     operation = { 
-        "op": res[0]["operation_history"]["op_object"],
-        "op_type": res[0]["operation_type"],
-        "block_num": res[0]["block_data"]["block_num"], 
-        "op_in_trx": res[0]["operation_history"]["op_in_trx"],
-        "result": json.loads(res[0]["operation_history"]["operation_result"]), 
-        "trx_in_block": res[0]["operation_history"]["trx_in_block"],
-        "virtual_op": res[0]["operation_history"]["virtual_op"], 
-        "block_time": res[0]["block_data"]["block_time"],
-        "trx_id": res[0]["block_data"]["trx_id"]
+        "op": res["operation_history"]["op_object"],
+        "op_type": res["operation_type"],
+        "block_num": res["block_data"]["block_num"], 
+        "op_in_trx": res["operation_history"]["op_in_trx"],
+        "result": json.loads(res["operation_history"]["operation_result"]), 
+        "trx_in_block": res["operation_history"]["trx_in_block"],
+        "virtual_op": res["operation_history"]["virtual_op"], 
+        "block_time": res["block_data"]["block_time"],
+        "trx_id": res["block_data"]["trx_id"]
     }
 
     operation = _enrich_operation(operation, bitshares_ws_client)
-    return [ operation ]
+    return operation
 
 def get_accounts():
     core_asset_holders = get_asset_holders('1.3.0', start=0, limit=100)
@@ -83,7 +83,7 @@ def get_accounts():
 
 
 def get_full_account(account_id):
-    account = bitshares_ws_client.request('database', 'get_full_accounts', [[account_id], 0])
+    account = bitshares_ws_client.request('database', 'get_full_accounts', [[account_id], 0])[0][1]
     return account
 
 
@@ -95,33 +95,29 @@ def get_assets():
     markets = bitshares_es_client.get_markets('now-1d', 'now', quote=config.CORE_ASSET_ID)
     bts_volume = 0.0 # BTS volume is the sum of all the others.
     for asset_id in itertools.chain(markets.keys(), [config.CORE_ASSET_ID]):
-        asset = get_asset_and_volume(asset_id)[0]
+        asset = get_asset_and_volume(asset_id)
         holders_count = get_asset_holders_count(asset_id)
         bts_volume += float(asset['volume'])
-        results.append([
-            None, # db id (legacy, no purpose)
-            asset['symbol'], # asset name
-            asset_id, # asset id
-            asset['latest_price'], # price in bts
-            float(asset['volume']) if asset_id != config.CORE_ASSET_ID else bts_volume, # 24h volume
+        results.append({
+            'asset_name': asset['symbol'], # asset name
+            'asset_id': asset_id, # asset id
+            'latest_price': asset['latest_price'], # price in bts
+            '24h_volume': float(asset['volume']) if asset_id != config.CORE_ASSET_ID else bts_volume, # 24h volume
             #float(markets[asset_id][config.CORE_ASSET_ID]['volume']), # 24h volume (from ES) / should be divided by core asset precision
-            asset['mcap'], # market cap
-            _get_asset_type(asset), # type: Core Asset / Smart Asset / User Issued Asset
-            int(asset['current_supply']), # Supply
-            holders_count, #Number of holders
-            '', # Wallet Type (useless value)
-            asset['precision'] # Asset precision
-        ])
+            'market_cap': asset['mcap'], # market cap
+            'asset_type': _get_asset_type(asset), # type: Core Asset / Smart Asset / User Issued Asset
+            'current_supply': int(asset['current_supply']), # Supply
+            'holders_count': holders_count, #Number of holders
+            'precision': asset['precision'] # Asset precision
+        })
 
-    results.sort(key=lambda a : -a[4]) # sort by volume
+    results.sort(key=lambda a : -a['24h_volume']) # sort by volume
     return results
 
 
 def get_fees():
     return bitshares_ws_client.get_global_properties()
 
-def get_asset(asset_id):
-    return [ _get_asset(asset_id) ]
 
 @cache.memoize()
 def _get_asset_id_and_precision(asset_name):
@@ -130,12 +126,12 @@ def _get_asset_id_and_precision(asset_name):
 
 
 @cache.memoize()
-def _get_asset(asset_id_or_name):
+def get_asset(asset_id):
     asset = None
-    if not _is_object(asset_id_or_name):
-        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id_or_name], 0])[0]
+    if not _is_object(asset_id):
+        asset = bitshares_ws_client.request('database', 'lookup_asset_symbols', [[asset_id], 0])[0]
     else:
-        asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id_or_name], 0])[0]
+        asset = bitshares_ws_client.request('database', 'get_assets', [[asset_id], 0])[0]
     
     dynamic_asset_data = bitshares_ws_client.get_object(asset["dynamic_asset_data_id"])
     asset["current_supply"] = dynamic_asset_data["current_supply"]
@@ -151,7 +147,7 @@ def _get_asset(asset_id_or_name):
 
 @cache.memoize()
 def get_asset_and_volume(asset_id):
-    asset = _get_asset(asset_id)
+    asset = get_asset(asset_id)
     
     core_symbol = _get_core_asset_name()
 
@@ -169,7 +165,7 @@ def get_asset_and_volume(asset_id):
         asset['mcap'] = int(asset['current_supply'])
         asset['latest_price'] = 1
 
-    return [asset]
+    return asset
 
 
 def get_block(block_num):
@@ -186,7 +182,7 @@ def _get_volume(base, quote):
 
 
 def get_object(object):
-    return [ bitshares_ws_client.get_object(object) ]
+    return bitshares_ws_client.get_object(object)
 
 def _ensure_asset_id(asset_id):
     if not _is_object(asset_id):
@@ -237,19 +233,18 @@ def _get_markets(asset_id):
 
     results = []
     for (base_id, quotes) in markets.items():
-        base_asset = _get_asset(base_id)
+        base_asset = get_asset(base_id)
         for (quote_id, data) in quotes.items():
-            quote_asset = _get_asset(quote_id)
+            quote_asset = get_asset(quote_id)
             ticker = get_ticker(base_id, quote_id)
             latest_price = float(ticker['latest'])
-            results.append([
-                0, # db_id
-                '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']), # pair
-                0, # quote_asset_db_id
-                latest_price, # price
-                data['volume'] / 10**quote_asset['precision'], # volume
-                quote_id # quote_id
-            ])
+            results.append({
+                'pair': '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']),
+                'latest_price': latest_price,
+                '24h_volume': data['volume'] / 10**quote_asset['precision'],
+                'quote_id': quote_id,
+                'base_id': base_id
+            })
 
     return results
 
@@ -277,18 +272,17 @@ def get_most_active_markets():
 
     results = []
     for m in top_markets:
-        base_asset = _get_asset(m['base'])
-        quote_asset = _get_asset(m['quote'])
+        base_asset = get_asset(m['base'])
+        quote_asset = get_asset(m['quote'])
         ticker = get_ticker(m['base'], m['quote'])
         latest_price = float(ticker['latest'])
-        results.append([
-            0, # db_id
-            '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']), # pair
-            0, # quote_asset_db_id
-            latest_price, # price
-            m['volume'] / 10**quote_asset['precision'], # volume
-            m['quote'] # quote_id
-        ])   
+        results.append({
+            'pair':  '{}/{}'.format(quote_asset['symbol'], base_asset['symbol']),
+            'latest_price': latest_price,
+            '24h_volume': m['volume'] / 10**quote_asset['precision'],
+            'quote_id': m['quote'],
+            'base_id': m['base']
+        })   
     
     return results
 
@@ -318,9 +312,9 @@ def get_witnesses():
     for witness in witnesses:
         if witness:
             witness["witness_account_name"] = get_account_name(witness["witness_account"])
-            result.append([witness])
+            result.append(witness)
 
-    result = sorted(result, key=lambda k: int(k[0]['total_votes']))
+    result = sorted(result, key=lambda k: int(k['total_votes']))
     result = result[::-1] # Reverse list.
     return result
 
@@ -397,15 +391,15 @@ def get_top_proxies():
         if 'follower_count' in holder:
             proxy_amount =  int(holder['balance']) + int(holder['follower_amount'])
             proxy_total_percentage = float(int(proxy_amount) * 100.0/ int(total_votes))
-            proxies.append([
-                holder['owner']['id'],
-                holder['owner']['name'],
-                proxy_amount,
-                holder['follower_count'],
-                proxy_total_percentage
-            ])
+            proxies.append({
+                'id': holder['owner']['id'],
+                'name': holder['owner']['name'],
+                'bts_weight': proxy_amount,
+                'followers': holder['follower_count'],
+                'bts_weight_percentage': proxy_total_percentage
+            })
 
-    proxies = sorted(proxies, key=lambda k: -k[2]) # Reverse amount order
+    proxies = sorted(proxies, key=lambda k: -k['bts_weight']) # Reverse amount order
 
     return proxies
 
@@ -454,7 +448,7 @@ def _get_holders():
             if proxy_id != '1.2.5':
                 if proxy_id not in holders_by_account_id:
                     proxy_without_balance = {
-                        'owner': get_account(proxy_id)[0],
+                        'owner': get_account(proxy_id),
                         'balance': 0,
                         'asset_type': config.CORE_ASSET_ID
                     }
@@ -476,13 +470,12 @@ def get_top_holders():
     holders_without_vote_delegation.sort(key=lambda h : -int(h['balance']))
     top_holders = []
     for holder in holders_without_vote_delegation[:10]:
-        top_holders.append([
-            0,                            # (legacy) database id
-            holder['owner']['id'],        # account id
-            holder['owner']['name'],      # account name
-            int(holder['balance']),       # BTS amount
-            _get_voting_account(holder)   # voting account
-        ]) 
+        top_holders.append({
+            'account_id': holder['owner']['id'],
+            'account_name': holder['owner']['name'],
+            'amount': int(holder['balance']),
+            'voting_account': _get_voting_account(holder)
+        }) 
     return top_holders
 
 
@@ -492,19 +485,23 @@ def _get_formatted_proxy_votes(proxies, vote_id):
 def get_witnesses_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
-    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     witnesses = get_witnesses()
     witnesses = witnesses[:25] # FIXME: Witness number is variable.
 
     witnesses_votes = []
     for witness in witnesses:
-        vote_id =  witness[0]["vote_id"]
-        id_witness = witness[0]["id"]
-        witness_account_name = witness[0]["witness_account_name"]
+        vote_id =  witness["vote_id"]
+        id_witness = witness["id"]
+        witness_account_name = witness["witness_account_name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-        witnesses_votes.append([witness_account_name, id_witness] + proxy_votes)
+        witnesses_votes.append({
+            'witness_account_name': witness_account_name, 
+            'witness_id': id_witness,
+            'top_proxy_votes': proxy_votes
+        })
 
     return witnesses_votes
 
@@ -512,7 +509,7 @@ def get_witnesses_votes():
 def get_workers_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
-    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     workers = get_workers()
     workers = workers[:30]
@@ -525,7 +522,12 @@ def get_workers_votes():
         worker_name = worker[0]["name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-        workers_votes.append([worker_account_name, id_worker, worker_name] + proxy_votes)
+        workers_votes.append({
+            'worker_account_name': worker_account_name, 
+            'worker_id': id_worker, 
+            'worker_name': worker_name,
+            'top_proxy_votes': proxy_votes
+        })
 
     return workers_votes
 
@@ -533,7 +535,7 @@ def get_workers_votes():
 def get_committee_votes():
     proxies = get_top_proxies()
     proxies = proxies[:10]
-    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p[0] for p in proxies ]])
+    proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     committee_members = get_committee_members()
     committee_members = committee_members[:11]
@@ -545,26 +547,30 @@ def get_committee_votes():
         committee_account_name = committee_member[0]["committee_member_account_name"]
         proxy_votes = _get_formatted_proxy_votes(proxies, vote_id)        
 
-        committee_votes.append([committee_account_name, id_committee] + proxy_votes)
+        committee_votes.append({ 
+            'committee_account_name': committee_account_name, 
+            'committee_id': id_committee,
+            'top_proxy_votes': proxy_votes
+        })
 
     return committee_votes
 
 
 def get_top_markets():
     markets = get_most_active_markets()
-    markets.sort(key=lambda a : -a[4]) # sort by volume
+    markets.sort(key=lambda a : -a['24h_volume']) # sort by volume
     top = markets[:7]
-    return [ [m[1], m[4]] for m in top ]
+    return top
 
 
 def get_top_smartcoins():
-    smartcoins = [[a[1], a[4]] for a in get_assets() if a[6] == 'SmartCoin']
+    smartcoins = [a for a in get_assets() if a['asset_type'] == 'SmartCoin']
     return smartcoins[:7]
 
 
 @cache.memoize()
 def get_top_uias():
-    uias = [[a[1], a[4]] for a in get_assets() if a[6] == 'User Issued']
+    uias = [a for a in get_assets() if a['asset_type'] == 'User Issued']
     return uias[:7]
 
 
@@ -582,7 +588,7 @@ def get_last_block_number():
     return dynamic_global_properties["head_block_number"]
 
 
-def get_account_history_pager_elastic(account_id, page):
+def get_account_history(account_id, page):
     account_id = _get_account_id(account_id)
 
     from_ = int(page) * 20
@@ -596,7 +602,7 @@ def get_account_history_pager_elastic(account_id, page):
             "block_num": op["block_data"]["block_num"],
             "id": op["account_history"]["operation_id"],
             "op_in_trx": op["operation_history"]["op_in_trx"],
-            "result": op["operation_history"]["operation_result"],
+            "result": json.loads(op["operation_history"]["operation_result"]),
             "timestamp": op["block_data"]["block_time"],
             "trx_in_block": op["operation_history"]["trx_in_block"],
             "virtual_op": op["operation_history"]["virtual_op"]
@@ -616,13 +622,13 @@ def get_dex_total_volume():
     usd_price = 0
     cny_price = 0
     for a in get_assets():
-        if a[2] != config.CORE_ASSET_ID:
-            volume += a[4]
-        if a[1] == 'USD':
-            usd_price = a[3]
-        if a[1] == 'CNY':
-            cny_price = a[3]
-        market_cap += a[5]
+        if a['asset_id'] != config.CORE_ASSET_ID:
+            volume += a['24h_volume']
+        if a['asset_name'] == 'USD':
+            usd_price = a['latest_price']
+        if a['asset_name'] == 'CNY':
+            cny_price = a['latest_price']
+        market_cap += a['market_cap']
 
     res = {
         "volume_bts": round(volume), 
@@ -646,7 +652,7 @@ def get_daily_volume_dex_dates():
 @cache.memoize(86400) # 1d TTL
 def get_daily_volume_dex_data():
     daily_volumes = bitshares_es_client.get_daily_volume('now-60d', 'now')
-    core_asset_precision = 10 ** _get_asset(config.CORE_ASSET_ID)['precision']
+    core_asset_precision = 10 ** get_asset(config.CORE_ASSET_ID)['precision']
 
     results = [ int(daily_volume['volume'] / core_asset_precision) for daily_volume in daily_volumes]
     return results
@@ -675,7 +681,7 @@ def get_referrer_count(account_id):
 
     count, _ = bitshares_es_client.get_accounts_with_referrer(account_id, size=0)
 
-    return [count]
+    return count
 
 
 def get_all_referrers(account_id, page=0):
@@ -687,15 +693,14 @@ def get_all_referrers(account_id, page=0):
     
     results = []
     for account in accounts:
-        results.append([
-            0, # db_id
-            account['id'],                                  # account_id
-            account['name'],                                # account name
-            account['referrer'],                            # referrer id
-            account['referrer_rewards_percentage'],         # % of reward that goes to referrer
-            account['lifetime_referrer'],                   # lifetime referrer id
-            account['lifetime_referrer_fee_percentage']     #  % of reward that goes to lifetime referrer
-        ])
+        results.append({
+            'account_id': account['id'],
+            'account_name': account['name'],
+            'referrer': account['referrer'],
+            'referrer_rewards_percentage': account['referrer_rewards_percentage'], # % of reward that goes to referrer
+            'lifetime_referrer': account['lifetime_referrer'],
+            'lifetime_referrer_fee_percentage': account['lifetime_referrer_fee_percentage'] #  % of reward that goes to lifetime referrer
+        })
 
     return results
 

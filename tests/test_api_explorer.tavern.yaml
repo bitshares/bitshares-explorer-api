@@ -38,7 +38,7 @@ stages:
     response:
       status_code: 200
       body:
-      - id: !anystr
+        id: !anystr
         name: !anystr
         referrer: !anystr
 ---
@@ -62,14 +62,14 @@ test_name: Retrieve /operation
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/operation_full_elastic"
+      url: "{host}/operation"
       method: GET
       params:
         operation_id: 1.11.0
     response:
       status_code: 200
       body:
-      - accounts_registered_this_interval: !anyint
+        accounts_registered_this_interval: !anyint
         block_num: !anyint
         block_time: !anystr
         bts_market_cap: !anyint
@@ -121,15 +121,13 @@ stages:
     response:
       status_code: 200
       body:
-        - 
-          - 1.2.0
-          - account:
-              active: !anything
-              id: !anystr
-              name: !anystr
-            assets: !anything
-            balances: !anything
-            statistics: !anything
+        account:
+          active: !anything
+          id: !anystr
+          name: !anystr
+        assets: !anything
+        balances: !anything
+        statistics: !anything
 ---
 test_name: Retrieve /assets
 stages:
@@ -143,18 +141,16 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc:
-              - null
-              - !anystr
-              - !anystr
-              - !anything
-              - !anyfloat
-              - !anything
-              - !anystr
-              - !anyint
-              - !anyint
-              - !anystr
-              - !anyint
+            element_desc: &asset_description
+              asset_name: !anystr
+              asset_id: !anystr
+              latest_price: !anything
+              24h_volume: !anyfloat
+              market_cap: !anything
+              asset_type: !anystr
+              current_supply: !anyint
+              holders_count: !anyint
+              precision: !anyint
 ---
 test_name: Retrieve /fees
 stages:
@@ -170,11 +166,11 @@ stages:
         active_witnesses: !anything
         parameters: !anything
 ---
-test_name: Retrieve /account_history_pager_elastic
+test_name: Retrieve /account_history
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/account_history_pager_elastic"
+      url: "{host}/account_history"
       method: GET
       params:
         account_id: 1.2.0
@@ -196,50 +192,50 @@ stages:
               trx_in_block: !anyint
               virtual_op: !anyint            
 ---
-test_name: Retrieve /get_asset
+test_name: Retrieve /asset
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset"
+      url: "{host}/asset"
       method: GET
       params:
         asset_id: BTS
     response:
       status_code: 200
       body:
-        - id: !anystr
-          issuer: !anystr
-          issuer_name: !anystr
-          precision: !anyint
-          symbol: !anystr
-          options: !anything
+        id: !anystr
+        issuer: !anystr
+        issuer_name: !anystr
+        precision: !anyint
+        symbol: !anystr
+        options: !anything
 ---
-test_name: Retrieve /get_asset_and_volume
+test_name: Retrieve /asset_and_volume
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset_and_volume"
+      url: "{host}/asset_and_volume"
       method: GET
       params:
         asset_id: BTS
     response:
       status_code: 200
       body:
-        - id: !anystr
-          issuer: !anystr
-          issuer_name: !anystr
-          precision: !anyint
-          symbol: !anystr
-          options: !anything
-          latest_price: !anyint
-          mcap: !anyint
-          volume: !anyint
+        id: !anystr
+        issuer: !anystr
+        issuer_name: !anystr
+        precision: !anyint
+        symbol: !anystr
+        options: !anything
+        latest_price: !anyint
+        mcap: !anyint
+        volume: !anyint
 ---
-test_name: Retrieve /get_block
+test_name: Retrieve /block
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_block"
+      url: "{host}/block"
       method: GET
       params:
         block_num: 1
@@ -254,11 +250,11 @@ stages:
         witness: !anystr
         witness_signature: !anystr
 ---
-test_name: Retrieve /get_ticker
+test_name: Retrieve /ticker
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_ticker"
+      url: "{host}/ticker"
       method: GET
       params:
         base: USD
@@ -276,28 +272,28 @@ stages:
         quote_volume: !anystr
         time: !anystr
 ---
-test_name: Retrieve /get_object
+test_name: Retrieve /object
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_object"
+      url: "{host}/object"
       method: GET
       params:
         object: 1.3.0
     response:
       status_code: 200
       body:
-        - id: !anystr
-          issuer: !anystr
-          precision: !anyint
-          symbol: !anystr
-          options: !anything
+        id: !anystr
+        issuer: !anystr
+        precision: !anyint
+        symbol: !anystr
+        options: !anything
 ---
-test_name: Retrieve /get_asset_holders_count
+test_name: Retrieve /asset_holders_count
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset_holders_count"
+      url: "{host}/asset_holders_count"
       method: GET
       params:
         asset_id: BTS
@@ -309,11 +305,11 @@ stages:
           extra_kwargs:
             unique_value: !anyint
 ---
-test_name: Retrieve /get_asset_holders
+test_name: Retrieve /asset_holders
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_asset_holders"
+      url: "{host}/asset_holders"
       method: GET
       params:
         asset_id: BTS
@@ -330,11 +326,11 @@ stages:
               amount: !anystr
               name: !anystr
 ---
-test_name: Retrieve /get_workers
+test_name: Retrieve /workers
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_workers"
+      url: "{host}/workers"
       method: GET
     response:
       status_code: 200
@@ -357,11 +353,11 @@ stages:
                 work_end_date: !anystr
                 worker: !anything
 ---
-test_name: Retrieve /get_markets
+test_name: Retrieve /markets
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_markets"
+      url: "{host}/markets"
       method: GET
       params:
         asset_id: BTS
@@ -371,19 +367,18 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc:
-              - 0
-              - !anystr
-              - 0
-              - !anyfloat
-              - !anyfloat
-              - !anystr
+            element_desc: &market_description
+              24h_volume: !anyfloat
+              latest_price: !anyfloat
+              pair: !anystr
+              base_id: !anystr
+              quote_id: !anystr
 ---
-test_name: Retrieve /get_order_book
+test_name: Retrieve /order_book
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_order_book"
+      url: "{host}/order_book"
       method: GET
       params:
         base: BTS
@@ -403,11 +398,11 @@ stages:
         base: BTS
         quote: CNY
 ---
-test_name: Retrieve /get_margin_positions
+test_name: Retrieve /margin_positions
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_margin_positions"
+      url: "{host}/margin_positions"
       method: GET
       params:
         account_id: 1.2.0
@@ -430,11 +425,11 @@ stages:
               debt: !anyint
               id: !anystr
 ---
-test_name: Retrieve /get_witnesses
+test_name: Retrieve /witnesses
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_witnesses"
+      url: "{host}/witnesses"
       method: GET
     response:
       status_code: 200
@@ -443,22 +438,22 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc:
-              - id: !anystr
-                last_aslot: !anyint
-                last_confirmed_block_num: !anyint
-                signing_key: !anystr
-                total_missed: !anyint
-                total_votes: !anything
-                url: !anystr
-                vote_id: !anystr
-                witness_account: !anystr
-                witness_account_name: !anystr
+              id: !anystr
+              last_aslot: !anyint
+              last_confirmed_block_num: !anyint
+              signing_key: !anystr
+              total_missed: !anyint
+              total_votes: !anything
+              url: !anystr
+              vote_id: !anystr
+              witness_account: !anystr
+              witness_account_name: !anystr
 ---
-test_name: Retrieve /get_committee_members
+test_name: Retrieve /committee_members
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_committee_members"
+      url: "{host}/committee_members"
       method: GET
     response:
       status_code: 200
@@ -522,11 +517,11 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anyint
-              - !anyint
-              - !anyfloat
+              id: !anystr
+              name: !anystr
+              bts_weight: !anyint
+              followers: !anyint
+              bts_weight_percentage: !anyfloat
 ---
 test_name: Retrieve /top_holders
 stages:
@@ -541,11 +536,10 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - 0
-              - !anystr
-              - !anystr
-              - !anyint
-              - !anystr
+              account_id: !anystr
+              account_name: !anystr
+              amount: !anyint
+              voting_account: !anystr
 ---
 test_name: Retrieve /witnesses_votes
 stages:
@@ -560,18 +554,19 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
+              witness_account_name: !anystr
+              witness_id: !anystr
+              top_proxy_votes:
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
 ---
 test_name: Retrieve /workers_votes
 stages:
@@ -586,19 +581,20 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
+              worker_account_name: !anystr
+              worker_id: !anystr
+              worker_name: !anystr
+              top_proxy_votes:
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
 ---
 test_name: Retrieve /committee_votes
 stages:
@@ -613,18 +609,33 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc: 
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anystr
+              committee_account_name: !anystr
+              committee_id: !anystr
+              top_proxy_votes:
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+                - !anystr
+---
+test_name: Retrieve /most_active_markets
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/most_active_markets"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc: *market_description 
 ---
 test_name: Retrieve /top_markets
 stages:
@@ -638,9 +649,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
-              - !anystr
-              - !anyfloat
+            element_desc: *market_description
 ---
 test_name: Retrieve /top_smartcoins
 stages:
@@ -654,9 +663,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
-              - !anystr
-              - !anyfloat
+            element_desc: *asset_description
 ---
 test_name: Retrieve /top_uias
 stages:
@@ -670,9 +677,7 @@ stages:
         $ext:
           function: tests.util:validate_list_of
           extra_kwargs:
-            element_desc: 
-              - !anystr
-              - !anyfloat
+            element_desc: *asset_description
 ---
 test_name: Retrieve /lookup_accounts
 stages:
@@ -709,11 +714,11 @@ stages:
             element_desc: 
               - !anystr
 ---
-test_name: Retrieve /getlastblocknumbher
+test_name: Retrieve /last_block_number
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/getlastblocknumbher"
+      url: "{host}/last_block_number"
       method: GET
     response:
       status_code: 200
@@ -723,11 +728,11 @@ stages:
           extra_kwargs:
             unique_value: !anyint
 ---
-test_name: Retrieve /get_dex_total_volume
+test_name: Retrieve /dex_total_volume
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_dex_total_volume"
+      url: "{host}/dex_total_volume"
       method: GET
     response:
       status_code: 200
@@ -767,11 +772,11 @@ stages:
           extra_kwargs:
             element_desc: !anyint
 ---
-test_name: Retrieve /get_all_asset_holders
+test_name: Retrieve /all_asset_holders
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_all_asset_holders"
+      url: "{host}/all_asset_holders"
       method: GET
       params:
         asset_id: USD
@@ -797,13 +802,16 @@ stages:
     response:
       status_code: 200
       body:
-        - !anyint
+        $ext:
+          function: tests.util:validate_unique_value
+          extra_kwargs:
+            unique_value: !anyint
 ---
-test_name: Retrieve /get_all_referrers
+test_name: Retrieve /all_referrers
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_all_referrers"
+      url: "{host}/all_referrers"
       method: GET
       params:
         account_id: 2.2.0
@@ -815,19 +823,18 @@ stages:
           function: tests.util:validate_list_of
           extra_kwargs:
             element_desc:
-              - 0
-              - !anystr
-              - !anystr
-              - !anystr
-              - !anyint
-              - !anystr
-              - !anyint
+              account_id: !anystr
+              account_name: !anystr
+              referrer: !anystr
+              referrer_rewards_percentage: !anyint
+              lifetime_referrer: !anystr
+              lifetime_referrer_fee_percentage: !anyint
 ---
-test_name: Retrieve /get_grouped_limit_orders
+test_name: Retrieve /grouped_limit_orders
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_grouped_limit_orders"
+      url: "{host}/grouped_limit_orders"
       method: GET
       params:
         base: BTS

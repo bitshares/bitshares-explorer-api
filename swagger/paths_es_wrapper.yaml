@@ -1,5 +1,5 @@
 paths:
-  "/get_account_history":
+  "/es/account_history":
     get:
       description: Get all operations in history with pager, similar to bitshares node call but with fullter features like search by date, filter by operation and others.
       operationId: api.es_wrapper.get_account_history
@@ -66,7 +66,7 @@ paths:
       tags:
         - wrapper
 
-  "/get_single_operation":
+  "/es/single_operation":
     get:
       description: Get a single operation by the operation ID.
       operationId: api.es_wrapper.get_single_operation
@@ -85,7 +85,7 @@ paths:
       tags:
         - wrapper
 
-  "/is_alive":
+  "/es/is_alive":
     get:
       description: Queries the latest head block and gives synchronization status of the elastic search database
       operationId: api.es_wrapper.is_alive
@@ -97,7 +97,7 @@ paths:
       tags:
         - wrapper
 
-  "/get_trx":
+  "/es/trx":
     get:
       description: Get the operations inside a transaction hash.
       operationId: api.es_wrapper.get_trx

@@ -1,9 +1,9 @@
 ---
-test_name: Retrieve /get_account_history
+test_name: Retrieve /es/account_history
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_account_history"
+      url: "{host}/es/account_history"
       method: GET
       params:
         account_id: 1.2.0
@@ -33,24 +33,23 @@ stages:
           operation_type: !anyint
         - *operation_description
 ---
-test_name: Retrieve /get_single_operation
+test_name: Retrieve /es/single_operation
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_single_operation"
+      url: "{host}/es/single_operation"
       method: GET
       params:
         operation_id: 1.11.0
     response:
       status_code: 200
-      body:
-        - *operation_description
+      body: *operation_description
 ---
-test_name: Retrieve /is_alive
+test_name: Retrieve /es/is_alive
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/is_alive"
+      url: "{host}/es/is_alive"
       method: GET
     response:
       status_code: 200
@@ -61,11 +60,11 @@ stages:
         server_time: !anystr
         status: ok
 ---
-test_name: Retrieve /get_trx
+test_name: Retrieve /es/trx
 stages:
   - name: Make sure we have the right content
     request:
-      url: "{host}/get_trx"
+      url: "{host}/es/trx"
       method: GET
       params:
         trx: 738be2bd22e2da31d587d281ea7ee9bd02b9dbf0
