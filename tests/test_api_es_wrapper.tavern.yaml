@@ -1,0 +1,77 @@
+---
+test_name: Retrieve /get_account_history
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_account_history"
+      method: GET
+      params:
+        account_id: 1.2.0
+        size: 2
+    response:
+      status_code: 200
+      body:
+        - &operation_description
+          account_history:
+            account: !anystr
+            id: !anystr
+            next: !anystr
+            operation_id: !anystr
+            sequence: !anyint
+          block_data:
+            block_num: !anyint
+            block_time: !anystr
+            trx_id: !anystr
+          operation_history:
+            op: !anystr
+            op_in_trx: !anyint
+            op_object: !anything
+            operation_result: !anystr
+            trx_in_block: !anyint
+            virtual_op: !anyint
+          operation_id_num: !anyint
+          operation_type: !anyint
+        - *operation_description
+---
+test_name: Retrieve /get_single_operation
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_single_operation"
+      method: GET
+      params:
+        operation_id: 1.11.0
+    response:
+      status_code: 200
+      body:
+        - *operation_description
+---
+test_name: Retrieve /is_alive
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/is_alive"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        deltatime: !anyfloat
+        head_block_time: !anystr
+        head_block_timestamp: !anyfloat
+        server_time: !anystr
+        status: ok
+---
+test_name: Retrieve /get_trx
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/get_trx"
+      method: GET
+      params:
+        trx: 738be2bd22e2da31d587d281ea7ee9bd02b9dbf0
+        size: 2
+    response:
+      status_code: 200
+      body:
+        - *operation_description
+        - *operation_description

@@ -7,11 +7,20 @@ http://185.208.208.184:5000/apidocs/
 Index:
 
 - [BitShares Explorer REST API](#bitshares-explorer-rest-api)
-  - [Installation](#installation)
-    - [Manual](#manual)
-      - [Install ElasticSearch](#install-elasticsearch)
-      - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
-      - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
+    - [Installation](#installation)
+        - [Manual](#manual)
+            - [Install ElasticSearch](#install-elasticsearch)
+            - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
+            - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
+            - [Simple running](#simple-running)
+            - [Nginx and uwsgi](#nginx-and-uwsgi)
+            - [Domain setup and SSL](#domain-setup-and-ssl)
+        - [Docker](#docker)
+    - [Usage](#usage)
+        - [Swagger](#swagger)
+        - [Profiler](#profiler)
+        - [Open Explorer](#open-explorer)
+        - [Development](#development)
 
 ## Installation
 
@@ -275,10 +284,31 @@ All versions of open-explorer uses this backend to get data.
 
 ### Development
 
-Run tests:
+Run all tests:
 
 ```
 PYTHONPATH=. pytest
 ```
+
+This will also run API tests (using [Tavern](https://taverntesting.github.io/)), that needs an local server to run, so make sure your development server is started.
+
+To run one specific test:
+
+```
+PYTHONPATH=. pytest -k test_ws_request
+```
+
+Or for API tests:
+
+```
+ PYTHONPATH=. py.test tests/test_api_explorer.tavern.yaml -k get_asset_holders_count
+ ```
+
+You can run API tests on a non localhost server using the command:
+
+```
+ PYTHONPATH=. py.test tavern-global-cfg=your_customized_environment.yaml tests/test_api_explorer.tavern.yaml
+ ```
+ See `tests/local_urls.yaml` to see how to define a new environment.
 
 And for non regression see `non_reg/README.md`

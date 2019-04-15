@@ -1,0 +1,188 @@
+---
+test_name: Retrieve /config
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/config"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        supported_resolutions:
+            - '1'
+            - '5'
+            - '15'
+            - '30'
+            - '60'
+            - '240'
+            - 1D
+        supports_group_request: false
+        supports_marks: false
+        supports_search: true
+        supports_time: true
+---
+test_name: Retrieve /symbols
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/symbols"
+      method: GET
+      params:
+        symbol: USD_CNY
+    response:
+      status_code: 200
+      body:
+        currency_code: ''
+        data_status: ''
+        description: USD/CNY
+        exchange: ''
+        expiration_date: ''
+        expired: ''
+        force_session_rebuild: ''
+        fractional: false
+        has_daily: true
+        has_empty_bars: true
+        has_intraday: true
+        has_no_volume: false
+        has_seconds: false
+        has_weekly_and_monthly: false
+        industry: ''
+        intraday_multipliers: ''
+        listed_exchange: ''
+        minmov: 1
+        minmove2: 0
+        name: USD_CNY
+        pricescale: 10000
+        seconds_multipliers: ''
+        sector: ''
+        session: 24x7
+        supported_resolutions:
+            - '1'
+            - '5'
+            - '15'
+            - '30'
+            - '60'
+            - '240'
+            - 1D
+        ticker: USD_CNY
+        timezone: Europe/London
+        type: ''
+        volume_precision: ''
+---
+test_name: Retrieve /search
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/search"
+      method: GET
+      params:
+        query: USD
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              description: !anystr
+              exchange: !anystr
+              full_name: !anystr
+              symbol: !anystr
+              ticker: !anystr
+              type: !anystr
+---
+test_name: Retrieve /history
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/history"
+      method: GET
+      params:
+        symbol: USD_CNY
+        from: 1513092731
+        to: 1513956731
+        resolution: D
+    response:
+      status_code: 200
+      body:
+        c:
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+        h:
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+        l:
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+        o:
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+          - !anyfloat
+        s: ok
+        t:
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+        v:
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+          - !anyint
+---
+test_name: Retrieve /time
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/time"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_unique_value
+          extra_kwargs:
+            unique_value: !anystr
