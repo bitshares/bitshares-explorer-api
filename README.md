@@ -3,6 +3,7 @@
 BitShares Explorer REST API is the backend service of the BitShares explorer that retrieve the infotmation from the blockchain.  
 
 http://185.208.208.184:5000/apidocs/
+
 https://explorer.bitshares-kibana.info/apidocs/
 
 Index:
@@ -255,6 +256,7 @@ There are a lot of ways and application for this collection of API calls, at the
 ### Swagger
 
 http://185.208.208.184:5000/apidocs/
+
 https://explorer.bitshares-kibana.info/apidocs/
 
 Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
