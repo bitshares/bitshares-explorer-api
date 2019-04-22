@@ -13,9 +13,9 @@ def get_account_history(account_id=None, operation_type=None, from_=0, size=10,
 
     q = Q()
 
-    if account_id:
+    if account_id and account_id != '':
         q = q & Q("match", account_history__account=account_id)
-    if operation_type:
+    if operation_type and operation_type != -1:
         q = q & Q("match", operation_type=operation_type)
 
     range_query = Q("range", block_data__block_time={'gte': from_date, 'lte': to_date})
