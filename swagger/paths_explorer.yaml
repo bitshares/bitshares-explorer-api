@@ -692,7 +692,7 @@ paths:
       parameters:
         - in: query
           name: account_id
-          default: 2.2.0
+          default: 1.2.0
           type: string
           required: true
           description: account id or name
