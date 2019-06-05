@@ -53,3 +53,6 @@ CORE_ASSET_ID = '1.3.0'
 
 TESTNET = 0 # 0 = not in the testnet, 1 = testnet
 CORE_ASSET_SYMBOL_TESTNET = 'TEST'
+
+# Choose which APIs to expose, default to all.
+#EXPOSED_APIS = ['explorer', 'es_wrapper', 'udf']

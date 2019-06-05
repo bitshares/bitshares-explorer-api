@@ -13,13 +13,19 @@ CORS(app.app)
 from services.cache import cache
 cache.init_app(app.app)
 
+import config
 from specsynthase.specbuilder import SpecBuilder
 import glob
 from os import path
 
 spec = SpecBuilder()
-for spec_file in glob.glob(path.join(path.dirname(__file__), 'swagger/*')):
-    spec.add_spec(spec_file)
+if not 'EXPOSED_APIS' in dir(config) or len(config.EXPOSED_APIS) == 0:
+    for spec_file in glob.glob(path.join(path.dirname(__file__), 'swagger/*')):
+        spec.add_spec(spec_file)
+else:
+    spec.add_spec(path.join(path.dirname(__file__), 'swagger/api.yaml'))
+    for api in config.EXPOSED_APIS:
+        spec.add_spec(path.join(path.dirname(__file__), 'swagger/paths_{}.yaml'.format(api)))   
 app.add_api(spec)
 
 import services.profiler
