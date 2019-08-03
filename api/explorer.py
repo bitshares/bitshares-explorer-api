@@ -1,6 +1,8 @@
 import itertools
 import datetime
 import json
+from multiprocessing import Pool
+from functools import partial
 from services.bitshares_websocket_client import client as bitshares_ws_client
 from services.bitshares_elasticsearch_client import client as bitshares_es_client
 from services.cache import cache
@@ -381,7 +383,8 @@ def get_market_chart_data(base, quote):
 
     return data
 
-def get_top_proxies():
+@cache.memoize()
+def _get_all_proxies():
     holders = _get_holders()
     
     total_votes = reduce(lambda acc, h: acc + int(h['balance']), holders, 0)
@@ -403,12 +406,23 @@ def get_top_proxies():
 
     return proxies
 
+def get_top_proxies(start=0, limit=10):
+    proxies = _get_all_proxies()
+    return proxies[start:start+limit]
+
+def get_proxy_count():
+    proxies = _get_all_proxies()
+    return len(proxies)
+
 def _get_accounts_by_chunks_via_es(account_ids, chunk_size=1000):
-    all_accounts = []
-    for i in xrange(0, len(account_ids), chunk_size):
-        accounts = bitshares_es_client.get_accounts(account_ids[i:i+chunk_size], size=chunk_size)
-        all_accounts.extend(accounts)
-    return all_accounts
+    f = partial(_get_accounts_chunck_via_es, account_ids, chunk_size)
+    pool = Pool()
+    accounts = pool.map(f, xrange(0, len(account_ids), chunk_size))
+    flattened_accounts = list(itertools.chain.from_iterable(accounts))
+    return flattened_accounts
+
+def _get_accounts_chunck_via_es(account_ids, chunk_size, i):
+    return bitshares_es_client.get_accounts(account_ids[i:i+chunk_size], size=chunk_size)
 
 def _get_accounts_by_chunks_via_ws(account_ids, chunk_size=1000):
     all_accounts = []
@@ -484,7 +498,6 @@ def _get_formatted_proxy_votes(proxies, vote_id):
 
 def get_witnesses_votes():
     proxies = get_top_proxies()
-    proxies = proxies[:10]
     proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     witnesses = get_witnesses()
@@ -508,7 +521,6 @@ def get_witnesses_votes():
 
 def get_workers_votes():
     proxies = get_top_proxies()
-    proxies = proxies[:10]
     proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     workers = get_workers()
@@ -534,7 +546,6 @@ def get_workers_votes():
 
 def get_committee_votes():
     proxies = get_top_proxies()
-    proxies = proxies[:10]
     proxies = bitshares_ws_client.request('database', 'get_objects', [[ p['id'] for p in proxies ]])
 
     committee_members = get_committee_members()

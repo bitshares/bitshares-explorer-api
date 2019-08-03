@@ -523,6 +523,20 @@ stages:
               followers: !anyint
               bts_weight_percentage: !anyfloat
 ---
+test_name: Retrieve /proxy_count
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/proxy_count"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_unique_value
+          extra_kwargs:
+            unique_value: !anyint
+---
 test_name: Retrieve /top_holders
 stages:
   - name: Make sure we have the right content
