@@ -21,7 +21,13 @@ paths:
           default: 0
           type: integer
           required: false
-          description: Record to start getting results
+          description: Record to start getting results. If more than 10000 results, use search_after instead.
+        - in: query
+          name: search_after
+          default: ''
+          type: string
+          required: false
+          description: Start search after this value, should match sort_by type. Multiple fields could be provided separated by a coma. This will take precedence of the from_ paremeter.
         - in: query
           name: size
           default: 10
@@ -42,10 +48,10 @@ paths:
           description: End date range
         - in: query
           name: sort_by
-          default: "-block_data.block_time"
+          default: "-operation_id_num"
           type: string
           required: false
-          description: Order by an output field
+          description: Order by an output field, multiple fields could be provided separated by a coma
         - in: query
           name: type
           default: "data"

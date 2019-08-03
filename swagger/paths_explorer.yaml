@@ -139,8 +139,14 @@ paths:
           name: page
           default: 0
           type: integer
-          required: true
-          description: the page
+          required: false
+          description: the page. Fails if more than 10000 results, use search_after instead.
+        - in: query
+          name: search_after
+          default: ''
+          type: string
+          required: false
+          description: the operation id to search the result from. This will takes precedence over the page parameter if provided.
       responses:
         '200':
           description: operations of account by page
