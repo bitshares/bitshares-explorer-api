@@ -99,8 +99,8 @@ stages:
       method: GET
       params:
         symbol: USD_CNY
-        from: 1513092731
-        to: 1513956731
+        from: 1532451252
+        to: 1563555312
         resolution: D
     response:
       status_code: 200
