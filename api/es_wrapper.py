@@ -3,16 +3,16 @@ from services.bitshares_elasticsearch_client import es
 from elasticsearch.exceptions import NotFoundError
 from datetime import datetime, timedelta
 
-def get_account_history(account_id=None, operation_type=None, size=10, 
+def get_account_history(account_id=None, operation_type=None, from_=0, size=10, 
                         from_date='2015-10-10', to_date='now', sort_by='-operation_id_num',
                         search_after=None, type='data', agg_field='operation_type'):
     s = Search(using=es, index="bitshares-*")
     if type == "data":
         s = s.extra(size=size)
-        print(search_after)
         if search_after and search_after != '':
-            print(search_after)
             s = s.extra(search_after=search_after.split(','))
+        else:
+            s = s.extra(**{ "from": from_ })
 
     q = Q()
 

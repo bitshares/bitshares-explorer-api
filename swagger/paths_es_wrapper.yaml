@@ -17,11 +17,17 @@ paths:
           default: -1
           description: 1-44 Operation type
         - in: query
+          name: from_
+          default: 0
+          type: integer
+          required: false
+          description: Record to start getting results. If more than 10000 results, use search_after instead.
+        - in: query
           name: search_after
           default: ''
           type: string
           required: false
-          description: Start search after this value, should match sort_by type. Multiple fields could be provided separated by a coma.
+          description: Start search after this value, should match sort_by type. Multiple fields could be provided separated by a coma. This will take precedence of the from_ paremeter.
         - in: query
           name: size
           default: 10

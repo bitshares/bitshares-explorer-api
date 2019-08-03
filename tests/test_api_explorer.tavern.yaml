@@ -174,7 +174,7 @@ stages:
       method: GET
       params:
         account_id: 1.2.0
-        search_after: 1.11.0
+        page: 0
     response:
       status_code: 200
       body:
