@@ -2,27 +2,26 @@
 
 BitShares Explorer REST API is the backend service of the BitShares explorer that retrieve the infotmation from the blockchain.  
 
-http://185.208.208.184:5000/apidocs/
+[http://185.208.208.184:5000/apidocs/](http://185.208.208.184:5000/apidocs/)
 
-https://explorer.bitshares-kibana.info/apidocs/
+[https://explorer.bitshares-kibana.info/apidocs/](https://explorer.bitshares-kibana.info/apidocs/)
 
 Index:
 
 - [BitShares Explorer REST API](#bitshares-explorer-rest-api)
-    - [Installation](#installation)
-        - [Manual](#manual)
-            - [Install ElasticSearch](#install-elasticsearch)
-            - [Install a BitShares node with requirements.](#install-a-bitshares-node-with-requirements)
-            - [Install BitShares Explorer API and dependencies.](#install-bitshares-explorer-api-and-dependencies)
-            - [Simple running](#simple-running)
-            - [Nginx and uwsgi](#nginx-and-uwsgi)
-            - [Domain setup and SSL](#domain-setup-and-ssl)
-        - [Docker](#docker)
-    - [Usage](#usage)
-        - [Swagger](#swagger)
-        - [Profiler](#profiler)
-        - [Open Explorer](#open-explorer)
-        - [Development](#development)
+  - [Installation](#installation)
+    - [Manual](#manual)
+      - [Install ElasticSearch](#install-elasticsearch)
+      - [Install a BitShares node with requirements](#install-a-bitshares-node-with-requirements)
+      - [Install BitShares Explorer API and dependencies](#install-bitshares-explorer-api-and-dependencies)
+      - [Simple running](#simple-running)
+      - [Nginx and uwsgi](#nginx-and-uwsgi)
+    - [Docker](#docker)
+  - [Usage](#usage)
+    - [Swagger](#swagger)
+    - [Profiler](#profiler)
+    - [Open Explorer](#open-explorer)
+    - [Development](#development)
 
 ## Installation
 
@@ -34,7 +33,7 @@ Step by step on everything needed to have your own BitShares Explorer API up and
 
 #### Install ElasticSearch
 
-For full elasticsearch installation and usage tutorial please go to: https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin
+For full elasticsearch installation and usage tutorial please go to: [https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin](https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin).
 
 The following is a  quick installation guide for elasticsearch in Ubuntu.
 
@@ -88,15 +87,15 @@ Stop the program with ctrl-c, daemonize and forget:
     tcp6       0      0 ::1:9200                :::*                    LISTEN     
     elastic@oxarbitrage:~$ 
 
-#### Install a BitShares node with requirements.
+#### Install a BitShares node with requirements
 
 This API backend connects to a BitShares `witness_node` to get data. This witness node must be configured with the following plugins:
 
-- `market_history`   
-- `grouped_orders` 
+- `market_history`
+- `grouped_orders`
 - `elasticsearch`
 
-Additionally, the node must have `asset_api` and `orders_api` enabled(off by default). 
+Additionally, the node must have `asset_api` and `orders_api` enabled(off by default).
 
 First download and build `bitshares-core`:
 
@@ -144,7 +143,7 @@ Check if it is working with:
 
 note: ask @clockwork about performance increment suggested for mainnet and elasticsearch.
 
-#### Install BitShares Explorer API and dependencies.
+#### Install BitShares Explorer API and dependencies
 
 Install python and pip:
 
@@ -154,7 +153,7 @@ Clone the app:
 
     git clone https://github.com/oxarbitrage/bitshares-explorer-api
     cd bitshares-explorer-api/
-    
+
 Install virtual environment and setup:
 
     pip install virtualenv 
@@ -175,27 +174,23 @@ Install dependencies in virtual env activated:
 
     pip install -r requirements/production.pip
 
-
 To run the api, always need to have the full path to program in `PYTHONPATH` environment variable exported:
 
-`export PYTHONPATH=/root/bitshares/bitshares-explorer-api` 
+`export PYTHONPATH=/root/bitshares/bitshares-explorer-api`
 
 If you have errors in the output about websocket you may need to also do:
-```
-apt-get install python-websocket
-```
+
+    apt-get install python-websocket
 
 If you see a problem similar to:
- 
- ```
- WARNING:connexion.options:The swagger_ui directory could not be found.
-    Please install connexion with extra install: pip install connexion[swagger-ui]
-    or provide the path to your local installation by passing swagger_path=<your path>
-```
+
+     WARNING:connexion.options:The swagger_ui directory could not be found.
+        Please install connexion with extra install: pip install connexion[swagger-ui]
+        or provide the path to your local installation by passing swagger_path=<your path>
 
 You need to execute:
-`pip install connexion[swagger-ui]`                        
-    
+`pip install connexion[swagger-ui]`
+
 #### Simple running
 
 In order to simply test and run the backend api you can do:
@@ -205,7 +200,7 @@ In order to simply test and run the backend api you can do:
 
 Then go to apidocs with your server external address:
 
-http://185.208.208.184:5000/apidocs/
+[http://185.208.208.184:5000/apidocs/](http://185.208.208.184:5000/apidocs/)
 
 #### Nginx and uwsgi
 
@@ -255,11 +250,11 @@ There are a lot of ways and application for this collection of API calls, at the
 
 ### Swagger
 
-http://185.208.208.184:5000/apidocs/
+[http://185.208.208.184:5000/apidocs/](http://185.208.208.184:5000/apidocs/)
 
-https://explorer.bitshares-kibana.info/apidocs/
+[https://explorer.bitshares-kibana.info/apidocs/](https://explorer.bitshares-kibana.info/apidocs/)
 
-Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data. 
+Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data.
 
 ### Profiler
 
@@ -271,42 +266,38 @@ Then you will be able to access profiling data at `http://localhost:5000/profile
 
 By default the profiler is not protected, to add basic authentification add username and password in `config.py` or using environment variables `PROFILER_USERNAME` and `PROFILER_PASSWORD`.
 
-
 ### Open Explorer
 
-- http://open-explorer.io
-- http://bitshares-explorer.io/
-- http://bitshares-testnet.xyz
+- [http://open-explorer.io](http://open-explorer.io)
+- [http://bitshares-explorer.io/](http://bitshares-explorer.io/)
+- [http://bitshares-testnet.xyz](http://bitshares-testnet.xyz)
 
 All versions of open-explorer uses this backend to get data.
 
 ### Development
 
+To run the server in development mode to have an auto reload on code change:
+
+    FLASK_ENV=development flask run
+
 Run all tests:
 
-```
-PYTHONPATH=. pytest
-```
+    PYTHONPATH=. pytest
 
 This will also run API tests (using [Tavern](https://taverntesting.github.io/)), that needs an local server to run, so make sure your development server is started.
 
 To run one specific test:
 
-```
-PYTHONPATH=. pytest -k test_ws_request
-```
+    PYTHONPATH=. pytest -k test_ws_request
 
 Or for API tests:
 
-```
- PYTHONPATH=. py.test tests/test_api_explorer.tavern.yaml -k get_asset_holders_count
- ```
+    PYTHONPATH=. py.test tests/test_api_explorer.tavern.yaml -k get_asset_holders_count
 
 You can run API tests on a non localhost server using the command:
 
-```
- PYTHONPATH=. py.test tavern-global-cfg=your_customized_environment.yaml tests/test_api_explorer.tavern.yaml
- ```
- See `tests/local_urls.yaml` to see how to define a new environment.
+    PYTHONPATH=. py.test tavern-global-cfg=your_customized_environment.yaml tests/test_api_explorer.tavern.yaml
+
+See `tests/local_urls.yaml` to see how to define a new environment.
 
 And for non regression see `non_reg/README.md`
