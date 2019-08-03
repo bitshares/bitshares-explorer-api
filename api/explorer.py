@@ -588,11 +588,10 @@ def get_last_block_number():
     return dynamic_global_properties["head_block_number"]
 
 
-def get_account_history(account_id, page):
+def get_account_history(account_id, search_after):
     account_id = _get_account_id(account_id)
 
-    from_ = int(page) * 20
-    operations = es_wrapper.get_account_history(account_id=account_id, from_=from_, size=20, sort_by='-block_data.block_time')
+    operations = es_wrapper.get_account_history(account_id=account_id, search_after=search_after, size=20, sort_by='-account_history.id.keyword')
 
     results = []
     for op in operations:

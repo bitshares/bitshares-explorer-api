@@ -136,11 +136,11 @@ paths:
           required: true
           description: the account to get operations from
         - in: query
-          name: page
-          default: 0
-          type: integer
-          required: true
-          description: the page
+          name: search_after
+          default: ''
+          type: string
+          required: false
+          description: the operation id to search the result from
       responses:
         '200':
           description: operations of account by page
