@@ -77,8 +77,8 @@ def get_operation(operation_id):
     operation = _enrich_operation(operation, bitshares_ws_client)
     return operation
 
-def get_accounts():
-    core_asset_holders = get_asset_holders('1.3.0', start=0, limit=100)
+def get_accounts(start=0, limit=100):
+    core_asset_holders = get_asset_holders('1.3.0', start=start, limit=limit)
     return core_asset_holders
 
 

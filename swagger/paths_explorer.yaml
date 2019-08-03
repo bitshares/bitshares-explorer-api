@@ -72,9 +72,22 @@ paths:
     get:
       description: Get an account list of the most 100 rich CORE holders.
       operationId: api.explorer.get_accounts
+      parameters:
+        - in: query
+          name: start
+          default: 0
+          type: integer
+          required: false
+          description: Pagination start
+        - in: query
+          name: limit
+          default: 100
+          type: integer
+          required: false
+          description: Number of records to retrieve
       responses:
         '200':
-          description: Rich list of accounts
+          description: Requested accounts
         '500':
           description: Error processing parameters
       tags:
@@ -292,7 +305,7 @@ paths:
           default: 20
           type: integer
           required: false
-          description: Number of records to retreive
+          description: Number of records to retrieve
       responses:
         '200':
           description: Account holder and amount
@@ -366,7 +379,7 @@ paths:
           default: 100
           type: integer
           required: false
-          description: Number of records to retreive
+          description: Number of records to retrieve
       responses:
         '200':
           description: the order book for the market
