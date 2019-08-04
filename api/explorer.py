@@ -1,11 +1,15 @@
 import itertools
 import datetime
 import json
+import connexion.problem
 from services.bitshares_websocket_client import client as bitshares_ws_client
 from services.bitshares_elasticsearch_client import client as bitshares_es_client
 from services.cache import cache
 import es_wrapper
 import config
+
+def _bad_request(detail):
+    return connexion.problem(400, 'Bad Request', detail)
 
 def _get_core_asset_name():
     if config.TESTNET == 1:
@@ -722,3 +726,77 @@ def _get_asset_type(asset):
         return 'SmartCoin'
     else:
         return 'User Issued'
+
+OPERATION_TYPES = [
+            { 'id': 0, 'name': 'transfer', 'virtual': False },
+            { 'id': 1, 'name': 'limit_order_create', 'virtual': False },
+            { 'id': 2, 'name': 'limit_order_cancel', 'virtual': False },
+            { 'id': 3, 'name': 'call_order_update', 'virtual': False },
+            { 'id': 4, 'name': 'fill_order', 'virtual': True },
+            { 'id': 5, 'name': 'account_create', 'virtual': False },
+            { 'id': 6, 'name': 'account_update', 'virtual': False },
+            { 'id': 7, 'name': 'account_whitelist', 'virtual': False },
+            { 'id': 8, 'name': 'account_upgrade', 'virtual': False },
+            { 'id': 9, 'name': 'account_transfer', 'virtual': False },
+            { 'id': 10, 'name': 'asset_create', 'virtual': False },
+            { 'id': 11, 'name': 'asset_update', 'virtual': False },
+            { 'id': 12, 'name': 'asset_update_bitasset', 'virtual': False },
+            { 'id': 13, 'name': 'asset_update_feed_producers', 'virtual': False },
+            { 'id': 14, 'name': 'asset_issue', 'virtual': False },
+            { 'id': 15, 'name': 'asset_reserve', 'virtual': False },
+            { 'id': 16, 'name': 'asset_fund_fee_pool', 'virtual': False },
+            { 'id': 17, 'name': 'asset_settle', 'virtual': False },
+            { 'id': 18, 'name': 'asset_global_settle', 'virtual': False },
+            { 'id': 19, 'name': 'asset_publish_feed', 'virtual': False },
+            { 'id': 20, 'name': 'witness_create', 'virtual': False },
+            { 'id': 21, 'name': 'witness_update', 'virtual': False },
+            { 'id': 22, 'name': 'proposal_create', 'virtual': False },
+            { 'id': 23, 'name': 'proposal_update', 'virtual': False },
+            { 'id': 24, 'name': 'proposal_delete', 'virtual': False },
+            { 'id': 25, 'name': 'withdraw_permission_create', 'virtual': False },
+            { 'id': 26, 'name': 'withdraw_permission_update', 'virtual': False },
+            { 'id': 27, 'name': 'withdraw_permission_claim', 'virtual': False },
+            { 'id': 28, 'name': 'withdraw_permission_delete', 'virtual': False },
+            { 'id': 29, 'name': 'committee_member_create', 'virtual': False },
+            { 'id': 30, 'name': 'committee_member_update', 'virtual': False },
+            { 'id': 31, 'name': 'committee_member_update_global_parameters', 'virtual': False },
+            { 'id': 32, 'name': 'vesting_balance_create', 'virtual': False },
+            { 'id': 33, 'name': 'vesting_balance_withdraw', 'virtual': False },
+            { 'id': 34, 'name': 'worker_create', 'virtual': False },
+            { 'id': 35, 'name': 'custom', 'virtual': False },
+            { 'id': 36, 'name': 'assert', 'virtual': False },
+            { 'id': 37, 'name': 'balance_claim', 'virtual': False },
+            { 'id': 38, 'name': 'override_transfer', 'virtual': False },
+            { 'id': 39, 'name': 'transfer_to_blind', 'virtual': False },
+            { 'id': 40, 'name': 'blind_transfer', 'virtual': False },
+            { 'id': 41, 'name': 'transfer_from_blind', 'virtual': False },
+            { 'id': 42, 'name': 'asset_settle_cancel', 'virtual': True },
+            { 'id': 43, 'name': 'asset_claim_fees', 'virtual': False },
+            { 'id': 44, 'name': 'fba_distribute', 'virtual': True },
+            { 'id': 45, 'name': 'bid_collateral', 'virtual': False },
+            { 'id': 46, 'name': 'execute_bid', 'virtual': True },
+            { 'id': 47, 'name': 'asset_claim_pool', 'virtual': False },
+            { 'id': 48, 'name': 'asset_update_issuer', 'virtual': False },
+            { 'id': 49, 'name': 'htlc_create', 'virtual': False },
+            { 'id': 50, 'name': 'htlc_redeem', 'virtual': False },
+            { 'id': 51, 'name': 'htlc_redeemed', 'virtual': True },
+            { 'id': 52, 'name': 'htlc_extend', 'virtual': False },
+            { 'id': 53, 'name': 'htlc_refund', 'virtual': True }
+]
+
+def get_operation_type(id, name):
+    if id and id > 0:
+        if id > len(OPERATION_TYPES):
+            return _bad_request("Invalid parameter 'id', it should be less or equal to {}".format(len(OPERATION_TYPES)))
+        return OPERATION_TYPES[id]
+
+    if name and name != '':
+        operation_type = filter(lambda operation_type: operation_type['name'] == name, OPERATION_TYPES)
+        if len(operation_type) == 0:
+            return _bad_request("Invalid parameter 'name', unknown operation type '{}'".format(name))
+        return operation_type[0]
+
+    return _bad_request("Invalid parameters, either 'id' or 'name' should be provided")
+
+def get_operation_types():
+    return OPERATION_TYPES
