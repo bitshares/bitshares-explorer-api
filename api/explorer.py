@@ -784,13 +784,15 @@ OPERATION_TYPES = [
             { 'id': 53, 'name': 'htlc_refund', 'virtual': True }
 ]
 
-def get_operation_type(id, name):
-    if id and id > 0:
-        if id > len(OPERATION_TYPES):
-            return _bad_request("Invalid parameter 'id', it should be less or equal to {}".format(len(OPERATION_TYPES)))
+def get_operation_type(id=None, name=None):
+    if id != None:
+        if name != None:
+            return _bad_request("Invalid parameters, either 'id' or 'name' should be provided")
+        if id < 0 or id > len(OPERATION_TYPES):
+            return _bad_request("Invalid parameter 'id', it should be in range 0..{}".format(len(OPERATION_TYPES) - 1))
         return OPERATION_TYPES[id]
 
-    if name and name != '':
+    if name != None and name != '':
         operation_type = filter(lambda operation_type: operation_type['name'] == name, OPERATION_TYPES)
         if len(operation_type) == 0:
             return _bad_request("Invalid parameter 'name', unknown operation type '{}'".format(name))
