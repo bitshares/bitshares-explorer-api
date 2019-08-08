@@ -68,6 +68,47 @@ paths:
       tags:
         - api
         - operation
+  "/operation_type":
+    get:
+      description: Get operation type by ID or name
+      operationId: api.explorer.get_operation_type
+      parameters:
+        - in: query
+          name: id
+          default: null
+          x-nullable: true
+          type: integer
+          required: false
+          description: 'Operation type ID (ex: 0)'
+        - in: query
+          name: name
+          default: null
+          x-nullable: true
+          type: string
+          required: false
+          description: 'Operation type name (ex: transfer)'
+      responses:
+        '200':
+          description: Operation type description
+        '500':
+          description: Error processing parameters
+      tags:
+        - api
+        - operation
+        - utility
+  "/operation_types":
+    get:
+      description: Get operation types
+      operationId: api.explorer.get_operation_types
+      responses:
+        '200':
+          description: Array of operation type description
+        '500':
+          description: Error processing parameters
+      tags:
+        - api
+        - operation
+        - utility
   "/accounts":
     get:
       description: Get an account list of the most 100 rich CORE holders.
