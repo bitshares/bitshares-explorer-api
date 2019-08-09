@@ -587,9 +587,15 @@ def lookup_assets(start):
     asset_names = bitshares_es_client.get_asset_names(start)
     return [ [ asset_name ] for asset_name in asset_names ]
 
+
 def get_last_block_number():
     dynamic_global_properties = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
     return dynamic_global_properties["head_block_number"]
+
+
+def get_last_block_time():
+    dynamic_global_properties = bitshares_ws_client.request('database', 'get_dynamic_global_properties', [])
+    return dynamic_global_properties["time"]
 
 
 def get_account_history(account_id, page, search_after):
