@@ -13,11 +13,17 @@ import config
 def info():
     return {
         "name": "Bitshares",
-        "description": "An exchange description of at least 1000 characters in plain text (no html)",
-        "location": "Anywhere",
-        "logo": "https://example.com/exchange-logo.png",
+        "description": "The BitShares Blockchain is an industrial-grade decentralized platform built for "
+                       "high-performance financial smart contracts mostly known for: its token factory,"
+                       " a decentralized exchange as a built-in native dapp (known as the DEX) and its stablecoins"
+                       " or, as they are called in BitShares, Smartcoins. It represents the first decentralized"
+                       " autonomous community that lets its core token holders decide on its future direction and"
+                       " products by means of on-chain voting. It is also the first DPoS blockchain in existence and"
+                       " the first blockchain to implement stablecoins.",
+        "location": "Worldwide",
+        "logo": "https://bitshares.org/exchange-logo.png",
         "website": "https://bitshares.org/",
-        "twitter": "example",
+        "twitter": "https://twitter.com/bitshares",
         "capability": {
             "markets": True,
             "trades": True,
