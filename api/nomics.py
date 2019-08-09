@@ -42,7 +42,7 @@ def markets():
 
     for market in top_markets:
         result.append({
-            'id': market["base"] + "_" + market["quote"],
+            'id': market["base"] + "-" + market["quote"],
             'base': market["base"],
             'quote': market["quote"]
         })
@@ -52,7 +52,7 @@ def markets():
 @cache.memoize()
 def trades(market, since):
 
-    market_id = market.split('_')
+    market_id = market.split('-')
     base = market_id[0]
     quote = market_id[1]
 
@@ -107,7 +107,7 @@ def trades(market, since):
 def snapshot(market):
     result = {}
 
-    market_id = market.split('_')
+    market_id = market.split('-')
     base = market_id[0]
     quote = market_id[1]
 

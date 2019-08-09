@@ -28,7 +28,7 @@ paths:
       parameters:
         - in: query
           name: market
-          default: USD_BTS
+          default: USD-BTS
           type: string
           required: true
           description: Market
@@ -52,7 +52,7 @@ paths:
       parameters:
         - in: query
           name: market
-          default: USD_CNY
+          default: USD-CNY
           type: string
           required: true
           description: Market
