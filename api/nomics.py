@@ -38,6 +38,7 @@ def info():
 
 def markets():
     result = []
+
     top_markets = bitshares_ws_client.request('database', 'get_top_markets', [100])
 
     for market in top_markets:
@@ -56,7 +57,7 @@ def trades(market, since):
     base = market_id[0]
     quote = market_id[1]
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     start = now
     stop = now - datetime.timedelta(days=3)
 
@@ -126,6 +127,6 @@ def snapshot(market):
 
     result["asks"] = asks
 
-    result["timestamp"] = api.explorer.get_last_block_time()
+    result["timestamp"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
 
     return result
