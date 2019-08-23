@@ -1,12 +1,12 @@
 import os
 
 
-WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "ws://localhost:8090/ws")
+WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "wss://api.bitshares-kibana.info/ws")
 
 
 # Default connection to Elastic Search.
 ELASTICSEARCH = {
-     'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://es.bitshares.eu/').split(','),
+     'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://elasticsearch.bitshares-kibana.info/').split(','),
      'user': os.environ.get('ELASTICSEARCH_USER', 'BitShares'),
      'password': os.environ.get('ELASTICSEARCH_USER', '******')
 }
@@ -31,7 +31,7 @@ ELASTICSEARCH_ADDITIONAL = {
     'operations': None,
     # Overwrite cluster to use to retrieve bitshares-* index.
     'objects': {
-        'hosts': ['http://148.251.10.231:5005/'] # oxarbitrage (no credentials)
+        'hosts': ['https://elasticsearch.bitshares-kibana.info/'] # oxarbitrage (no credentials)
     }
 }
 

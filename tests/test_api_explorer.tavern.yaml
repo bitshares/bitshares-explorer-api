@@ -93,6 +93,38 @@ stages:
         virtual_op: !anyint
         witness_count: !anyint
 ---
+test_name: Retrieve /operation_type
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/operation_type"
+      method: GET
+      params:
+        id: 42
+    response:
+      status_code: 200
+      body:
+        id: 42
+        name: "asset_settle_cancel"
+        virtual: true
+---
+test_name: Retrieve /operation_types
+stages:
+  - name: Make sure we have the right content
+    request:
+      url: "{host}/operation_types"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tests.util:validate_list_of
+          extra_kwargs:
+            element_desc:
+              id: !anyint
+              name: !anystr
+              virtual: !anybool
+---
 test_name: Retrieve /accounts
 stages:
   - name: Make sure we have the right content

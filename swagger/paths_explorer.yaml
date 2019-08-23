@@ -68,13 +68,67 @@ paths:
       tags:
         - api
         - operation
+  "/operation_type":
+    get:
+      description: Get operation type by ID or name
+      operationId: api.explorer.get_operation_type
+      parameters:
+        - in: query
+          name: id
+          default: null
+          x-nullable: true
+          type: integer
+          required: false
+          description: 'Operation type ID (ex: 0)'
+        - in: query
+          name: name
+          default: null
+          x-nullable: true
+          type: string
+          required: false
+          description: 'Operation type name (ex: transfer)'
+      responses:
+        '200':
+          description: Operation type description
+        '500':
+          description: Error processing parameters
+      tags:
+        - api
+        - operation
+        - utility
+  "/operation_types":
+    get:
+      description: Get operation types
+      operationId: api.explorer.get_operation_types
+      responses:
+        '200':
+          description: Array of operation type description
+        '500':
+          description: Error processing parameters
+      tags:
+        - api
+        - operation
+        - utility
   "/accounts":
     get:
       description: Get an account list of the most 100 rich CORE holders.
       operationId: api.explorer.get_accounts
+      parameters:
+        - in: query
+          name: start
+          default: 0
+          type: integer
+          required: false
+          description: Pagination start
+        - in: query
+          name: limit
+          default: 100
+          type: integer
+          required: false
+          description: Number of records to retrieve
       responses:
         '200':
-          description: Rich list of accounts
+          description: Requested accounts
         '500':
           description: Error processing parameters
       tags:
@@ -139,8 +193,14 @@ paths:
           name: page
           default: 0
           type: integer
-          required: true
-          description: the page
+          required: false
+          description: the page. Fails if more than 10000 results, use search_after instead.
+        - in: query
+          name: search_after
+          default: ''
+          type: string
+          required: false
+          description: the operation id to search the result from. This will takes precedence over the page parameter if provided.
       responses:
         '200':
           description: operations of account by page
@@ -292,7 +352,7 @@ paths:
           default: 20
           type: integer
           required: false
-          description: Number of records to retreive
+          description: Number of records to retrieve
       responses:
         '200':
           description: Account holder and amount
@@ -366,7 +426,7 @@ paths:
           default: 100
           type: integer
           required: false
-          description: Number of records to retreive
+          description: Number of records to retrieve
       responses:
         '200':
           description: the order book for the market

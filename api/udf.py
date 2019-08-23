@@ -171,7 +171,7 @@ def get_history(symbol, to, resolution):
     while len_result == 200:
         counter = counter + 200
 
-        left = datetime.fromtimestamp(int(result['t'][-1]+1)).strftime('%Y-%m-%dT%H:%M:%S')
+        left = datetime.fromtimestamp(int(results['t'][-1]+1)).strftime('%Y-%m-%dT%H:%M:%S')
         len_result = _load_next_market_history(base_id, base_precision, quote_id, quote_precision, invert, buckets, left, right, results)
 
     results["s"] = "ok"

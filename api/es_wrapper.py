@@ -4,12 +4,15 @@ from elasticsearch.exceptions import NotFoundError
 from datetime import datetime, timedelta
 
 def get_account_history(account_id=None, operation_type=None, from_=0, size=10, 
-                        from_date='2015-10-10', to_date='now', sort_by='-block_data.block_time',
-                        type='data', agg_field='operation_type'):
-    if type != "data":
-        s = Search(using=es, index="bitshares-*")
-    else:
-        s = Search(using=es, index="bitshares-*", extra={"size": size, "from": from_})
+                        from_date='2015-10-10', to_date='now', sort_by='-operation_id_num',
+                        search_after=None, type='data', agg_field='operation_type'):
+    s = Search(using=es, index="bitshares-*")
+    if type == "data":
+        s = s.extra(size=size)
+        if search_after and search_after != '':
+            s = s.extra(search_after=search_after.split(','))
+        else:
+            s = s.extra(**{ "from": from_ })
 
     q = Q()
 
@@ -24,7 +27,7 @@ def get_account_history(account_id=None, operation_type=None, from_=0, size=10,
     if type != "data":
         s.aggs.bucket('per_field', 'terms', field=agg_field, size=size)
 
-    s = s.sort(sort_by)
+    s = s.sort(*sort_by.split(','))
     response = s.execute()
 
     if type == "data":
