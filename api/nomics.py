@@ -57,52 +57,25 @@ def trades(market, since):
     base = market_id[0]
     quote = market_id[1]
 
-    now = datetime.datetime.utcnow()
-    start = now
-    stop = now - datetime.timedelta(days=3)
+    base_asset = api.explorer._get_asset_id_and_precision(base)
+    quote_asset = api.explorer._get_asset_id_and_precision(quote)
+
+    trade_history = es_wrapper.get_trade_history(search_after=since, base=base_asset[0], quote=quote_asset[0], size=20,
+                                                 sort_by='operation_id_num')
 
     results = []
+    for trade in trade_history:
+        base_amount = trade["operation_history"]["op_object"]["fill_price"]["base"]["amount"]
+        quote_amount = trade["operation_history"]["op_object"]["fill_price"]["base"]["amount"]
 
-    _trades = bitshares_ws_client.request('database', 'get_trade_history',
-                                          [base, quote, start.strftime("%Y-%m-%dT%H:%M:%S"),
-                                           stop.strftime("%Y-%m-%dT%H:%M:%S"), 100])
-
-    for trade in _trades:
         results.append({
-            "id": trade["sequence"],
-            "timestamp": trade["date"],
-            "price": trade["price"],
-            "amount": trade["amount"],
-            "order": "",
-            "type": "",
-            "side": "",
-            "raw": ""
+            "id": trade["operation_id_num"],
+            "timestamp": trade["block_data"]["block_time"],
+            "price": float(float(base_amount)/int(base_asset[1]))/float(float(quote_amount)/int(quote_asset[1])),
+            "amount": trade["operation_history"]["op_object"]["receives"]["amount"]/quote_asset[1]
         })
 
-    while len(_trades) == 100:
-        start_seq = _trades[99]["sequence"]
-        _trades = bitshares_ws_client.request('database', 'get_trade_history_by_sequence',
-                                              [base, quote, start_seq, stop.strftime("%Y-%m-%dT%H:%M:%S"), 100])
-        for trade in _trades:
-            results.append({
-                "id": trade["sequence"],
-                "timestamp": trade["date"],
-                "price": trade["price"],
-                "amount": trade["amount"],
-                "order": "",
-                "type": "",
-                "side": "",
-                "raw": ""
-            })
-
-    if not since:
-        return list(reversed(results))[0:100]
-    else:
-        new_results = []
-        for r in results:
-            if int(r["id"]) > int(since):
-                new_results.append(r)
-        return list(reversed(new_results))[0:100]
+    return results
 
 
 def snapshot(market):
