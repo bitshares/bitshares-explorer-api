@@ -37,16 +37,16 @@ def info():
 
 
 def markets():
-    result = []
+    result = [
+        {"id": "CNY-BTS", "base": "CNY", "quote": "BTS"},
+        {"id": "USD-BTS", "base": "USD", "quote": "BTS"},
+        {"id": "CNY-USD", "base": "CNY", "quote": "USD"},
+        {"id": "EUR-BTS", "base": "EUR", "quote": "BTS"},
+        {"id": "RUBLE-BTS", "base": "RUBLE", "quote": "BTS"},
+        {"id": "SILVER-BTS", "base": "SILVER", "quote": "BTS"},
+        {"id": "GOLD-BTS", "base": "GOLD", "quote": "BTS"}
+    ]
 
-    top_markets = bitshares_ws_client.request('database', 'get_top_markets', [100])
-
-    for market in top_markets:
-        result.append({
-            'id': market["base"] + "-" + market["quote"],
-            'base': market["base"],
-            'quote': market["quote"]
-        })
     return result
 
 
@@ -69,10 +69,10 @@ def trades(market, since):
         quote_amount = trade["operation_history"]["op_object"]["fill_price"]["base"]["amount"]
 
         results.append({
-            "id": trade["operation_id_num"],
+            "id": str(trade["operation_id_num"]),
             "timestamp": trade["block_data"]["block_time"],
-            "price": float(float(base_amount)/int(base_asset[1]))/float(float(quote_amount)/int(quote_asset[1])),
-            "amount": trade["operation_history"]["op_object"]["receives"]["amount"]/quote_asset[1]
+            "price": str(float(float(base_amount)/int(base_asset[1]))/float(float(quote_amount)/int(quote_asset[1]))),
+            "amount": str(trade["operation_history"]["op_object"]["receives"]["amount"]/quote_asset[1])
         })
 
     return results
@@ -91,12 +91,12 @@ def snapshot(market):
     asks = []
 
     for bid in order_book["bids"]:
-        bids.append([bid["price"], bid["base"]])
+        bids.append([float(bid["price"]), float(bid["base"])])
 
     result["bids"] = bids
 
     for ask in order_book["asks"]:
-        asks.append([ask["price"], ask["base"]])
+        asks.append([float(ask["price"]), float(ask["base"])])
 
     result["asks"] = asks
 
