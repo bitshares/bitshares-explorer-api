@@ -42,8 +42,8 @@ def _add_global_informations(response, ws_client):
     # get market cap
     core_asset = ws_client.get_object('2.3.0')
     current_supply = core_asset["current_supply"]
-    confidental_supply = core_asset["confidential_supply"]
-    market_cap = int(current_supply) + int(confidental_supply)
+    confidential_supply = core_asset["confidential_supply"]
+    market_cap = int(current_supply) + int(confidential_supply)
     response["bts_market_cap"] = int(market_cap/100000000)
 
     if config.TESTNET != 1: # Todo: had to do something else for the testnet
@@ -53,7 +53,7 @@ def _add_global_informations(response, ws_client):
         response["quote_volume"] = 0
 
     global_properties = ws_client.get_global_properties()
-    response["commitee_count"] = len(global_properties["active_committee_members"])
+    response["committee_count"] = len(global_properties["active_committee_members"])
     response["witness_count"] = len(global_properties["active_witnesses"])
 
     return response
