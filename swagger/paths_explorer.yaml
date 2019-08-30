@@ -669,6 +669,18 @@ paths:
       tags:
         - api
         - operation
+  "/last_block_time":
+    get:
+      description: Get current block time
+      operationId: api.explorer.get_last_block_time
+      responses:
+        '200':
+          description:  last known block time
+        '500':
+          description: Error processing parameters
+      tags:
+        - api
+        - operation
   "/dex_total_volume":
     get:
       description: Get some total dex volume figures

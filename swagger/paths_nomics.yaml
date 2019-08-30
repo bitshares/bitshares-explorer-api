@@ -1,0 +1,65 @@
+paths:
+  "/nomics/info":
+    get:
+      description: Returns information about the exchange as a whole, and is used by Nomics to display information about Bitshares to users.
+      operationId: api.nomics.info
+      responses:
+        '200':
+          description: JSON object containing excchange info
+        '500':
+          description: Error processing parameters
+      tags:
+        - nomics
+  "/nomics/markets":
+    get:
+      description: Returns a list of the top markets on the Bitshares exchange.
+      operationId: api.nomics.markets
+      responses:
+        '200':
+          description: Top markets
+        '500':
+          description: Error processing parameters
+      tags:
+        - nomics
+  "/nomics/trades":
+    get:
+      description: Search for an asset(symbol)
+      operationId: api.nomics.trades
+      parameters:
+        - in: query
+          name: market
+          default: USD-BTS
+          type: string
+          required: true
+          description: Market
+        - in: query
+          name: since
+          default: ''
+          type: string
+          required: false
+          description: A trade ID from a previous /trades response. If none is provided, the oldest trades should be returned
+      responses:
+        '200':
+          description: Found assets
+        '500':
+          description: Error processing parameters
+      tags:
+        - nomics
+  "/nomics/orders/snapshot":
+    get:
+      description: The /orders/snapshot endpoint returns the current order book for a given market. It allows Nomics to get a simple snapshot of open orders.
+      operationId: api.nomics.snapshot
+      parameters:
+        - in: query
+          name: market
+          default: USD-CNY
+          type: string
+          required: true
+          description: Market
+      responses:
+        '200':
+          description: History in selected period.
+        '500':
+          description: Error processing parameters
+      tags:
+        - nomics

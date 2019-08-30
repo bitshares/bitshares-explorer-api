@@ -92,3 +92,28 @@ def get_trx(trx, from_=0, size=10):
     response = s.execute()
 
     return [ hit.to_dict() for hit in response ]
+
+
+def get_trade_history(size=10, from_date='2015-10-10', to_date='now', sort_by='-operation_id_num',
+                      search_after=None, base="1.3.0", quote="1.3.121"):
+
+    s = Search(using=es, index="bitshares-*")
+
+    s = s.extra(size=size)
+    if search_after and search_after != '':
+        s = s.extra(search_after=search_after.split(','))
+
+    q = Q()
+    q = q & Q("match", operation_type=4)
+    q = q & Q("match", operation_history__op_object__is_maker=True)
+
+    q = q & Q("match", operation_history__op_object__fill_price__base__asset_id=base)
+    q = q & Q("match", operation_history__op_object__fill_price__quote__asset_id=quote)
+
+    range_query = Q("range", block_data__block_time={'gte': from_date, 'lte': to_date})
+    s.query = q & range_query
+
+    s = s.sort(*sort_by.split(','))
+    response = s.execute()
+
+    return [hit.to_dict() for hit in response]
