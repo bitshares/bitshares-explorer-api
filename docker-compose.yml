@@ -14,7 +14,7 @@ services:
     hostname: api
     image: bitshares-explorer
     build: .
-    command: uwsgi --ini uwsgi.ini
+    command: uwsgi --ini docker.ini
     depends_on:
       - db
     env_file:
