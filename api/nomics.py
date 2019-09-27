@@ -21,9 +21,9 @@ def info():
                        " products by means of on-chain voting. It is also the first DPoS blockchain in existence and"
                        " the first blockchain to implement stablecoins.",
         "location": "Worldwide",
-        "logo": "https://bitshares.org/exchange-logo.png",
+        "logo": "https://www.bitshares.foundation/download/bitshares-logo.svg",
         "website": "https://bitshares.org/",
-        "twitter": "https://twitter.com/bitshares",
+        "twitter": "https://twitter.com/hashtag/BitShares",
         "capability": {
             "markets": True,
             "trades": True,
@@ -41,10 +41,7 @@ def markets():
         {"id": "CNY-BTS", "base": "CNY", "quote": "BTS"},
         {"id": "USD-BTS", "base": "USD", "quote": "BTS"},
         {"id": "CNY-USD", "base": "CNY", "quote": "USD"},
-        {"id": "EUR-BTS", "base": "EUR", "quote": "BTS"},
-        {"id": "RUBLE-BTS", "base": "RUBLE", "quote": "BTS"},
-        {"id": "SILVER-BTS", "base": "SILVER", "quote": "BTS"},
-        {"id": "GOLD-BTS", "base": "GOLD", "quote": "BTS"}
+        {"id": "EUR-BTS", "base": "EUR", "quote": "BTS"}
     ]
 
     return result
