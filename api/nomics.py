@@ -21,7 +21,7 @@ def info():
                        " products by means of on-chain voting. It is also the first DPoS blockchain in existence and"
                        " the first blockchain to implement stablecoins.",
         "location": "Worldwide",
-        "logo": "https://www.bitshares.foundation/download/bitshares-logo.svg",
+        "logo": "https://www.bitshares.foundation/download/bitshares-logo-squared.svg",
         "website": "https://bitshares.org/",
         "twitter": "https://twitter.com/hashtag/BitShares",
         "capability": {
