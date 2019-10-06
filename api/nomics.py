@@ -70,7 +70,7 @@ def trades(market, since):
 
         results.append({
             "id": str(trade["operation_id_num"]),
-            "timestamp": trade["block_data"]["block_time"],
+            "timestamp": trade["block_data"]["block_time"] + "Z",
             "price": str(float(float(base_amount)/int(base_asset[1]))/float(float(quote_amount)/int(quote_asset[1]))),
             "amount": str(trade["operation_history"]["op_object"]["receives"]["amount"]/quote_asset[1])
         })
