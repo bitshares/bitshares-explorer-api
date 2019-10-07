@@ -100,6 +100,6 @@ def snapshot(market):
 
     result["asks"] = asks
 
-    result["timestamp"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    result["timestamp"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S") + "Z"
 
     return result
