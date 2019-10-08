@@ -60,7 +60,7 @@ def trades(market, since):
     base_asset = api.explorer._get_asset_id_and_precision(base)
     quote_asset = api.explorer._get_asset_id_and_precision(quote)
 
-    trade_history = es_wrapper.get_trade_history(search_after=since, base=base_asset[0], quote=quote_asset[0], size=100,
+    trade_history = es_wrapper.get_trade_history(search_after=since, base=base_asset[0], quote=quote_asset[0], size=1000,
                                                  sort_by='operation_id_num')
 
     results = []
