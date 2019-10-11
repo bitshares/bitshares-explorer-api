@@ -66,7 +66,7 @@ def trades(market, since):
     results = []
     for trade in trade_history:
         base_amount = trade["operation_history"]["op_object"]["fill_price"]["base"]["amount"]
-        quote_amount = trade["operation_history"]["op_object"]["fill_price"]["base"]["amount"]
+        quote_amount = trade["operation_history"]["op_object"]["fill_price"]["quote"]["amount"]
 
         results.append({
             "id": str(trade["operation_id_num"]),
