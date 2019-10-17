@@ -38,13 +38,10 @@ def info():
 
 def markets():
     result = [
-        {"id": "CNY-BTS", "base": "CNY", "quote": "BTS"},
-        {"id": "USD-BTS", "base": "USD", "quote": "BTS"},
-        {"id": "CNY-USD", "base": "CNY", "quote": "USD"},
-        {"id": "EUR-BTS", "base": "EUR", "quote": "BTS"},
-        {"id": "RUBLE-BTS", "base": "RUBLE", "quote": "BTS"},
-        {"id": "SILVER-BTS", "base": "SILVER", "quote": "BTS"},
-        {"id": "GOLD-BTS", "base": "GOLD", "quote": "BTS"}
+        {"id": "CNY-BTS", "base": "BTS", "quote": "CNY"},
+        {"id": "USD-BTS", "base": "BTS", "quote": "USD"},
+        {"id": "CNY-USD", "base": "USD", "quote": "CNY"},
+        {"id": "EUR-BTS", "base": "BTS", "quote": "EUR"}
     ]
 
     return result
