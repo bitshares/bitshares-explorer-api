@@ -1,112 +1,43 @@
 # BitShares Explorer REST API
 
-BitShares Explorer REST API is the backend service of the BitShares explorer that retrieve the infotmation from the blockchain.  
-
-[http://185.208.208.184:5000/apidocs/](http://185.208.208.184:5000/apidocs/)
+BitShares Explorer REST API allows your programs to query the blockchain. 
 
 [https://explorer.bitshares-kibana.info/apidocs/](https://explorer.bitshares-kibana.info/apidocs/)
 
 Index:
 
-- [BitShares Explorer REST API](#bitshares-explorer-rest-api)
-  - [Installation](#installation)
-    - [Manual](#manual)
-      - [Install ElasticSearch](#install-elasticsearch)
-      - [Install a BitShares node with requirements](#install-a-bitshares-node-with-requirements)
-      - [Install BitShares Explorer API and dependencies](#install-bitshares-explorer-api-and-dependencies)
-      - [Simple running](#simple-running)
-      - [Nginx and uwsgi](#nginx-and-uwsgi)
-    - [Docker](#docker)
-  - [Usage](#usage)
-    - [Swagger](#swagger)
-    - [Profiler](#profiler)
-    - [Open Explorer](#open-explorer)
-    - [Development](#development)
+- [Installation](#installation)
+  - [Elasticsearch node](#Elasticsearch-node)
+  - [BitShares node](#BitShares-node)
+  - [Install BitShares Explorer API and dependencies](#Install-BitShares-Explorer-API-and-dependencies)
+- [Usage](#Usage)
+  - [Simple running](#Simple-running)
+  - [Nginx and uwsgi](#Nginx-and-uwsgi)
+  - [Profiler](#Profiler)
+  - [Development](#Development)
 
 ## Installation
 
-The following procedure will work in Debian based Linux, more specifically the commands to make the guide were executed in `Ubuntu 16.04.4 LTS` with `Python 2.7`.
+The following procedure will work in Debian based Linux, more specifically the commands to make the guide were executed in `Ubuntu 18.04` with `Python 2.7`.
 
-### Manual
+### Elasticsearch node
 
-Step by step on everything needed to have your own BitShares Explorer API up and running for a production environment.
+Some API calls make use of elasticsearch plugins for Bitshares. This plugins are `elasticsearch` and `es-objects`.
 
-#### Install ElasticSearch
+For elasticsearch installation and usage tutorial please go to: [https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin](https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin).
 
-For full elasticsearch installation and usage tutorial please go to: [https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin](https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin).
+To avoid installation the API cames with public elasticsearch node that can be updated from config.
 
-The following is a  quick installation guide for elasticsearch in Ubuntu.
+### BitShares node
 
-Install the requirements:
-
-    apt-get install default-jre
-    apt-get install default-jdk
-    apt-get install software-properties-common
-    add-apt-repository ppa:webupd8team/java
-    apt-get update
-    apt-get install oracle-java8-installer
-    apt-get install unzip
-    apt-get install libcurl4-openssl-dev
-
-Add an elasticsearch account to the system as the database can not run by root:
-
-    root@oxarbitrage ~ # adduser elastic
-    Adding user `elastic' ...
-    Adding new group `elastic' (1000) ...
-    Adding new user `elastic' (1000) with group `elastic' ...
-    Creating home directory `/home/elastic' ...
-    Copying files from `/etc/skel' ...
-    Enter new UNIX password: 
-    Retype new UNIX password: 
-    passwd: password updated successfully
-    Changing the user information for elastic
-    Enter the new value, or press ENTER for the default
-            Full Name []: 
-            Room Number []: 
-            Work Phone []: 
-            Home Phone []: 
-            Other []: 
-    Is the information correct? [Y/n] 
-    root@oxarbitrage ~ # 
-
-Download and run elasticsearch  database:
-
-    root@oxarbitrage ~ # su elastic
-    elastic@oxarbitrage:/root$ cd
-    elastic@oxarbitrage:~$ 
-    elastic@oxarbitrage:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.4.zip
-    elastic@oxarbitrage:~$ unzip elasticsearch-6.2.0.zip
-    elastic@oxarbitrage:~$ cd elasticsearch-6.2.0
-    elastic@oxarbitrage:~$ ./bin/elasticsearch
-
-Stop the program with ctrl-c, daemonize and forget:
-
-    elastic@oxarbitrage:~$ ./elasticsearch-6.2.0/bin/elasticsearch --daemonize
-    elastic@oxarbitrage:~$ netstat -an | grep 9200
-    tcp6       0      0 127.0.0.1:9200          :::*                    LISTEN     
-    tcp6       0      0 ::1:9200                :::*                    LISTEN     
-    elastic@oxarbitrage:~$ 
-
-#### Install a BitShares node with requirements
-
-This API backend connects to a BitShares `witness_node` to get data. This witness node must be configured with the following plugins:
+This API backend connects to a BitShares `witness_node` to get data. Additionally from elasticsearch API makes use of the following bitshares plugins:
 
 - `market_history`
 - `grouped_orders`
-- `elasticsearch`
 
-Additionally, the node must have `asset_api` and `orders_api` enabled(off by default).
+The node must have `asset_api` and `orders_api` enabled.
 
-First download and build `bitshares-core`:
-
-    git clone https://github.com/bitshares/bitshares-core.git
-    cd bitshares-core/
-    
-    git submodule update --init --recursive
-    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
-    make
-
-Next, create `api-access.json` file as shown:
+`api-access.json`:
 
     {
        "permission_map" :
@@ -122,36 +53,19 @@ Next, create `api-access.json` file as shown:
        ]
     }
 
-Finally run the start command with the required plugins and api-access.json, please note elasticsearch must be running on port 9200 of localhost in order for this command to work:
+To install a bitshares node please refer to: https://github.com/bitshares/bitshares-core/blob/master/README.md
 
-    programs/witness_node/witness_node --data-dir blockchain --rpc-endpoint "127.0.0.1:8091" --plugins "witness elasticsearch market_history grouped_orders" --api-access /full/path/to/api-access.json
+You can use/change public bitshares API nodes for this by updating the config.
 
-If you adding the wrapper to a testnet/private network backend you will need to change a bit the elasticsearch default parameters to start getting data faster. For example a testnet setup command may look as:
+### Install BitShares Explorer API and dependencies
 
-    programs/witness_node/witness_node --data-dir blockchain --rpc-endpoint "127.0.0.1:8091" --plugins "witness elasticsearch market_history grouped_orders" --elasticsearch-bulk-replay 1000 elasticsearch-bulk-sync 10 --elasticsearch-logs true --elasticsearch-visitor true --api-access /full/path/to/api-access.json
-
-Check if it is working with:
-
-    curl -X GET 'http://localhost:9200/graphene-*/data/_count?pretty=true' -H 'Content-Type: application/j
-    son' -d '
-    {
-        "query" : {
-            "bool" : { "must" : [{"match_all": {}}] }
-        }
-    }
-    '
-
-note: ask @clockwork about performance increment suggested for mainnet and elasticsearch.
-
-#### Install BitShares Explorer API and dependencies
-
-Install python and pip:
+Install python and pip if you dont have them:
 
 `apt-get install -y python python-pip`
 
 Clone the app:
 
-    git clone https://github.com/oxarbitrage/bitshares-explorer-api
+    git clone https://github.com/bitshares/bitshares-explorer-api
     cd bitshares-explorer-api/
 
 Install virtual environment and setup:
@@ -159,12 +73,6 @@ Install virtual environment and setup:
     pip install virtualenv 
     virtualenv -p python2 wrappers_env/ 
     source wrappers_env/bin/activate
-
-Now you are in an isolated environment where you install dependencies with `pip install` without affecting anything else or creating version race conditions.
-You can also simply switch or recreate the environment by deleting the env folder that will be created in your working directory.
-
-    root@oxarbitrage ~/bitshares #  source wrappers_env/bin/activate
-    (wrappers_env) root@oxarbitrage ~/bitshares # 
 
 Deactivate with:
 
@@ -174,15 +82,11 @@ Install dependencies in virtual env activated:
 
     pip install -r requirements/production.pip
 
-To run the api, always need to have the full path to program in `PYTHONPATH` environment variable exported:
-
-`export PYTHONPATH=/root/bitshares/bitshares-explorer-api`
-
-If you have errors in the output about websocket you may need to also do:
+Note: If you have errors in the output about websocket you may need to also do:
 
     apt-get install python-websocket
 
-If you see a problem similar to:
+Note: If you see a problem similar to:
 
      WARNING:connexion.options:The swagger_ui directory could not be found.
         Please install connexion with extra install: pip install connexion[swagger-ui]
@@ -191,18 +95,20 @@ If you see a problem similar to:
 You need to execute:
 `pip install connexion[swagger-ui]`
 
-#### Simple running
+## Usage
+
+### Simple running
 
 In order to simply test and run the backend api you can do:
 
     export FLASK_APP=app.py
     flask run --host=0.0.0.0
 
-Then go to apidocs with your server external address:
+Then go to apidocs with your IP:
 
-[http://185.208.208.184:5000/apidocs/](http://185.208.208.184:5000/apidocs/)
+[http://127.0.0.1:5000/apidocs/](http://127.0.0.1:5000/apidocs/)
 
-#### Nginx and uwsgi
+### Nginx and uwsgi
 
 In a production environment, when multiple requests start to happen at the same time, flask alone is not enough to handle the load. Nginx and uwsgi are alternatives to host a production backend.
 
@@ -234,28 +140,6 @@ Now api can be started with:
 
     (wrappers) root@oxarbitrage ~/bitshares/bitshares-explorer-api # uwsgi --ini app.ini
 
-Another common error is currently:
-
-    WARNING:connexion.options:The swagger_ui directory could not be found.
-    Please install connexion with extra install: pip install connexion[swagger-ui]
-    or provide the path to your local installation by passing swagger_path=<your path>
-
-### Docker
-
-Installation is too long, docker is here to automate this things. [Todo]
-
-## Usage
-
-There are a lot of ways and application for this collection of API calls, at the moment of writing there are mainly 2 use cases.
-
-### Swagger
-
-[http://185.208.208.184:5000/apidocs/](http://185.208.208.184:5000/apidocs/)
-
-[https://explorer.bitshares-kibana.info/apidocs/](https://explorer.bitshares-kibana.info/apidocs/)
-
-Allows to make calls directly from that address by changing the parameters of the request and getting the results. This is very convenient to make quick calls to the blockchain looking for specific data.
-
 ### Profiler
 
 To activate profiler use:
@@ -265,14 +149,6 @@ To activate profiler use:
 Then you will be able to access profiling data at `http://localhost:5000/profiler`.
 
 By default the profiler is not protected, to add basic authentification add username and password in `config.py` or using environment variables `PROFILER_USERNAME` and `PROFILER_PASSWORD`.
-
-### Open Explorer
-
-- [http://open-explorer.io](http://open-explorer.io)
-- [http://bitshares-explorer.io/](http://bitshares-explorer.io/)
-- [http://bitshares-testnet.xyz](http://bitshares-testnet.xyz)
-
-All versions of open-explorer uses this backend to get data.
 
 ### Development
 
