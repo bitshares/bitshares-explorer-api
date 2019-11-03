@@ -2,6 +2,7 @@ from elasticsearch_dsl import Search, Q
 from services.bitshares_elasticsearch_client import es
 from elasticsearch.exceptions import NotFoundError
 from datetime import datetime, timedelta
+from services.cache import cache
 
 def get_account_history(account_id=None, operation_type=None, from_=0, size=10, 
                         from_date='2015-10-10', to_date='now', sort_by='-operation_id_num',
@@ -36,6 +37,7 @@ def get_account_history(account_id=None, operation_type=None, from_=0, size=10,
         return [ field.to_dict() for field in response.aggregations.per_field.buckets ]
 
 
+@cache.memoize()
 def get_single_operation(operation_id):
     s = Search(using=es, index="bitshares-*", extra={"size": 1})
     s.query = Q("match", account_history__operation_id=operation_id)
@@ -85,6 +87,7 @@ def is_alive():
     return json_response
 
 
+@cache.memoize()
 def get_trx(trx, from_=0, size=10):
     s = Search(using=es, index="bitshares-*", extra={"size": size, "from": from_})
     s.query = Q("match", block_data__trx_id=trx)
