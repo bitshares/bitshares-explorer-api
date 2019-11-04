@@ -13,6 +13,9 @@ CORS(app.app)
 from services.cache import cache
 cache.init_app(app.app)
 
+import services.limiter
+limiter = services.limiter.init(app.app)
+
 import config
 from specsynthase.specbuilder import SpecBuilder
 import glob

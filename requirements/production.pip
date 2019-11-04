@@ -2,6 +2,7 @@ flask
 flask-cors
 Flask-Caching
 flask_profiler
+Flask-Limiter
 connexion>=2.0.0
 connexion[swagger-ui]
 websocket-client
