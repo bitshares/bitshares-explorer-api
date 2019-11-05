@@ -26,6 +26,11 @@ class BitsharesWebsocketClient():
             self.ws.close()
             self._connect()
             return self._safe_request(api, method_name, params)
+        except Exception as e:
+            print(e)
+            self.ws.close()
+            self._connect()
+            return self._safe_request(api, method_name, params)
 
     def _safe_request(self, api, method_name, params):
         api_id = self.load_api_id(api)
