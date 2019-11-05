@@ -16,7 +16,7 @@ BitShares Explorer REST API allows your programs to query the blockchain.
 
 ## Installation
 
-The following procedure will work in Debian based Linux, more specifically the commands to make the guide were executed in `Ubuntu 18.04` with `Python 2.7`.
+The following procedure will work in Debian based Linux, more specifically the commands to make the guide were executed in `Ubuntu 18.04` with `Python 3.7`.
 
 ### Elasticsearch node
 
@@ -24,7 +24,7 @@ Some API calls make use of elasticsearch plugins for Bitshares. This plugins are
 
 For elasticsearch installation and usage tutorial please go to: [https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin](https://github.com/bitshares/bitshares-core/wiki/ElasticSearch-Plugin).
 
-To avoid installation the API cames with public elasticsearch node that can be updated from config.
+To avoid installation the API comes with public elasticsearch node that can be updated from config.
 
 ### BitShares node
 
@@ -69,7 +69,7 @@ Clone the app:
 Install virtual environment and setup:
 
     pip install virtualenv 
-    virtualenv -p python2 wrappers_env/ 
+    virtualenv -p python3 wrappers_env/ 
     source wrappers_env/bin/activate
 
 Deactivate with:
@@ -91,7 +91,8 @@ Note: If you see a problem similar to:
         or provide the path to your local installation by passing swagger_path=<your path>
 
 You need to execute:
-`pip install connexion[swagger-ui]`
+    
+    pip install connexion[swagger-ui]
 
 ## Usage
 
