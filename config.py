@@ -8,7 +8,7 @@ WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "wss://api.bitshares-kibana.info
 ELASTICSEARCH = {
      'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://elasticsearch.bitshares-kibana.info/').split(','),
      'user': os.environ.get('ELASTICSEARCH_USER', 'BitShares'),
-     'password': os.environ.get('ELASTICSEARCH_USER', '******')
+     'password': os.environ.get('ELASTICSEARCH_PASS', '******')
 }
 
 # Optional ElasticSearch cluster to access other data.
