@@ -6,10 +6,12 @@ WEBSOCKET_URL = os.environ.get('WEBSOCKET_URL', "wss://api.bitshares-kibana.info
 
 # Default connection to Elastic Search.
 ELASTICSEARCH = {
-     'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://elasticsearch.bitshares-kibana.info/').split(','),
+     #'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://elasticsearch.bitshares-kibana.info/').split(','),
+     'hosts': os.environ.get('ELASTICSEARCH_URL', 'https://BitShares:Infrastructure@eu.elasticsearch.bitshares.ws:443').split(','),
      'user': os.environ.get('ELASTICSEARCH_USER', 'BitShares'),
-     'password': os.environ.get('ELASTICSEARCH_PASS', '******')
+     'password': os.environ.get('ELASTICSEARCH_USER', 'Infrastructure')
 }
+
 
 # Optional ElasticSearch cluster to access other data.
 # Currently expect:
@@ -31,8 +33,10 @@ ELASTICSEARCH_ADDITIONAL = {
     'operations': None,
     # Overwrite cluster to use to retrieve bitshares-* index.
     'objects': {
-        'hosts': ['https://elasticsearch.bitshares-kibana.info/'] # oxarbitrage (no credentials)
+        #'hosts': ['https://elasticsearch.bitshares-kibana.info/'] # oxarbitrage (no credentials)
+        'hosts': ['https://BitShares:Infrastructure@eu.elasticsearch.bitshares.ws:443'] # infra
     }
+
 }
 
 # Cache: see https://flask-caching.readthedocs.io/en/latest/#configuring-flask-caching
