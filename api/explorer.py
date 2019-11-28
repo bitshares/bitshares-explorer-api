@@ -5,10 +5,8 @@ import connexion.problem
 from services.bitshares_websocket_client import client as bitshares_ws_client
 from services.bitshares_elasticsearch_client import client as bitshares_es_client
 from services.cache import cache
-import es_wrapper
+from . import es_wrapper
 import config
-from app import limiter
-
 
 def _bad_request(detail):
     return connexion.problem(400, 'Bad Request', detail)
@@ -179,7 +177,6 @@ def get_block(block_num):
     return block
 
 
-@limiter.limit("1000 per day")
 def get_ticker(base, quote):
     return bitshares_ws_client.request('database', 'get_ticker', [base, quote])
 
@@ -302,7 +299,6 @@ def _ensure_safe_limit(limit):
     return limit
 
 
-@limiter.limit("1000 per day")
 def get_order_book(base, quote, limit=False):
     limit = _ensure_safe_limit(limit)    
     order_book = bitshares_ws_client.request('database', 'get_order_book', [base, quote, limit])

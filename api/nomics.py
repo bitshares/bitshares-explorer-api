@@ -5,8 +5,8 @@ import connexion
 from services.bitshares_websocket_client import client as bitshares_ws_client
 from services.bitshares_elasticsearch_client import client as bitshares_es_client
 from services.cache import cache
-import api.explorer
-import es_wrapper
+from . import explorer
+from . import es_wrapper
 import config
 
 
@@ -54,8 +54,8 @@ def trades(market, since):
     base = market_id[0]
     quote = market_id[1]
 
-    base_asset = api.explorer._get_asset_id_and_precision(base)
-    quote_asset = api.explorer._get_asset_id_and_precision(quote)
+    base_asset = explorer._get_asset_id_and_precision(base)
+    quote_asset = explorer._get_asset_id_and_precision(quote)
 
     trade_history = es_wrapper.get_trade_history(search_after=since, base=base_asset[0], quote=quote_asset[0], size=1000,
                                                  sort_by='operation_id_num')
@@ -82,7 +82,7 @@ def snapshot(market):
     base = market_id[0]
     quote = market_id[1]
 
-    order_book = api.explorer.get_order_book(base, quote, 100)
+    order_book = explorer.get_order_book(base, quote, 100)
 
     bids = []
     asks = []
