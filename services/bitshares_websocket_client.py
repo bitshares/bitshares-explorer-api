@@ -75,7 +75,7 @@ class BitsharesWebsocketClient():
 
     def load_api_id(self, api):
         if (api not in self.api_ids):
-            api_id = self.request('login', api, [])
+            api_id = self._safe_request('login', api, [])
             self.api_ids[api] = api_id
         return self.api_ids[api]
 
