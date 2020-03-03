@@ -1,5 +1,6 @@
 from elasticsearch_dsl import connections, Search, Q, A
 import config
+from datetime import datetime
 
 class BitsharesElasticSearchClient():
     def __init__(self, default_cluster_config, additional_clusters_config):
@@ -62,7 +63,9 @@ class BitsharesElasticSearchClient():
             query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.fill_price.quote.asset_id.keyword": quote } })
 
         client = connections.get_connection('operations')
-        response = client.search(index="bitshares-*", body=query)
+        if to_date == "now":
+            find_string = datetime.utcnow().strftime("%Y-%m")
+        response = client.search(index="bitshares-" + find_string, body=query)
 
         markets = {}
         for bucket in response['aggregations']['pairs']['buckets']:
