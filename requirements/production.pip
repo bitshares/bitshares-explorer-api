@@ -11,3 +11,4 @@ uwsgi==2.0.15
 elasticsearch>=6.0.0,<7.0.0
 elasticsearch-dsl>=6.0.0,<7.0.0
 spec-synthase
+gunicorn
