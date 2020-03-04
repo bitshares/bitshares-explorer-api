@@ -7,6 +7,7 @@ from services.bitshares_elasticsearch_client import client as bitshares_es_clien
 from services.cache import cache
 from . import es_wrapper
 import config
+from functools import reduce
 
 def _bad_request(detail):
     return connexion.problem(400, 'Bad Request', detail)
@@ -410,14 +411,14 @@ def get_top_proxies():
 
 def _get_accounts_by_chunks_via_es(account_ids, chunk_size=1000):
     all_accounts = []
-    for i in xrange(0, len(account_ids), chunk_size):
+    for i in range(0, len(account_ids), chunk_size):
         accounts = bitshares_es_client.get_accounts(account_ids[i:i+chunk_size], size=chunk_size)
         all_accounts.extend(accounts)
     return all_accounts
 
 def _get_accounts_by_chunks_via_ws(account_ids, chunk_size=1000):
     all_accounts = []
-    for i in xrange(0, len(account_ids), chunk_size):
+    for i in range(0, len(account_ids), chunk_size):
         accounts = bitshares_ws_client.request('database', 'get_accounts', [ account_ids[i:i+chunk_size] ])
         all_accounts.extend(accounts)
     return all_accounts
@@ -438,7 +439,7 @@ def _get_voting_account(holder):
 
 @cache.memoize()
 def _get_holders():
-    balances = bitshares_es_client.get_balances(asset_id=config.CORE_ASSET_ID)
+    balances = bitshares_ws_client.get_balances(asset_id=config.CORE_ASSET_ID, return_as_es=True)
     account_ids = [ balance['owner'] for balance in balances ]
     accounts = _get_accounts_by_chunks_via_es(account_ids)
     accounts = _load_missing_accounts_via_ws(account_ids, accounts)
@@ -447,6 +448,8 @@ def _get_holders():
         holders_by_account_id[balance['owner']] = balance
     for account in accounts:
         holders_by_account_id[account['id']]['owner'] = account
+    
+    proxies = holders_by_account_id.copy()  # can't manipulate dict in iterator, so new array
     for holder in holders_by_account_id.values():
         if 'options' in holder['owner'] and 'voting_account' in holder['owner']['options']:
             proxy_id = holder['owner']['options']['voting_account']
@@ -457,15 +460,15 @@ def _get_holders():
                         'balance': 0,
                         'asset_type': config.CORE_ASSET_ID
                     }
-                    holders_by_account_id[proxy_id] = proxy_without_balance
-                proxy = holders_by_account_id[proxy_id] 
+                    proxies[proxy_id] = proxy_without_balance
+                proxy = proxies[proxy_id]
                 if 'follower_amount' not in proxy:
                     proxy['follower_amount'] = 0
                     proxy['follower_count'] = 0
                 proxy['follower_amount'] += int(holder['balance']) 
                 proxy['follower_count'] += 1 
 
-    return holders_by_account_id.values()    
+    return list(proxies.values())
 
 
 def get_top_holders():

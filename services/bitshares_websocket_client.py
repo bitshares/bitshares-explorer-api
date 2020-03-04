@@ -86,5 +86,33 @@ class BitsharesWebsocketClient():
     def get_global_properties(self):
         return self.request('database', 'get_global_properties', [])
 
+    def get_balances(self, asset_id, threshold=100000000, return_as_es=False):
+        all_balances = []
+        add_balances = self.request(
+            'asset',
+            'get_asset_holders',
+            [asset_id, 0, 100]
+        )
+        all_balances += add_balances
+        while len(add_balances) == 100:
+            add_balances = self.request(
+                'asset', 
+                'get_asset_holders', 
+                [asset_id, len(all_balances), 100]
+            )
+            all_balances += add_balances
+            if int(add_balances[-1]["amount"]) < threshold:
+                break
+        if return_as_es:
+            for _balance in all_balances:
+                _balance.update({
+                    "balance": _balance["amount"],
+                    "asset_type": asset_id,
+                    "owner": _balance["account_id"]
+                })
+                del _balance["name"]
+                del _balance["account_id"]
+        return all_balances
+
 
 client = BitsharesWebsocketClient(config.WEBSOCKET_URL)
