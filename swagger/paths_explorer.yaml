@@ -522,9 +522,35 @@ paths:
     get:
       description: Get the top proxies
       operationId: api.explorer.get_top_proxies
+      parameters:
+        - in: query
+          name: start
+          default: 0
+          type: integer
+          required: false
+          description: Pagination start
+        - in: query
+          name: limit
+          default: 10
+          type: integer
+          required: false
+          description: Number of records to retreive
       responses:
         '200':
           description: Top X proxies
+        '500':
+          description: Error processing parameters
+      tags:
+        - api
+        - proxy
+        - governance
+  "/proxy_count":
+    get:
+      description: Get the number of proxies
+      operationId: api.explorer.get_proxy_count
+      responses:
+        '200':
+          description: Number of proxies
         '500':
           description: Error processing parameters
       tags:
