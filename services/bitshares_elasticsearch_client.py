@@ -45,21 +45,21 @@ class BitsharesElasticSearchClient():
                     "composite" : {
                         "size": 10000, # TODO use a generator function instead of a big size, see https://github.com/elastic/elasticsearch-dsl-py/blob/master/examples/composite_agg.py#L21
                         "sources" : [
-                            { "base": { "terms" : { "field": "operation_history.op_object.fill_price.base.asset_id.keyword" } } },
-                            { "quote": { "terms" : { "field": "operation_history.op_object.fill_price.quote.asset_id.keyword" } } }
+                            { "base": { "terms" : { "field": "operation_history.op_object.pays.asset_id.keyword" } } },
+                            { "quote": { "terms" : { "field": "operation_history.op_object.receives.asset_id.keyword" } } }
                         ]
                     },
                     "aggs": {
-                        "volume": { "sum" : { "field" : "operation_history.op_object.fill_price.quote.amount" } }
+                        "volume": { "sum" : { "field" : "operation_history.op_object.receives.amount" } }
                     }
                 }
             }
         }
 
         if base:
-            query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.fill_price.base.asset_id.keyword": base } })
+            query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.pays.asset_id.keyword": base } })
         if quote:
-            query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.fill_price.quote.asset_id.keyword": quote } })
+            query['query']['bool']['filter'].append({ "term": { "operation_history.op_object.receives.asset_id.keyword": quote } })
 
         client = connections.get_connection('operations')
         response = client.search(index="bitshares-*", body=query)
@@ -124,11 +124,11 @@ class BitsharesElasticSearchClient():
         s = s.query('bool', filter = [
             Q('term', operation_type=4),
             Q('range', block_data__block_time={'gte': from_date, 'lte': to_date}),
-            Q('term', operation_history__op_object__fill_price__quote__asset_id__keyword=config.CORE_ASSET_ID)
+            Q('term', operation_history__op_object__receives__asset_id__keyword=config.CORE_ASSET_ID)
         ])
 
         a = A('date_histogram', field='block_data.block_time', interval='1d', format='yyyy-MM-dd') \
-                .metric('volume', 'sum', field='operation_history.op_object.fill_price.quote.amount')
+                .metric('volume', 'sum', field='operation_history.op_object.receives.amount')
         s.aggs.bucket('volume_over_time', a)
 
         response = s.execute()
