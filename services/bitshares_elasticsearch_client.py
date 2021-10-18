@@ -28,7 +28,7 @@ class BitsharesElasticSearchClient():
             "query": {
                 "bool": {
                     "filter": [
-                        { "term": { "operation_type": 4 } },
+                        { "term": { "operation_type": 4 } }, # NOTE: may logically return duplicate data since not filtering by `is_maker == true`
                         { 
                             "range": { 
                                 "block_data.block_time": { 
@@ -51,6 +51,8 @@ class BitsharesElasticSearchClient():
                     },
                     "aggs": {
                         "volume": { "sum" : { "field" : "operation_history.op_object.receives.amount" } }
+                        # NOTE: perhaps better return both `pays.amount` and `receives.amount` (in different fields but not add them together),
+                        #       because it does not make much sense to return only `receives.amount` when filtering by `pays.asset_id`.
                     }
                 }
             }
