@@ -28,7 +28,7 @@ class BitsharesElasticSearchClient():
             "query": {
                 "bool": {
                     "filter": [
-                        { "term": { "operation_type": 4 } }, # NOTE: may logically return duplicate data since not filtering by `is_maker == true`
+                        { "term": { "operation_type": 4 } }, # NOTE: two fill_order_operation entries for each match, one for each side
                         { 
                             "range": { 
                                 "block_data.block_time": { 
